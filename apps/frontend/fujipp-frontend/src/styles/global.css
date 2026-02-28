@@ -1,0 +1,82 @@
+/* ─────────────────────────────────────────────────────────────────
+   GLOBAL STYLES
+   Tailwind @theme mapping, base layer resets, and utility classes.
+   Imports all design tokens via styles/tokens/index.css.
+───────────────────────────────────────────────────────────────── */
+
+@import "./tokens/index.css";
+
+/* ── Tailwind theme token bridge ────────────────────────────────── */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+    --color-error: var(--error);
+
+    --color-navbar-bg: var(--navbar-bg);
+    --color-navbar-foreground: var(--navbar-foreground);
+    --color-navbar-active-foreground: var(--navbar-active-foreground);
+    --color-navbar-border: var(--navbar-border);
+}
+
+/* ── Base layer ─────────────────────────────────────────────────── */
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-family: var(--font-family-base);
+    }
+}
+
+/* ── Theme transition class ─────────────────────────────────────── */
+:root.theme-fade,
+:root.theme-fade * {
+    transition:
+        background-color 350ms ease,
+        color 350ms ease,
+        border-color 350ms ease,
+        box-shadow 350ms ease,
+        fill 350ms ease,
+        stroke 350ms ease;
+}
+
+/* ── Hide scrollbars globally ───────────────────────────────────── */
+html,
+body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
+}

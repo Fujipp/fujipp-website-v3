@@ -1,0 +1,8 @@
+/* ─────────────────────────────────────────────────────────────────
+   BASE FONT TOKENS
+   Typography tokens used across the app.
+───────────────────────────────────────────────────────────────── */
+
+:root {
+    --font-family-base: "Kanit", "Inter", "Noto Sans Thai", sans-serif;
+}
