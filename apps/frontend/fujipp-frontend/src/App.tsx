@@ -1,41 +1,112 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { Button } from './components/ui/button'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { AppNavbar, type ThemeOption } from './components/layout/AppNavbar'
+import { AboutPage } from './pages/AboutPage'
+import { HomePage } from './pages/HomePage'
+import { ProjectsPage } from './pages/ProjectsPage'
+
+interface PageDefinition {
+  id: string
+  label: string
+  render: () => ReactNode
+}
+
+const PAGES: PageDefinition[] = [
+  {
+    id: 'home',
+    label: 'HOME',
+    render: () => <HomePage />,
+  },
+  {
+    id: 'about',
+    label: 'ABOUT',
+    render: () => <AboutPage />,
+  },
+  {
+    id: 'projects',
+    label: 'PROJECTS',
+    render: () => <ProjectsPage />,
+  },
+]
+
+const THEME_STORAGE_KEY = 'fujipp-theme'
+const THEME_TRANSITION_CLASS = 'theme-fade'
+const THEME_TRANSITION_DURATION_MS = 350
+
+const getStoredTheme = (): ThemeOption => {
+  if (typeof window === 'undefined') {
+    return 'system'
+  }
+
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+  return storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system'
+    ? storedTheme
+    : 'system'
+}
+
+const applyThemeToDocument = (theme: ThemeOption) => {
+  const root = document.documentElement
+
+  root.classList.remove('light', 'dark')
+
+  if (theme === 'system') {
+    root.removeAttribute('data-theme')
+    return
+  }
+
+  root.setAttribute('data-theme', theme)
+  root.classList.add(theme)
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activePage, setActivePage] = useState(PAGES[0].id)
+  const [theme, setTheme] = useState<ThemeOption>(getStoredTheme)
+  const hasHydratedThemeRef = useRef(false)
+
+  useEffect(() => {
+    const root = document.documentElement
+    const shouldAnimate = hasHydratedThemeRef.current
+
+    if (shouldAnimate) {
+      root.classList.add(THEME_TRANSITION_CLASS)
+    }
+
+    applyThemeToDocument(theme)
+    localStorage.setItem(THEME_STORAGE_KEY, theme)
+    hasHydratedThemeRef.current = true
+
+    if (!shouldAnimate) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      root.classList.remove(THEME_TRANSITION_CLASS)
+    }, THEME_TRANSITION_DURATION_MS)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+      root.classList.remove(THEME_TRANSITION_CLASS)
+    }
+  }, [theme])
+
+  const currentPage = useMemo(
+    () => PAGES.find((page) => page.id === activePage) ?? PAGES[0],
+    [activePage],
+  )
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>  
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-      <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button>Click me</Button>
+    <div className="min-h-svh bg-background text-foreground">
+      <AppNavbar
+        activePage={activePage}
+        onPageChange={setActivePage}
+        pages={PAGES}
+        theme={theme}
+        onThemeChange={setTheme}
+      />
+
+      <main className="mx-auto flex min-h-svh w-full max-w-7xl items-start px-4 pt-24 pb-8 md:px-8">
+        {currentPage.render()}
+      </main>
     </div>
-    </>
   )
 }
 
