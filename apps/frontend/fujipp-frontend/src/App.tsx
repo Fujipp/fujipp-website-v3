@@ -19,7 +19,7 @@ function App() {
             onThemeChange={setTheme}
           />
 
-          <main className="mx-auto flex min-h-svh w-full max-w-7xl items-start px-4 pt-24 pb-8 md:px-8">
+          <main className="mx-auto flex min-h-svh w-full items-start">
             <Routes>
               {PAGES.map((page) => (
                 <Route
