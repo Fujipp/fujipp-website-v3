@@ -17,6 +17,8 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    /* Prevent layout changes inside from propagating to fixed elements */
+    contain: layout;
 }
 
 /* ══════════════════════════════════════════════
@@ -26,6 +28,9 @@
     position: absolute;
     inset: 0;
     z-index: 0;
+    /* Own stacking context — isolates compositing from fixed BackgroundEffect */
+    isolation: isolate;
+    will-change: transform;
 }
 
 .bgImage {
@@ -35,8 +40,12 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    transition: opacity 1s ease;
+    transition: opacity 1.2s ease;
     pointer-events: none;
+    /* Pre-promote to GPU layer so opacity transition doesn't trigger
+       a repaint pass that ripples to the fixed BackgroundEffect */
+    will-change: opacity;
+    transform: translateZ(0);
 }
 
 .bgImageActive {
@@ -47,6 +56,9 @@
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.52);
+    /* GPU layer — no background-color changes so this is stable */
+    transform: translateZ(0);
+    pointer-events: none;
 }
 
 .bgGradientTop {
@@ -56,15 +68,40 @@
     right: 0;
     height: 180px;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+    transform: translateZ(0);
+    pointer-events: none;
 }
 
+/*
+  bgGradientBottom: DOES NOT use var(--background) directly in gradient
+  because every theme switch causes a full repaint of this layer which
+  interrupts the GPU-composited slideshow transition.
+
+  Instead, we:
+  1. Use a pure rgba fade (black→transparent) for the blur-to-black edge
+  2. Overlay a solid var(--background) strip at the very bottom that
+     transitions smoothly — this is a flat color, GPU-friendly.
+*/
 .bgGradientBottom {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 220px;
-    background: linear-gradient(to top, var(--background), transparent);
+    height: 280px;
+    pointer-events: none;
+    transform: translateZ(0);
+}
+
+/* Full-height gradient fade on its own GPU layer.
+   Repaint on theme switch is isolated here, doesn't touch slideshow layers. */
+.bgGradientBottom::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, var(--background) 0%, transparent 100%);
+    transition: background-color 0.4s ease;
+    will-change: background-color;
+    transform: translateZ(0);
 }
 
 /* ══════════════════════════════════════════════
@@ -279,3 +316,505 @@
         border-radius: 18px;
     }
 }
+
+/* ══════════════════════════════════════════════
+   SECTION 2 — SKILLS
+══════════════════════════════════════════════ */
+.skillsSection {
+    width: 100%;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2.5rem, 5vh, 4rem);
+    padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 6vw, 7rem);
+    box-sizing: border-box;
+}
+
+/* ── Section header ────────────────────────── */
+.skillsHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.4rem, 0.8vh, 0.75rem);
+    text-align: center;
+}
+
+.skillsEyebrow {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.skillsTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.skillsTitleDivider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.6;
+    margin-top: 0.25rem;
+}
+
+/* ── 3-column group grid ───────────────────── */
+.skillsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1rem, 2vw, 1.75rem);
+    width: 100%;
+    max-width: clamp(340px, 82vw, 1100px);
+}
+
+/* ── Individual group card ─────────────────── */
+.skillGroup {
+    background: var(--surface);
+    border-radius: clamp(14px, 1.8vw, 20px);
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    border: 1px solid transparent;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.skillGroup_blue  { border-color: rgba(121, 135, 172, 0.25); }
+.skillGroup_green { border-color: rgba(46, 158, 115, 0.25); }
+.skillGroup_purple{ border-color: rgba(198, 180, 232, 0.25); }
+
+.skillGroup:hover {
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+}
+
+.skillGroupLabel {
+    margin: 0 0 clamp(0.75rem, 1.5vh, 1rem);
+    font-family: var(--font-family-base);
+    font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.skillGroup_blue   .skillGroupLabel { color: var(--primary); }
+.skillGroup_green  .skillGroupLabel { color: var(--success); }
+.skillGroup_purple .skillGroupLabel { color: var(--pastel-7); }
+
+.chipRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(5px, 0.8vw, 8px);
+}
+
+/* ── Chips ─────────────────────────────────── */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: clamp(4px, 0.7vh, 6px) clamp(10px, 1.3vw, 14px);
+    border-radius: 999px;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.chip_blue {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+    border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+}
+.chip_blue:hover {
+    background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.chip_green {
+    background: color-mix(in srgb, var(--success) 12%, transparent);
+    color: var(--success);
+    border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+}
+.chip_green:hover {
+    background: color-mix(in srgb, var(--success) 22%, transparent);
+}
+
+.chip_purple {
+    background: color-mix(in srgb, var(--pastel-7) 12%, transparent);
+    color: var(--pastel-7);
+    border: 1px solid color-mix(in srgb, var(--pastel-7) 30%, transparent);
+}
+.chip_purple:hover {
+    background: color-mix(in srgb, var(--pastel-7) 22%, transparent);
+}
+
+/* ── AI Tools ──────────────────────────────── */
+.aiSection {
+    width: 100%;
+    max-width: clamp(340px, 82vw, 1100px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1rem, 2vh, 1.5rem);
+}
+
+.aiTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.95rem, 1.6vw, 1.25rem);
+    font-weight: 700;
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* lucide icon in AI title */
+.aiIconEl {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.aiGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.aiCard {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    border-radius: clamp(12px, 1.5vw, 18px);
+    background: var(--surface);
+    border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+    box-shadow:
+        0 0 20px color-mix(in srgb, var(--primary) 8%, transparent),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: box-shadow 0.25s, border-color 0.25s, transform 0.2s;
+}
+
+/* lucide icon inside AI card */
+.aiCardIcon {
+    color: var(--primary);
+    opacity: 0.8;
+    margin-bottom: 4px;
+}
+
+.aiCard:hover {
+    border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+    box-shadow: 0 0 32px color-mix(in srgb, var(--primary) 18%, transparent);
+    transform: translateY(-2px);
+}
+
+.aiName {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.85rem, 1.3vw, 1rem);
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.aiDesc {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.7rem, 1vw, 0.825rem);
+    color: var(--text-secondary-dark);
+}
+
+/* ── Responsive ────────────────────────────── */
+@media (max-width: 768px) {
+    .skillsSection {
+        padding: 2.5rem 1.25rem;
+    }
+
+    .skillsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .aiGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .aiGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ══════════════════════════════════════════════
+   SECTION 3 — EDUCATION  (Framer Motion horizontal scroll)
+══════════════════════════════════════════════ */
+
+.eduTrack {
+    position: relative;
+    height: 300vh;
+}
+
+/* Sticky pane — centered like Skills section */
+.eduSticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.5rem, 3vh, 2.5rem);
+    overflow: visible;          /* gallery bleeds outside */
+    box-sizing: border-box;
+}
+
+/* ── Section label (centered, same vibe as Skills) ── */
+.eduSectionLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.3rem, 0.6vh, 0.5rem);
+    text-align: center;
+}
+
+.eduEyebrow {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.eduTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.eduTitleDivider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.6;
+    margin-top: 0.25rem;
+}
+
+/* ── Gallery wrapper — the "sticky-wrapper" from reference ── */
+/* Width = one card — first card starts centered on screen    */
+.eduGalleryWrapper {
+    width: 560px;
+    position: relative;
+    overflow: visible;   /* cards bleed left and right */
+    flex-shrink: 0;
+}
+
+/* ── Gallery flex row (motion.div) ─────────── */
+.eduGallery {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    align-items: stretch;
+    will-change: transform;
+}
+
+/* ── Card ───────────────────────────────────── */
+.eduCard {
+    flex-shrink: 0;
+    width: 560px;
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    box-shadow:
+        0 24px 56px -12px rgba(0, 0, 0, 0.45),
+        0 0 0 1px color-mix(in srgb, var(--primary) 10%, transparent);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.eduCard_blue   { border-color: color-mix(in srgb, var(--primary)  30%, transparent); }
+.eduCard_green  { border-color: color-mix(in srgb, var(--success)  30%, transparent); }
+.eduCard_purple { border-color: color-mix(in srgb, var(--pastel-7) 30%, transparent); }
+
+/* ── Banner image ──────────────────────────── */
+.eduBannerWrap {
+    position: relative;
+    width: 100%;
+    height: clamp(140px, 22vh, 200px);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.eduBanner {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* Gradient fade — deep blend from banner into card body (like hero bgGradientBottom) */
+.eduBannerWrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        color-mix(in srgb, var(--surface) 20%, transparent) 45%,
+        color-mix(in srgb, var(--surface) 78%, transparent) 75%,
+        color-mix(in srgb, var(--surface) 95%, transparent) 100%
+    );
+    pointer-events: none;
+}
+
+/* ── Logo badge — top-right corner of the banner ─── */
+.eduLogoBadge {
+    position: absolute;
+    top: clamp(0.75rem, 1.5vw, 1rem);
+    right: clamp(0.75rem, 1.5vw, 1rem);
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.eduLogo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px;
+    box-sizing: border-box;
+    display: block;
+}
+
+/* ── Text block (below banner) ──────────────── */
+.eduText {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.2rem, 0.5vh, 0.4rem);
+    padding: clamp(1.5rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2rem);
+}
+
+.eduPeriod {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.8rem);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+.eduPeriod_blue   { color: var(--primary); }
+.eduPeriod_green  { color: var(--success); }
+.eduPeriod_purple { color: var(--pastel-7); }
+
+.eduSchool {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.25rem, 2.8vw, 2rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.eduLevel {
+    margin: 0.2rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.85rem, 1.4vw, 1rem);
+    font-weight: 600;
+    color: var(--text-secondary-dark);
+}
+
+.eduDesc {
+    margin: 0.5rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+    color: rgba(255, 255, 255, 0.48);
+    line-height: 1.7;
+}
+
+/* ── Number badge (decorative) ──────────────── */
+.eduBadge {
+    position: absolute;
+    bottom: clamp(1rem, 2vw, 1.5rem);
+    right: clamp(1.5rem, 3vw, 2rem);
+    font-family: var(--font-family-base);
+    font-size: clamp(3.5rem, 7vw, 6rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.06em;
+    opacity: 0.08;
+    pointer-events: none;
+    user-select: none;
+}
+.eduBadge_blue   { color: var(--primary); }
+.eduBadge_green  { color: var(--success); }
+.eduBadge_purple { color: var(--pastel-7); }
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+    .eduTrack { height: auto; }
+
+    .eduSticky {
+        position: static;
+        height: auto;
+        padding: 3rem 0 2rem;
+        align-items: flex-start;
+    }
+
+    .eduSectionLabel {
+        padding: 0 1.25rem;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .eduGalleryWrapper {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .eduGalleryWrapper::-webkit-scrollbar { display: none; }
+
+    .eduGallery {
+        transform: none !important;
+        padding: 0 1.25rem;
+    }
+
+    .eduCard { width: clamp(280px, 82vw, 400px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .eduGallery { transform: none !important; }
+    .eduTrack   { height: auto; }
+    .eduSticky  { position: static; height: auto; }
+    .eduGalleryWrapper { overflow-x: auto; }
+}
+

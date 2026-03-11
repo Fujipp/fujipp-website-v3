@@ -20,6 +20,11 @@
   background: var(--divider);
   animation: effectbg-float 25s linear infinite;
   transition: background-color 0.5s ease;
+
+  /* GPU layer — prevents reflow/repaint on every animation frame */
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  contain: layout style;
 }
 
 /* ── Shape 1 — large, far left ─────────────── */
