@@ -1,0 +1,281 @@
+/* ──────────────────────────────────────────────
+   AboutPage — simplified: bg slideshow + card only
+   No skills, no social links
+─────────────────────────────────────────────── */
+
+.page {
+    width: 100%;
+    min-height: 100svh;
+}
+
+/* ── Section ───────────────────────────────── */
+.section {
+    position: relative;
+    width: 100%;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════
+   BACKGROUND SLIDESHOW
+══════════════════════════════════════════════ */
+.bgWrapper {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.bgImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1s ease;
+    pointer-events: none;
+}
+
+.bgImageActive {
+    opacity: 1;
+}
+
+.bgOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+}
+
+.bgGradientTop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 180px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+}
+
+.bgGradientBottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 220px;
+    background: linear-gradient(to top, var(--background), transparent);
+}
+
+/* ══════════════════════════════════════════════
+   CONTENT
+══════════════════════════════════════════════ */
+.content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1rem, 2vh, 1.5rem);
+    padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2rem);
+    width: 100%;
+    max-width: clamp(340px, 82vw, 1100px);
+    box-sizing: border-box;
+}
+
+/* ══════════════════════════════════════════════
+   GLASS CARD
+══════════════════════════════════════════════ */
+.card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.75rem, 1.5vh, 1.25rem);
+
+    /* Fixed height relative to viewport — never resizes on lang switch */
+    height: clamp(420px, 76svh, 820px);
+
+    background: color-mix(in srgb, var(--surface) 68%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+    border-radius: clamp(20px, 3vw, 32px);
+    padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
+
+    box-shadow:
+        0 30px 60px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+/* ── Card top row ──────────────────────────── */
+.cardTop {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.875rem, 2vw, 1.5rem);
+}
+
+.identity {
+    flex: 1;
+}
+
+/* ── Lang toggle ───────────────────────────── */
+.langToggle {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 3px;
+}
+
+.langBtn {
+    padding: clamp(4px, 0.7vh, 6px) clamp(10px, 1.4vw, 16px);
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s;
+}
+
+.langBtnActive {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+/* ── Bio block — 2-column grid, fills remaining card height ─ */
+.bioBlock {
+    flex: 1;               /* fill remaining space in card */
+    min-height: 0;         /* allow flex child to shrink/scroll */
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(0.6rem, 1.2vh, 1rem) clamp(1.5rem, 3vw, 2.5rem);
+    align-content: start;
+    animation: fadeSlide 0.3s ease;
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Avatar ────────────────────────────────── */
+.avatarWrap {
+    width: clamp(56px, 9vw, 96px);
+    height: clamp(56px, 9vw, 96px);
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary);
+    box-shadow:
+        0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent),
+        0 6px 20px rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
+}
+
+.avatarImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* ── Name ──────────────────────────────────── */
+.name {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.2rem, 3vw, 2.5rem);
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+
+/* ── Role ──────────────────────────────────── */
+.role {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.875rem, 1.8vw, 1.5rem);
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ── Divider ───────────────────────────────── */
+.divider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.7;
+    margin: clamp(0.25rem, 0.8vh, 0.5rem) 0;
+}
+
+/* ── Bio text ──────────────────────────────── */
+.bio {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    color: rgba(255, 255, 255, 0.76);
+    line-height: 1.8;
+}
+
+/* Highlighted keywords */
+.highlight {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════
+   IMAGE INDICATORS
+══════════════════════════════════════════════ */
+.indicators {
+    display: flex;
+    gap: clamp(5px, 0.8vw, 8px);
+}
+
+.indicator {
+    width: clamp(7px, 0.9vw, 9px);
+    height: clamp(7px, 0.9vw, 9px);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.38);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.3s, width 0.3s, border-radius 0.3s;
+}
+
+.indicatorActive {
+    width: clamp(22px, 2.8vw, 32px);
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.indicator:hover:not(.indicatorActive) {
+    background: rgba(255, 255, 255, 0.65);
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .content {
+        max-width: 100%;
+        padding: 1rem 0.875rem;
+    }
+
+    .card {
+        padding: 1.75rem 1.25rem;
+        border-radius: 18px;
+    }
+}
