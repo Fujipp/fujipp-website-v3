@@ -80,7 +80,6 @@
 
 .avatar {
     height: 90%;
-    max-height: 1000px;
     width: auto;
     object-fit: contain;
     display: block;
@@ -102,14 +101,14 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: clamp(8px, 1.2vh, 20px);
 }
 
 /* "HI GUYS, I AM ANAWAT" */
 .greeting {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(1.5rem, 2.5vw, 2.25rem);  /* ~32–36px */
+    font-size: clamp(1.25rem, 3vw, 4rem);       /* scale: mobile → 4K */
     font-weight: 700;
     color: var(--foreground);               /* adapts: dark in light mode, white in dark */
     line-height: 1.25;
@@ -134,7 +133,7 @@
 /* "FULLSTACK DEVELOPER" */
 .roleText {
     font-family: var(--font-family-base);
-    font-size: clamp(0.875rem, 1.5vw, 1.25rem); /* ~24px */
+    font-size: clamp(0.75rem, 1.8vw, 2rem);     /* scale: mobile → 4K */
     font-weight: 600;
     color: var(--text-secondary-dark);           /* #939393 */
     text-transform: uppercase;
