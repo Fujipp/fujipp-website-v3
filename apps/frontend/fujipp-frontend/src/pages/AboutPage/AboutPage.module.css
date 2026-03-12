@@ -815,6 +815,422 @@
     .eduGallery { transform: none !important; }
     .eduTrack   { height: auto; }
     .eduSticky  { position: static; height: auto; }
-    .eduGalleryWrapper { overflow-x: auto; }
+}
+
+/* ══════════════════════════════════════════════
+   SECTION 4 — HOBBIES & INTERESTS
+══════════════════════════════════════════════ */
+
+.hobbySection {
+    padding: clamp(4rem, 8vh, 7rem) clamp(1.5rem, 8vw, 8rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2.5rem, 5vh, 4rem);
+}
+
+/* ── Header ─────────────────────────────────── */
+.hobbyHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+}
+
+.hobbyEyebrow {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.hobbyTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.hobbyDivider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.6;
+    margin-top: 0.25rem;
+}
+
+/* ── Grid ───────────────────────────────────── */
+.hobbyGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1rem, 2vw, 1.5rem);
+    width: 100%;
+    max-width: 960px;
+}
+
+/* ── Card ───────────────────────────────────── */
+.hobbyCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: clamp(1.75rem, 3vw, 2.25rem);
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--surface) 75%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    user-select: none;
+    will-change: transform;
+    min-height: 180px;
+}
+
+/* Colour accent borders — semantic tokens */
+.hobbyCard_primary  { border-color: color-mix(in srgb, var(--primary)  30%, transparent); }
+.hobbyCard_success  { border-color: color-mix(in srgb, var(--success)  30%, transparent); }
+.hobbyCard_pastel-7 { border-color: color-mix(in srgb, var(--pastel-7) 30%, transparent); }
+.hobbyCard_warning  { border-color: color-mix(in srgb, var(--warning)  30%, transparent); }
+.hobbyCard_pastel-5 { border-color: color-mix(in srgb, var(--pastel-5) 30%, transparent); }
+.hobbyCard_pastel-2 { border-color: color-mix(in srgb, var(--pastel-2) 30%, transparent); }
+
+/* ── Icon wrapper ───────────────────────────── */
+.hobbyIconWrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Per-token icon colours */
+.hobbyIconWrap_primary  { background: color-mix(in srgb, var(--primary)  18%, transparent); color: var(--primary); }
+.hobbyIconWrap_success  { background: color-mix(in srgb, var(--success)  18%, transparent); color: var(--success); }
+.hobbyIconWrap_pastel-7 { background: color-mix(in srgb, var(--pastel-7) 18%, transparent); color: var(--pastel-7); }
+.hobbyIconWrap_warning  { background: color-mix(in srgb, var(--warning)  18%, transparent); color: var(--warning); }
+.hobbyIconWrap_pastel-5 { background: color-mix(in srgb, var(--pastel-5) 18%, transparent); color: var(--pastel-5); }
+.hobbyIconWrap_pastel-2 { background: color-mix(in srgb, var(--pastel-2) 18%, transparent); color: var(--pastel-2); }
+
+/* ── Card text ──────────────────────────────── */
+.hobbyCardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+}
+
+.hobbyCardTagline {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.hobbyTagline_primary  { color: var(--primary); }
+.hobbyTagline_success  { color: var(--success); }
+.hobbyTagline_pastel-7 { color: var(--pastel-7); }
+.hobbyTagline_warning  { color: var(--warning); }
+.hobbyTagline_pastel-5 { color: var(--pastel-5); }
+.hobbyTagline_pastel-2 { color: var(--pastel-2); }
+
+.hobbyCardName {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    font-weight: 700;
+    color: var(--foreground);
+}
+
+/* ══════════════════════════════════════════════
+   HOBBY MODAL (layoutId expand)
+══════════════════════════════════════════════ */
+
+/* Backdrop — starts BELOW the navbar (52px) so navbar stays visible */
+.hobbyBackdrop {
+    position: fixed;
+    inset: 52px 0 0 0;
+    background: rgba(0, 0, 0, 0.70);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100;
+}
+
+/* Expanded modal card — fixed, centered in the area below navbar */
+.hobbyModal {
+    position: fixed;
+    top: calc(52px + (100vh - 52px) / 2);
+    left: 50%;
+    translate: -50% -50%;
+    z-index: 101;
+    width: min(560px, 90vw);
+    /* Height sized to content — no scroll needed */
+    height: auto;
+    max-height: clamp(420px, 80vh, 680px);
+    border-radius: 28px;
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 40px 80px -16px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Close button */
+.hobbyModalClose {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    z-index: 1;
+}
+.hobbyModalClose:hover { background: rgba(255, 255, 255, 0.16); }
+
+/* ── Zone 1+2: Inline header row — icon left, text right ─── */
+.hobbyModalHeader {
+    width: 100%;
+    padding: 1.75rem 2.25rem 1.25rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.25rem;
+    /* Subtle tinted gradient top */
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--primary) 8%, transparent) 0%,
+        transparent 100%
+    );
+}
+
+/* Per-token header tint */
+.hobbyModalHeader_primary  { background: linear-gradient(to bottom, color-mix(in srgb, var(--primary)  10%, transparent), transparent); }
+
+.hobbyModalHeaderText {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.hobbyModalIconLg {
+    width: 80px;
+    height: 80px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+
+.hobbyModalName {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--foreground);
+    letter-spacing: -0.02em;
+}
+
+.hobbyModalDesc {
+    margin: 0.4rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.9rem, 1.4vw, 1rem);
+    color: rgba(255, 255, 255, 0.58);
+    line-height: 1.7;
+}
+
+/* Image / icon area placeholder */
+.hobbyModalImgArea {
+    margin-top: 1.5rem;
+    width: 100%;
+    min-height: 120px;
+    border-radius: 16px;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.hobbyModalImgPlaceholder {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Zone 3: Game section ────────────────────── */
+.hobbyGameSection {
+    padding: 0.75rem 2.25rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.hobbyGameSectionLabel {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.6rem, 0.9vw, 0.72rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--primary);
+    opacity: 0.7;
+}
+
+/* ── Seamless CSS scroll marquee ─────────────── */
+
+/* Divider line above the marquee strip */
+.hobbyMarqueeDivider {
+    width: 40px;
+    height: 2px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--primary) 45%, transparent);
+    margin: 0 auto;
+}
+
+
+.hobbyMarqueeTrack {
+    width: 100%;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 12%,
+        black 88%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 12%,
+        black 88%,
+        transparent 100%
+    );
+}
+
+/* Inner rail — items duplicated, scrolls exactly -50% then loops */
+.hobbyMarqueeRail {
+    display: flex;
+    flex-direction: row;
+    /* Fixed px gap so translateX(-50%) calculation is exact */
+    gap: 14px;
+    width: max-content;
+    /* GPU-composited animation — no layout repaints */
+    will-change: transform;
+    transform: translateZ(0);
+    animation: hobbyMarqueeScroll 22s linear infinite;
+}
+
+/* Pause on hover */
+.hobbyMarqueeRail:hover {
+    animation-play-state: paused;
+}
+
+/* Keyframe: slide left by exactly half the rail (= original set width) */
+@keyframes hobbyMarqueeScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+/* Single card */
+.hobbyMarqueeCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    width: 100px;
+}
+
+/* Square image — games & restaurants */
+.hobbyMarqueeImg {
+    width: 100px;
+    height: 100px;
+    border-radius: 16px;
+    object-fit: cover;
+    object-position: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: block;
+    /* GPU-promoted so hover scale doesn't cause repaint on rail */
+    will-change: transform;
+    transform: translateZ(0);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.hobbyMarqueeCard:hover .hobbyMarqueeImg {
+    transform: translateZ(0) scale(1.1) translateY(-3px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+/* Portrait override — anime posters (2:3) */
+.hobbyMarqueeImgPortrait {
+    height: 150px;
+    border-radius: 10px;
+    object-position: top center;
+}
+
+/* Caption */
+.hobbyGameName {
+    font-family: var(--font-family-base);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    line-height: 1.2;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+    .hobbyGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hobbySection {
+        padding: 3rem 1.25rem;
+    }
+
+    .hobbyModal {
+        width: min(440px, 92vw);
+    }
+}
+
+@media (max-width: 480px) {
+    .hobbyGrid {
+        grid-template-columns: 1fr;
+    }
 }
 

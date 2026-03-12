@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'motion/react';
-import { Monitor, Server, Wrench, Bot, Cpu, Code2 } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+import {
+  Monitor, Server, Wrench, Bot, Cpu, Code2,
+  Gamepad2, Music, Tv2, Utensils, Mic, Dumbbell, X,
+} from 'lucide-react';
 import {
   SiVuedotjs, SiReact, SiTypescript, SiJavascript,
   SiTailwindcss, SiHtml5,
@@ -46,12 +49,12 @@ const SKILL_GROUPS = [
     color: 'blue',
     groupIcon: Monitor,
     skills: [
-      { name: 'Vue.js',       icon: SiVuedotjs },
-      { name: 'React',        icon: SiReact },
-      { name: 'TypeScript',   icon: SiTypescript },
-      { name: 'JavaScript',   icon: SiJavascript },
+      { name: 'Vue.js', icon: SiVuedotjs },
+      { name: 'React', icon: SiReact },
+      { name: 'TypeScript', icon: SiTypescript },
+      { name: 'JavaScript', icon: SiJavascript },
       { name: 'Tailwind CSS', icon: SiTailwindcss },
-      { name: 'HTML / CSS',   icon: SiHtml5 },
+      { name: 'HTML / CSS', icon: SiHtml5 },
     ],
   },
   {
@@ -60,10 +63,10 @@ const SKILL_GROUPS = [
     groupIcon: Server,
     skills: [
       { name: 'Spring Boot', icon: SiSpring },
-      { name: 'Java',        icon: FaJava },
-      { name: 'Node.js',     icon: SiNodedotjs },
-      { name: 'REST API',    icon: Code2 },
-      { name: 'MySQL',       icon: SiMysql },
+      { name: 'Java', icon: FaJava },
+      { name: 'Node.js', icon: SiNodedotjs },
+      { name: 'REST API', icon: Code2 },
+      { name: 'MySQL', icon: SiMysql },
     ],
   },
   {
@@ -71,20 +74,20 @@ const SKILL_GROUPS = [
     color: 'purple',
     groupIcon: Wrench,
     skills: [
-      { name: 'Git',          icon: SiGit },
-      { name: 'Docker',       icon: SiDocker },
-      { name: 'Discord Bot',  icon: SiDiscord },
-      { name: 'Automation',   icon: Cpu },
-      { name: 'Linux',        icon: SiLinux },
+      { name: 'Git', icon: SiGit },
+      { name: 'Docker', icon: SiDocker },
+      { name: 'Discord Bot', icon: SiDiscord },
+      { name: 'Automation', icon: Cpu },
+      { name: 'Linux', icon: SiLinux },
     ],
   },
 ];
 
 const AI_TOOLS = [
-  { name: 'Claude Sonnet',  desc: 'Coding & reasoning', icon: SiAnthropic },
-  { name: 'Claude Opus',    desc: 'Deep analysis',      icon: SiAnthropic },
-  { name: 'GPT-Codex',     desc: 'Code generation',    icon: SiOpenai },
-  { name: 'Gemini 2.5 Pro', desc: 'Multimodal tasks',  icon: SiGoogle },
+  { name: 'Claude Sonnet', desc: 'Coding & reasoning', icon: SiAnthropic },
+  { name: 'Claude Opus', desc: 'Deep analysis', icon: SiAnthropic },
+  { name: 'GPT-Codex', desc: 'Code generation', icon: SiOpenai },
+  { name: 'Gemini 2.5 Pro', desc: 'Multimodal tasks', icon: SiGoogle },
 ];
 
 
@@ -122,9 +125,114 @@ const EDUCATION = [
   },
 ];
 
+// ── Hobby data (semantic color tokens only) ──────────────────────────
+const HOBBIES = [
+  {
+    id: 1,
+    Icon: Gamepad2,
+    label: 'Gaming',
+    tagline: 'Mobile & Casual',
+    token: 'primary',
+    games: [
+      { name: 'Roblox', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Roblox_Corporation_2025_logo.svg/960px-Roblox_Corporation_2025_logo.svg.png' },
+      { name: 'RoV', logo: 'https://play-lh.googleusercontent.com/fWAs7pgAaEwNk5gGF0sOsdO-dKUmxm94wEeGbXEF7fsmcnEOTqqkJtqvFEDwk3w_F3wiFDlr9-eX5DtLK1GJCw' },
+      { name: 'Pokémon GO', logo: 'https://play-lh.googleusercontent.com/Qf2SJGpLxd9eu4CLWRrh2tfmmkncg7TQ2RNr44tWO07EBfhfMs4CHlizioym11Vb6RmfIWCNz6FNsOgHj_5dMA=w240-h480-rw' },
+      { name: 'Block Blast', logo: 'https://media.xp-pen.co/web/2025/06/12/2025061211235340587185.png' },
+      { name: 'Candy Crush', logo: 'https://logodix.com/logo/1029738.png' },
+      { name: 'Mobile Legends: Bang Bang', logo: 'https://img.tapimg.net/market/images/3f57a40c644dc33a6467176f91c707d6.png/appicon?t=1' },
+    ],
+  },
+  {
+    id: 2,
+    Icon: Music,
+    label: 'Artists',
+    tagline: 'K-Pop & Thai Pop',
+    token: 'primary',
+    artists: [
+      { name: 'Pun', photo: 'https://media.readthecloud.co/wp-content/uploads/2025/04/22125104/punisalwayshappy-22-1.webp' },
+      { name: 'Winter', photo: 'https://pbs.twimg.com/media/GFsjHGwa0AA97zM.jpg' },
+      { name: 'Karina', photo: 'https://xonomax.com/cdn/shop/files/753317.jpg?v=1742271499' },
+      { name: 'NingNing', photo: 'https://preview.redd.it/aespa-ningning-w-korea-x-bvlgari-may-2025-issue-pictorial-v0-0z542u6pw3we1.jpg?width=640&crop=smart&auto=webp&s=8a1ec7a0aad57095fa6cef082a26a68381ea87e5' },
+      { name: 'Giselle', photo: 'https://pbs.twimg.com/media/HCaFZJwbMAAKUT_.jpg' },
+      { name: 'Percy', photo: 'https://i.scdn.co/image/ab67616100005174cbd0b4097d0b6f42a706a8b2' },
+    ],
+  },
+  {
+    id: 3,
+    Icon: Dumbbell,
+    label: 'Sports',
+    tagline: 'Active & Spectator',
+    token: 'primary',
+    sports: [
+      { name: 'Badminton', photo: 'https://corporate.bwfbadminton.com/wp-content/uploads/2025/02/20241212_2212_WorldTourFinals2024_BPYL0773.jpg' },
+      { name: 'F1', photo: 'https://media.formula1.com/image/upload/c_lfill,w_3392/q_auto/v1740000000/fom-website/2025/Miscellaneous/2025-start-barcelona.webp' },
+      { name: 'Running', photo: 'https://www.healthywomen.org/media-library/fitness-woman-running-training-for-marathon-on-sunny-coast-trail.jpg?id=34353001&width=1200&height=800&quality=70&coordinates=110%2C0%2C110%2C0' },
+      { name: 'Football', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Football_in_Bloomington%2C_Indiana%2C_1995.jpg/1280px-Football_in_Bloomington%2C_Indiana%2C_1995.jpg' },
+      { name: 'Basketball', photo: 'https://www.rockstaracademy.com/lib/images/news/basketball.jpeg' },
+      { name: 'Tennis', photo: 'https://i.natgeofe.com/n/e626ca85-71f1-4485-90ea-4828d5884965/GettyImages-1272468011.jpg' },
+    ],
+  },
+  {
+    id: 4,
+    Icon: Tv2,
+    label: 'Anime',
+    tagline: 'Seinen & Thriller',
+    token: 'primary',
+    animes: [
+      { name: 'Pokémon Journey', poster: 'https://cms.dmpcdn.com/moviearticle/2022/12/02/af9b6a10-7233-11ed-80b2-f5c55ac792e7_webp_original.jpg' },
+      { name: 'Naruto', poster: 'https://m.media-amazon.com/images/M/MV5BZTNjOWI0ZTAtOGY1OS00ZGU0LWEyOWYtMjhkYjdlYmVjMDk2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg' },
+      { name: 'One Piece', poster: 'https://m.media-amazon.com/images/M/MV5BMTNjNGU4NTUtYmVjMy00YjRiLTkxMWUtNzZkMDNiYjZhNmViXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg' },
+      { name: 'Demon Slayer', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWRaIUYW6W8mWGutUKJkRbKn2rOkYq9HN4Dg&s' },
+      { name: 'Attack on Titan', poster: 'https://aot-portal.com/wp/wp-content/uploads/2025/11/re_aotLA_kokuchi_1107-1-712x1006.jpg' },
+      { name: 'Slime Datta Ken', poster: 'https://i.ebayimg.com/images/g/-LUAAOSwfyVcwunZ/s-l1200.jpg' },
+    ],
+  },
+  {
+    id: 5,
+    Icon: Utensils,
+    label: 'Restaurants',
+    tagline: 'Japanese & Hot Pot',
+    token: 'primary',
+    restaurants: [
+      { name: 'Fuji', photo: 'https://d2kihw5e8drjh5.cloudfront.net/eyJidWNrZXQiOiJ1dGEtaW1hZ2VzIiwia2V5IjoicGxhY2VfaW1nL3kyVlJ1TlFoU0RhdkRYUlhiTkNRbVEiLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjY0MCwiaGVpZ2h0Ijo2NDAsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsInRvRm9ybWF0IjogIndlYnAifX0=' },
+      { name: 'Yakiniku Like', photo: 'https://www.lemon8-app.com/seo/image?item_id=7444072419444326919&index=2&sign=4f25b199053bdd7b481de39c264a1fb2' },
+      { name: 'Sushiro', photo: 'https://pacificplace.b-cdn.net/directory_image/JxKMM/PP-Web-Sushiro-1%20(1).jpg' },
+      { name: 'Hot Pot Man', photo: 'https://img.wongnai.com/p/400x0/2024/11/12/51d54f995d9d4b159cc2151935dedea8.jpg' },
+      { name: 'Haidilao', photo: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/35/31/15/1haidilao-hot-pot-2-outdoor.jpg?w=1200&h=1200&s=1' },
+      { name: 'Momo Paradise', photo: 'https://img.wongnai.com/p/1920x0/2023/01/12/cebfb1e5fa08410d8b4a886942769b4a.jpg' },
+    ],
+  },
+  {
+    id: 6,
+    Icon: Mic,
+    label: 'Speakers',
+    tagline: 'Ideas & Insights',
+    token: 'primary',
+    speakers: [
+      { name: '9arm', photo: 'https://shop.9arm.co/cdn/shop/files/chat1.jpg?v=1686500424' },
+      { name: 'CK', photo: 'https://yt3.googleusercontent.com/CMqKWgqvz1amDcZaIa7KksykIeM1TjNpyg5mxNrdoRl3UbLVbyX7mGg7CV-hPiQ3Dfp7N2jr6g=s900-c-k-c0x00ffffff-no-rj' },
+      { name: '9aimmuno', photo: 'https://media.readthecloud.co/wp-content/uploads/2022/02/29124731/aimmuno-feature.webp' },
+      { name: 'ธนาธร', photo: 'https://static.thairath.co.th/media/dFQROr7oWzulq5Fa6rY3s3rvbZ4CsfC96lSDb9cxXqC1UaKJybBTprBvMDPDQ3EPNJQ.jpg' },
+      { name: 'พิธา', photo: 'https://f.ptcdn.info/946/088/000/meiljq6miTV1q7cNKr5-o.jpg' },
+      { name: 'ณัฐพงษ์', photo: 'https://static.thairath.co.th/media/dFQROr7oWzulq5Fa6rMjN2oy8tvr5maS39MZLcsw9DJKHW2qgryg7v4IogQJmBO1sjt.jpg' },
+    ],
+  },
+];
+
 export function AboutPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lang, setLang] = useState<Lang>('en');
+  const [selectedHobby, setSelectedHobby] = useState<number | null>(null);
+
+  // Lock body scroll when hobby modal is open
+  useEffect(() => {
+    if (selectedHobby !== null) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [selectedHobby]);
 
   // ── Education horizontal scroll (Framer Motion) ──
   const eduTrackRef = useRef<HTMLDivElement>(null);
@@ -134,7 +242,7 @@ export function AboutPage() {
   });
 
   const CARD_WIDTH = 560;
-  const CARD_GAP   = 32;
+  const CARD_GAP = 32;
   const totalDistance = (EDUCATION.length - 1) * (CARD_WIDTH + CARD_GAP);
   const eduX = useTransform(eduScrollYProgress, [0, 1], [0, -totalDistance]);
 
@@ -348,6 +456,160 @@ export function AboutPage() {
 
         </div>
       </div>
+
+      {/* ══ SECTION 4 — Hobbies ══ */}
+      <section className={styles.hobbySection}>
+        <div className={styles.hobbyHeader}>
+          <p className={styles.hobbyEyebrow}>OUTSIDE THE CODE</p>
+          <h2 className={styles.hobbyTitle}>Hobbies & Interests</h2>
+          <div className={styles.hobbyDivider} />
+        </div>
+
+        {/* Grid of compact clickable cards */}
+        <div className={styles.hobbyGrid}>
+          {HOBBIES.map((h) => (
+            <motion.div
+              key={h.id}
+              layoutId={`hobby-card-${h.id}`}
+              className={`${styles.hobbyCard} ${styles[`hobbyCard_${h.token}` as keyof typeof styles]}`}
+              // Fade the source card OUT immediately so only the flying version is visible
+              animate={{ opacity: selectedHobby === h.id ? 0 : 1 }}
+              whileHover={selectedHobby !== null ? {} : { scale: 1.04, y: -6 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+              onClick={() => setSelectedHobby(h.id)}
+              style={{ cursor: 'pointer', pointerEvents: selectedHobby === h.id ? 'none' : 'auto' }}
+            >
+              <div className={`${styles.hobbyIconWrap} ${styles[`hobbyIconWrap_${h.token}` as keyof typeof styles]}`}>
+                <h.Icon size={28} strokeWidth={1.6} />
+              </div>
+              <div className={styles.hobbyCardBody}>
+                <p className={`${styles.hobbyCardTagline} ${styles[`hobbyTagline_${h.token}` as keyof typeof styles]}`}>
+                  {h.tagline}
+                </p>
+                <h3 className={styles.hobbyCardName}>{h.label}</h3>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ══ Hobby modal (shared layoutId expands from grid card) ══ */}
+      <AnimatePresence>
+        {selectedHobby && (() => {
+          const h = HOBBIES.find(x => x.id === selectedHobby)!;
+          return (
+            <>
+              {/* Backdrop — delayed so flying card animation is visible first */}
+              <motion.div
+                className={styles.hobbyBackdrop}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: 'tween', duration: 0.22, delay: 0.2 }}
+                onClick={() => setSelectedHobby(null)}
+              />
+
+              {/* Expanded card — same layoutId as the grid card */}
+              <motion.div
+                layoutId={`hobby-card-${h.id}`}
+                className={`${styles.hobbyModal} ${styles[`hobbyCard_${h.token}` as keyof typeof styles]}`}
+                transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+              >
+                {/* Close button */}
+                <button
+                  className={styles.hobbyModalClose}
+                  onClick={() => setSelectedHobby(null)}
+                  aria-label="Close"
+                >
+                  <X size={20} strokeWidth={2} />
+                </button>
+
+                {/* ―― ZONE 1+2: Icon · tagline · name — single inline row ―― */}
+                <motion.div
+                  className={`${styles.hobbyModalHeader} ${styles[`hobbyModalHeader_${h.token}` as keyof typeof styles]}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 240, damping: 24, delay: 0.42 }}
+                >
+                  <div className={`${styles.hobbyModalIconLg} ${styles[`hobbyIconWrap_${h.token}` as keyof typeof styles]}`}>
+                    <h.Icon size={36} strokeWidth={1.4} />
+                  </div>
+                  <div className={styles.hobbyModalHeaderText}>
+                    <p className={`${styles.hobbyCardTagline} ${styles[`hobbyTagline_${h.token}` as keyof typeof styles]}`}>
+                      {h.tagline}
+                    </p>
+                    <h2 className={styles.hobbyModalName}>{h.label}</h2>
+                  </div>
+                </motion.div>
+
+                {/* ―― ZONE 3: Seamless CSS marquee ―― */}
+                {(() => {
+                  type GameItem = { name: string; logo: string };
+                  type AnimeItem = { name: string; poster: string };
+                  type RestItem = { name: string; photo: string };
+
+                  type MarqueeEntry = { src: string; name: string; portrait?: boolean };
+
+                  let label = '';
+                  let entries: MarqueeEntry[] = [];
+
+                  if ('games' in h && h.games) {
+                    label = 'เกมที่ชอบ';
+                    entries = (h.games as GameItem[]).map(g => ({ src: g.logo, name: g.name }));
+                  } else if ('animes' in h && h.animes) {
+                    label = 'อนิเมะที่ชอบ';
+                    entries = (h.animes as AnimeItem[]).map(a => ({ src: a.poster, name: a.name, portrait: true }));
+                  } else if ('restaurants' in h && h.restaurants) {
+                    label = 'ร้านอาหารโปรด';
+                    entries = (h.restaurants as RestItem[]).map(r => ({ src: r.photo, name: r.name }));
+                  } else if ('artists' in h && h.artists) {
+                    label = 'ศิลปินที่ชอบ';
+                    entries = (h.artists as { name: string; photo: string }[]).map(a => ({ src: a.photo, name: a.name, portrait: true }));
+                  } else if ('sports' in h && h.sports) {
+                    label = 'กีฬาที่ชอบ';
+                    entries = (h.sports as { name: string; photo: string }[]).map(s => ({ src: s.photo, name: s.name }));
+                  } else if ('speakers' in h && h.speakers) {
+                    label = 'นักพูดที่ชอบ';
+                    entries = (h.speakers as { name: string; photo: string }[]).map(s => ({ src: s.photo, name: s.name, portrait: true }));
+                  }
+
+                  if (entries.length === 0) return null;
+
+                  // Duplicate so translateX(-50%) loops seamlessly
+                  const doubled = [...entries, ...entries];
+
+                  return (
+                    <motion.div
+                      className={styles.hobbyGameSection}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: 'tween', duration: 0.28, ease: 'easeOut', delay: 0.62 }}
+                    >
+                      <div className={styles.hobbyMarqueeDivider} />
+                      <div className={styles.hobbyMarqueeTrack}>
+                        <div className={styles.hobbyMarqueeRail}>
+                          {doubled.map((item, i) => (
+                            <div key={i} className={styles.hobbyMarqueeCard}>
+                              <img
+                                src={item.src}
+                                alt={item.name}
+                                className={`${styles.hobbyMarqueeImg}${item.portrait ? ` ${styles.hobbyMarqueeImgPortrait}` : ''}`}
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.15'; }}
+                              />
+                              <span className={styles.hobbyGameName}>{item.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+              </motion.div>
+            </>
+          );
+        })()}
+      </AnimatePresence>
 
     </main>
   );
