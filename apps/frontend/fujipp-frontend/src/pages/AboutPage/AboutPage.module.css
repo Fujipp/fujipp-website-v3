@@ -1234,3 +1234,406 @@
     }
 }
 
+/* ══════════════════════════════════════════════
+   FADE BRIDGE — Hobbies → Contact
+══════════════════════════════════════════════ */
+.hobbyToContactBridge {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        color-mix(in srgb, var(--surface) 40%, transparent) 50%,
+        var(--background) 100%
+    );
+    pointer-events: none;
+    position: relative;
+    z-index: 0;
+    margin-top: -2px;
+}
+
+/* ══════════════════════════════════════════════
+   SECTION 5 — CONTACT
+══════════════════════════════════════════════ */
+.contactSection {
+    padding: clamp(4rem, 8vh, 7rem) clamp(1.5rem, 8vw, 8rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(3rem, 6vh, 5rem);
+    overflow: visible;
+}
+
+/* ── Inner wrapper ─────────────────────────── */
+.contactInner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: clamp(340px, 94vw, 1200px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(3rem, 6vh, 5rem);
+}
+
+/* ── Header ─────────────────────────────────── */
+.contactHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.4rem, 0.8vh, 0.75rem);
+    text-align: center;
+    width: 100%;
+}
+
+.contactEyebrow {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.contactTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.contactTitleDivider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--primary), var(--pastel-7));
+    opacity: 0.7;
+    margin-top: 0.25rem;
+}
+
+.contactSubtitle {
+    margin: 0.4rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.88rem, 1.4vw, 1rem);
+    color: var(--text-secondary-dark);
+    line-height: 1.8;
+    text-align: center;
+}
+
+/* ── Diagonal stagger card row ───────────────── */
+.contactCardRow {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.4rem;
+    /*
+      Compensate for parallelogram clip visual right-bias:
+      clip-path top starts at 48px → whole row looks shifted RIGHT.
+      Shift row left by 24px (half offset) to re-center visually.
+    */
+    width: calc(100% + 48px);
+    margin-left: -24px;
+    overflow: visible;
+}
+
+/* ── Card (parallelogram via clip-path) ───────── */
+.contactCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 0;
+    overflow: hidden;
+    will-change: clip-path;
+    /* True parallelogram cut: leans right ~10° slant */
+    clip-path: polygon(48px 0%, 100% 0%, calc(100% - 48px) 100%, 0% 100%);
+    margin-left: 0;
+    transition: filter 0.3s ease;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.45));
+    min-height: 520px;
+    min-width: clamp(240px, 22vw, 320px);
+    cursor: pointer;
+}
+.contactCard:first-child { margin-left: 0; }
+
+/* Content stays upright inside the parallelogram clip */
+.contactCardInner {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    /*
+      padding must exceed the 48px clip offset so content is never trimmed.
+      left clip is worst at the card top; right clip is worst at the bottom.
+    */
+    padding-left: clamp(52px, 4.5vw, 60px);
+    padding-right: clamp(52px, 4.5vw, 60px);
+    box-sizing: border-box;
+}
+
+/* Subtle shine on hover */
+.contactCard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, rgba(255,255,255,0.05) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+.contactCard:hover::before { opacity: 1; }
+
+/* Platform-specific accent backgrounds (border doesn’t show with clip-path) */
+.contactCard_discord   { background: color-mix(in srgb, var(--surface) 88%, rgba(88, 101, 242, 0.22)); }
+.contactCard_facebook  { background: color-mix(in srgb, var(--surface) 88%, rgba(24, 119, 242, 0.22)); }
+.contactCard_instagram { background: color-mix(in srgb, var(--surface) 88%, rgba(225, 48, 108, 0.22)); }
+.contactCard_github    { background: color-mix(in srgb, var(--surface) 92%, rgba(200, 200, 210, 0.12)); }
+
+.contactCard_discord:hover   { filter: drop-shadow(0 16px 40px rgba(88, 101, 242, 0.30)) drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+.contactCard_facebook:hover  { filter: drop-shadow(0 16px 40px rgba(24, 119, 242, 0.30)) drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+.contactCard_instagram:hover { filter: drop-shadow(0 16px 40px rgba(225, 48, 108, 0.30)) drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+.contactCard_github:hover    { filter: drop-shadow(0 16px 40px rgba(180, 180, 190, 0.20)) drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+
+/* ── Card header (with negative margins so border-bottom is full card width) ── */
+.contactCardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    /* Extend beyond contactCardInner's padding to touch full visible card width */
+    margin-left: calc(-1 * clamp(52px, 4.5vw, 60px));
+    margin-right: calc(-1 * clamp(52px, 4.5vw, 60px));
+    padding-left: clamp(52px, 4.5vw, 60px);
+    padding-right: clamp(52px, 4.5vw, 60px);
+    border-bottom: 1px solid var(--divider);
+}
+
+.contactPlatformIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.25s;
+}
+
+.contactPlatformIcon_discord   { background: rgba(88, 101, 242, 0.14); color: rgba(88, 101, 242, 0.85); }
+.contactPlatformIcon_facebook  { background: rgba(24, 119, 242, 0.14); color: rgba(24, 119, 242, 0.85); }
+.contactPlatformIcon_instagram { background: rgba(225, 48, 108, 0.14); color: rgba(225, 48, 108, 0.85); }
+.contactPlatformIcon_github    { background: rgba(200, 200, 210, 0.10); color: var(--text-secondary-dark); }
+
+.contactCard_discord:hover   .contactPlatformIcon_discord   { color: rgba(88, 101, 242, 1); }
+.contactCard_facebook:hover  .contactPlatformIcon_facebook  { color: rgba(24, 119, 242, 1); }
+.contactCard_instagram:hover .contactPlatformIcon_instagram { color: rgba(225, 48, 108, 1); }
+.contactCard_github:hover    .contactPlatformIcon_github    { color: var(--foreground); }
+
+.contactPlatformInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.contactPlatformName {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.88rem, 1.2vw, 1rem);
+    font-weight: 700;
+    color: var(--foreground);
+    line-height: 1.2;
+}
+
+.contactPlatformHandle {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.72rem, 0.95vw, 0.82rem);
+    color: var(--text-secondary-dark);
+}
+
+/* ── Card body ──────────────────────────────── */
+.contactCardBody {
+    flex: 1;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* ── Avatar row ─────────────────────────────── */
+.contactProfileRow {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+}
+
+.contactAvatarWrap {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contactAvatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.contactAvatarDecor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 76px;
+    height: 76px;
+    pointer-events: none;
+    object-fit: contain;
+}
+
+.contactStatusDot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: var(--surface);
+    border-radius: 50%;
+    padding: 2px;
+    box-sizing: content-box;
+}
+
+.contactProfileInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.contactDisplayName {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.9rem, 1.2vw, 1rem);
+    font-weight: 600;
+    color: var(--foreground);
+    line-height: 1.2;
+}
+
+.contactStatusBadge {
+    display: inline-block;
+    font-family: var(--font-family-base);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.45rem;
+    border-radius: 4px;
+    width: fit-content;
+}
+
+.contactStatusBadge_online  { background: color-mix(in srgb, #43a25a 20%, transparent); color: #43a25a; }
+.contactStatusBadge_idle    { background: color-mix(in srgb, #ca9654 20%, transparent); color: #ca9654; }
+.contactStatusBadge_dnd     { background: color-mix(in srgb, #d83a42 20%, transparent); color: #d83a42; }
+.contactStatusBadge_offline { background: rgba(255,255,255,0.06); color: var(--text-secondary-dark); }
+
+.contactBioText {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.78rem, 1.05vw, 0.88rem);
+    color: var(--text-secondary-dark);
+    line-height: 1.5;
+}
+
+.contactBadgeRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.contactBadgeSpotify,
+.contactBadgeActivity {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 6px;
+    font-family: var(--font-family-base);
+    font-size: 0.7rem;
+    font-weight: 500;
+    overflow: hidden;
+}
+.contactBadgeSpotify span:last-child,
+.contactBadgeActivity span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.contactBadgeSpotify  { background: color-mix(in srgb, #1db954 14%, transparent); color: #1db954; }
+.contactBadgeActivity { background: var(--background); color: var(--text-secondary-dark); }
+
+/* ── View Profile button ─────────────────────── */
+.contactViewBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    /*
+      offset = 48px (clip-path parallelogram inset).
+      At bottom: visible area is 52px left gap but only 4px right gap.
+      Adding margin-right: 48px shifts button center LEFT by 24px
+      to match visual center of the parallelogram.
+    */
+    margin: auto 48px 1.25rem 0;
+    width: calc(100% - 48px);
+    box-sizing: border-box;
+    border-radius: 10px;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+    font-weight: 600;
+    background: var(--background);
+    color: var(--text-secondary-dark);
+    border: 1px solid var(--divider);
+    transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.contactViewBtn:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.contactViewBtn_discord:hover   { background: rgba(88, 101, 242, 0.9);  border-color: transparent; box-shadow: 0 6px 18px rgba(88, 101, 242, 0.35); }
+.contactViewBtn_facebook:hover  { background: rgba(24, 119, 242, 0.9);  border-color: transparent; box-shadow: 0 6px 18px rgba(24, 119, 242, 0.35); }
+.contactViewBtn_instagram:hover { background: linear-gradient(135deg, #f77737, #e1306c, #833ab4); border-color: transparent; box-shadow: 0 6px 18px rgba(225, 48, 108, 0.35); }
+.contactViewBtn_github:hover    { background: rgba(55, 55, 65, 0.95);   border-color: transparent; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 900px) {
+    .contactCardRow {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+    }
+    .contactCard {
+        /* Remove parallelogram on small screens */
+        clip-path: none;
+        margin-left: 0;
+        width: 100%;
+        max-width: 420px;
+        border-radius: 16px;
+    }
+
+}
+
+@media (max-width: 480px) {
+    .contactTitle { font-size: 2rem; }
+    .contactSection { padding: 4rem 1.25rem 5rem; }
+}
+

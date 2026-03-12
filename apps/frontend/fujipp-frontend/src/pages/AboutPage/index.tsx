@@ -10,6 +10,7 @@ import {
   SiSpring, SiNodedotjs, SiMysql,
   SiGit, SiDocker, SiDiscord, SiLinux,
   SiAnthropic, SiOpenai, SiGoogle,
+  SiFacebook, SiInstagram, SiGithub,
 } from 'react-icons/si';
 import { FaJava } from 'react-icons/fa';
 import styles from './AboutPage.module.css';
@@ -219,10 +220,139 @@ const HOBBIES = [
   },
 ];
 
+// ── Lanyard (Discord live status) ─────────────────────────────────────────
+const DISCORD_USER_ID = '1108816021915176962';
+
+interface LanyardData {
+  discord_user: {
+    id: string;
+    username: string;
+    display_name?: string;
+    avatar: string;
+    avatar_decoration_data?: { asset: string };
+  };
+  discord_status: 'online' | 'idle' | 'dnd' | 'offline';
+  activities: Array<{ name: string; type: number; state?: string }>;
+  listening_to_spotify: boolean;
+  spotify?: { song: string; artist: string };
+}
+
+// ── Static social card definitions ────────────────────────────────────────
+const SOCIAL_CARDS = [
+  {
+    id: 'discord',
+    platform: 'Discord',
+    handle: 'fujipp.',
+    avatar: '', // filled from Lanyard
+    decoration: '', // filled from Lanyard
+    bio: 'Live status via Lanyard',
+    href: `https://discord.com/users/${DISCORD_USER_ID}`,
+    color: 'discord',
+    stagger: 0,    // diagonal offset multiplier (0 = highest)
+    Icon: SiDiscord,
+  },
+  {
+    id: 'facebook',
+    platform: 'Facebook',
+    handle: 'fujipp',
+    displayName: 'Anawat Grudtoop',
+    avatar: '/images/users/fujipp/profile-fujipp.png',
+    decoration: '',
+    bio: 'Follow for news and updates',
+    href: 'https://www.facebook.com/fujipp',
+    color: 'facebook',
+    stagger: 1,
+    Icon: SiFacebook,
+  },
+  {
+    id: 'instagram',
+    platform: 'Instagram',
+    handle: '@f.janw',
+    displayName: 'f.janw',
+    avatar: '/images/users/fujipp/profile-fujipp.png',
+    decoration: '',
+    bio: 'Capturing moments and memories',
+    href: 'https://www.instagram.com/f.janw/',
+    color: 'instagram',
+    stagger: 2,
+    Icon: SiInstagram,
+  },
+  {
+    id: 'github',
+    platform: 'GitHub',
+    handle: '@Fujipp',
+    displayName: 'Fujipp',
+    // Downloaded from avatars.githubusercontent.com — saved as local asset
+    avatar: '/avatars/github.jpg',
+    decoration: '',
+    bio: 'Open source projects and code',
+    href: 'https://github.com/Fujipp',
+    color: 'github',
+    stagger: 3,
+    Icon: SiGithub,
+  },
+];
+
 export function AboutPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lang, setLang] = useState<Lang>('en');
   const [selectedHobby, setSelectedHobby] = useState<number | null>(null);
+
+  // ── Discord Lanyard live status ──────────────────────────────────────────
+  const [lanyardData, setLanyardData] = useState<LanyardData | null>(null);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+    const fetchLanyard = async () => {
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const json = await res.json();
+        if (json.success && json.data) setLanyardData(json.data);
+      } catch { /* silent */ }
+    };
+    fetchLanyard();
+    timer = setInterval(fetchLanyard, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const discordAvatarUrl = lanyardData?.discord_user?.avatar
+    ? (() => {
+      const av = lanyardData.discord_user.avatar;
+      const ext = av.startsWith('a_') ? 'gif' : 'png';
+      return `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/${av}.${ext}?size=128`;
+    })()
+    : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+  const discordDecorationUrl = lanyardData?.discord_user?.avatar_decoration_data?.asset
+    ? `https://cdn.discordapp.com/avatar-decoration-presets/${lanyardData.discord_user.avatar_decoration_data.asset}.png?size=128&passthrough=true`
+    : null;
+
+  const discordStatus = lanyardData?.discord_status ?? 'offline';
+  const discordDisplayName = lanyardData?.discord_user?.display_name ?? lanyardData?.discord_user?.username ?? 'Fuji';
+  const discordCustomStatus = lanyardData?.activities?.find(a => a.type === 4)?.state ?? null;
+  const discordActivity = lanyardData?.activities?.find(a => a.type === 0) ?? null;
+
+  // ── GitHub live handle (public API — no token needed) ────────────────────
+  const [githubHandle, setGithubHandle] = useState('@Fujipp');
+  useEffect(() => {
+    fetch('https://api.github.com/users/Fujipp')
+      .then(r => r.json())
+      .then(data => { if (data.login) setGithubHandle(`@${data.login}`); })
+      .catch(() => { /* keep fallback */ });
+  }, []);
+
+  const STATUS_COLOR: Record<string, string> = {
+    online: '#43a25a',
+    idle: '#ca9654',
+    dnd: '#d83a42',
+    offline: '#747f8d',
+  };
+  const STATUS_LABEL: Record<string, string> = {
+    online: 'Online',
+    idle: 'Idle',
+    dnd: 'Do Not Disturb',
+    offline: 'Offline',
+  };
 
   // Lock body scroll when hobby modal is open
   useEffect(() => {
@@ -493,6 +623,148 @@ export function AboutPage() {
           ))}
         </div>
       </section>
+
+      {/* ══ SECTION 5 — Contact ══ */}
+      <section className={styles.contactSection}>
+
+        <div className={styles.contactInner}>
+
+          {/* Header — same structure as hobbyHeader */}
+          <motion.div
+            className={styles.contactHeader}
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+          >
+            <p className={styles.contactEyebrow}>GET IN TOUCH</p>
+            <h2 className={styles.contactTitle}>Let's Connect</h2>
+            <div className={styles.hobbyDivider} />
+          </motion.div>
+
+          {/* Parallelogram card row — skewed like the reference image */}
+          <div className={styles.contactCardRow}>
+            {SOCIAL_CARDS.map((card) => {
+              const CardIcon = card.Icon;
+              const isDiscord = card.id === 'discord';
+              const avatarSrc = isDiscord ? discordAvatarUrl : card.avatar;
+              const decorSrc = isDiscord ? discordDecorationUrl : card.decoration;
+              const displayName = isDiscord
+                ? discordDisplayName
+                : (card as { displayName?: string }).displayName ?? card.handle;
+              return (
+                <motion.div
+                  key={card.id}
+                  className={`${styles.contactCard} ${styles[`contactCard_${card.color}` as keyof typeof styles]}`}
+                  style={{ zIndex: card.stagger + 1 }}
+                  initial={{ opacity: 0, x: 40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ type: 'spring', stiffness: 220, damping: 24, delay: card.stagger * 0.08 }}
+                  whileHover={{ scale: 1.03, zIndex: 10, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
+                >
+                  {/* Counter-skewed inner wrapper so text stays upright */}
+                  <div className={styles.contactCardInner}>
+
+                    {/* Header row */}
+                    <div className={styles.contactCardHeader}>
+                      <div className={`${styles.contactPlatformIcon} ${styles[`contactPlatformIcon_${card.color}` as keyof typeof styles]}`}>
+                        <CardIcon size={20} />
+                      </div>
+                      <div className={styles.contactPlatformInfo}>
+                        <h3 className={styles.contactPlatformName}>{card.platform}</h3>
+                        <span className={styles.contactPlatformHandle}>
+                          {isDiscord
+                            ? (lanyardData?.discord_user?.username ? `@${lanyardData.discord_user.username}` : card.handle)
+                            : card.id === 'github'
+                              ? githubHandle
+                              : card.handle}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Body */}
+                    <div className={styles.contactCardBody}>
+                      <div className={styles.contactProfileRow}>
+                        <div className={styles.contactAvatarWrap}>
+                          <img
+                            src={avatarSrc}
+                            alt={card.platform}
+                            className={styles.contactAvatar}
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://cdn.discordapp.com/embed/avatars/0.png'; }}
+                          />
+                          {decorSrc && (
+                            <img src={decorSrc} alt="" className={styles.contactAvatarDecor} aria-hidden />
+                          )}
+                          {isDiscord && (
+                            <svg className={styles.contactStatusDot} viewBox="0 0 16 16" width="16" height="16">
+                              <defs>
+                                <mask id={`mask-${discordStatus}`}>
+                                  <circle cx="8" cy="8" r="8" fill="white" />
+                                  {discordStatus === 'idle' && <circle cx="5" cy="5" r="5" fill="black" />}
+                                  {discordStatus === 'dnd' && <rect x="3" y="6.5" width="10" height="3" rx="1.5" fill="black" />}
+                                  {discordStatus === 'offline' && <circle cx="8" cy="8" r="4" fill="black" />}
+                                </mask>
+                              </defs>
+                              <rect width="16" height="16" fill={STATUS_COLOR[discordStatus]} mask={`url(#mask-${discordStatus})`} />
+                            </svg>
+                          )}
+                        </div>
+                        <div className={styles.contactProfileInfo}>
+                          <span className={styles.contactDisplayName}>{displayName}</span>
+                          {isDiscord && (
+                            <span className={`${styles.contactStatusBadge} ${styles[`contactStatusBadge_${discordStatus}` as keyof typeof styles]}`}>
+                              {STATUS_LABEL[discordStatus]}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {isDiscord && discordCustomStatus ? (
+                        <p className={styles.contactBioText}>{discordCustomStatus}</p>
+                      ) : (
+                        !isDiscord && <p className={styles.contactBioText}>{card.bio}</p>
+                      )}
+
+                      {isDiscord && (
+                        <div className={styles.contactBadgeRow}>
+                          {lanyardData?.listening_to_spotify && lanyardData.spotify && (
+                            <div className={styles.contactBadgeSpotify}>
+                              <span>🎵</span>
+                              <span>{lanyardData.spotify.song} – {lanyardData.spotify.artist}</span>
+                            </div>
+                          )}
+                          {discordActivity && (
+                            <div className={styles.contactBadgeActivity}>
+                              <span>🎮</span>
+                              <span>{discordActivity.name}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <a
+                      href={card.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`${styles.contactViewBtn} ${styles[`contactViewBtn_${card.color}` as keyof typeof styles]}`}
+                    >
+                      View Profile
+                    </a>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+
+
+
+
 
       {/* ══ Hobby modal (shared layoutId expands from grid card) ══ */}
       <AnimatePresence>
