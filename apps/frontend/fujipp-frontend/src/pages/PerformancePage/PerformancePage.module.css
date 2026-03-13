@@ -1,5 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────
    PERFORMANCE PAGE — CSS Module
+   Uses project design tokens for all colors, fonts, and spacing.
    Card backgrounds use --navbar-bg for solid visibility in all themes.
    Score ring colors are dynamic (good / warning / poor).
 ───────────────────────────────────────────────────────────────── */
@@ -12,6 +13,7 @@
   flex-direction: column;
   align-items: center;
   padding-bottom: 7rem;
+  font-family: var(--font-family-base);
 }
 
 /* ── Hero ───────────────────────────────────────────────────────── */
@@ -32,7 +34,7 @@
     radial-gradient(ellipse 70% 60% at 50% 0%,
       color-mix(in srgb, var(--primary) 18%, transparent) 0%, transparent 70%),
     radial-gradient(ellipse 40% 40% at 80% 70%,
-      color-mix(in srgb, var(--success) 10%, transparent) 0%, transparent 60%);
+      color-mix(in srgb, var(--primary) 8%, transparent) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -59,7 +61,7 @@
 }
 
 .heroTitle {
-  font-size: clamp(2.8rem, 8vw, 5rem);
+  font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: 800;
   line-height: 1;
   color: var(--text-primary);
@@ -120,32 +122,15 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--radius);
   border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
   background: var(--navbar-bg);
   color: var(--error);
   font-size: 0.85rem;
 }
 
-.retryBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-left: auto;
-  padding: 0.4rem 0.9rem;
-  border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
-  background: transparent;
-  color: var(--error);
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 150ms;
-}
 
-.retryBtn:hover {
-  background: color-mix(in srgb, var(--error) 12%, transparent);
-}
+
 
 /* ── Lighthouse score row ───────────────────────────────────────── */
 .lighthouseRow {
@@ -161,7 +146,6 @@
   align-items: center;
   gap: 0.85rem;
   padding: 1.75rem 2rem;
-  /* Solid navbar-style background for visibility in both light/dark */
   background: var(--navbar-bg);
   border: 1px solid var(--navbar-border);
   border-radius: 16px;
@@ -240,30 +224,8 @@
   opacity: 0.6;
 }
 
-.refreshBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.35rem 0.85rem;
-  border-radius: 8px;
-  border: 1px solid var(--navbar-border);
-  background: var(--navbar-bg);
-  color: var(--navbar-foreground);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 150ms, color 150ms;
-}
 
-.refreshBtn:hover:not(:disabled) {
-  border-color: var(--primary);
-  color: var(--primary);
-}
 
-.refreshBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinning {
@@ -291,7 +253,6 @@
   gap: 1rem;
   padding: 1.25rem 1.4rem;
   border-radius: 14px;
-  /* Same solid navbar background */
   background: var(--navbar-bg);
   border: 1px solid var(--navbar-border);
   transition: border-color 200ms, transform 200ms;
@@ -430,6 +391,7 @@
   gap: 1rem;
 }
 
+/* Unified category header — uses --primary theme color */
 .stackGroupHeader {
   display: inline-flex;
   align-items: center;
@@ -441,22 +403,6 @@
   padding: 0.4rem 0.9rem;
   border-radius: 9999px;
   width: fit-content;
-}
-
-.stackGroupHeader_blue {
-  /* var(--surface) is #1c1c1c in both light & dark — always visible */
-  background: var(--surface);
-  color: var(--info);
-  border: 1px solid color-mix(in srgb, var(--info) 40%, transparent);
-}
-
-.stackGroupHeader_green {
-  background: var(--surface);
-  color: var(--success);
-  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
-}
-
-.stackGroupHeader_purple {
   background: var(--surface);
   color: var(--primary);
   border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
@@ -473,10 +419,9 @@
   align-items: center;
   gap: 0.85rem;
   padding: 1rem 1.2rem;
-  /* Solid navbar background — visible in both light & dark */
   background: var(--navbar-bg);
   border: 1px solid var(--navbar-border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   cursor: default;
   transition: border-color 200ms;
 }
@@ -487,7 +432,6 @@
 
 .techCardIcon {
   flex-shrink: 0;
-  /* Use navbar active foreground for icon clarity */
   color: var(--navbar-active-foreground);
   display: flex;
   align-items: center;
@@ -515,4 +459,245 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Design Tokens ──────────────────────────────────────────────── */
+.tokenWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.tokenGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tokenGroupHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  width: fit-content;
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+/* ── Fonts ─────────────────────────────────────── */
+.fontGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.fontCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem 1.4rem;
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: var(--radius);
+  transition: border-color 200ms;
+}
+
+.fontCard:hover {
+  border-color: var(--primary);
+}
+
+.fontSample {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--navbar-active-foreground);
+  line-height: 1.3;
+}
+
+.fontMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.fontName {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--navbar-active-foreground);
+}
+
+.fontRole {
+  font-size: 0.68rem;
+  color: var(--navbar-foreground);
+  opacity: 0.7;
+}
+
+/* ── Brand & Semantic Colors ──────────────────── */
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.85rem;
+}
+
+.colorCard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: var(--radius);
+  transition: border-color 200ms, transform 200ms;
+}
+
+.colorCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+}
+
+.colorSwatch {
+  width: 100%;
+  height: 56px;
+}
+
+.colorMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.colorName {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--navbar-active-foreground);
+}
+
+.colorVar {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--primary);
+  font-family: monospace;
+}
+
+.colorHex {
+  font-size: 0.62rem;
+  color: var(--navbar-foreground);
+  opacity: 0.7;
+  font-family: monospace;
+}
+
+/* ── Neutral Palette ──────────────────────────── */
+.neutralStrip {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 0.5rem;
+}
+
+@media (max-width: 860px) {
+  .neutralStrip { grid-template-columns: repeat(5, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .neutralStrip { grid-template-columns: repeat(5, 1fr); }
+}
+
+.neutralCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.neutralSwatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  border: 1px solid var(--navbar-border);
+}
+
+.neutralLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--navbar-active-foreground);
+}
+
+.neutralHex {
+  font-size: 0.55rem;
+  color: var(--navbar-foreground);
+  opacity: 0.7;
+  font-family: monospace;
+}
+
+/* ── Spacing & Radius ──────────────────────────── */
+.spacingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.85rem;
+}
+
+.spacingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem 1.2rem;
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: var(--radius);
+  transition: border-color 200ms;
+}
+
+.spacingCard:hover {
+  border-color: var(--primary);
+}
+
+.spacingPreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spacingBox {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  border: 2px solid var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.spacingMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.spacingName {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--navbar-active-foreground);
+}
+
+.spacingVar {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--primary);
+  font-family: monospace;
+}
+
+.spacingValue {
+  font-size: 0.62rem;
+  color: var(--navbar-foreground);
+  opacity: 0.7;
+}
+
+/* ── Button Showcase ──────────────────────────── */
+.buttonShowcase {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: center;
 }

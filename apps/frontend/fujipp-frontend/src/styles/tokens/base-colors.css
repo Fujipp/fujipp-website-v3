@@ -44,7 +44,7 @@
     /* Surface */
     --background-light: #ffffff;
     --background-dark: #272727;
-    --surface: #1c1c1c;
+    --surface: #171717;
     --divider: #505050;
 
     /* Text */
@@ -84,7 +84,7 @@
     --btn-danger-text: #ffffff;
 
     /* Navbar */
-    --navbar-bg: #1c1c1c;
+    --navbar-bg: #171717;
     --navbar-foreground: #aeaeae;
     --navbar-active-foreground: #ffffff;
     --navbar-border: #505050;
@@ -118,7 +118,7 @@
 [data-theme="dark"] {
     color-scheme: dark;
 
-    --background: #272727;
+    --background: #1c1c1c;
     --foreground: #ffffff;
     --card: #272727;
     --card-foreground: #ffffff;
@@ -146,7 +146,7 @@
 
     --background-light: #ffffff;
     --background-dark: #272727;
-    --surface: #1c1c1c;
+    --surface: #171717;
     --divider: #505050;
 
     --text-primary: #ffffff;
@@ -182,7 +182,7 @@
     --btn-danger-active: #a83232;
     --btn-danger-text: #ffffff;
 
-    --navbar-bg: #1c1c1c;
+    --navbar-bg: #171717;
     --navbar-foreground: #aeaeae;
     --navbar-active-foreground: #ffffff;
     --navbar-border: #505050;
@@ -213,7 +213,7 @@
     :root:not(.light):not([data-theme="light"]) {
         color-scheme: dark;
 
-        --background: #272727;
+        --background: #1c1c1c;
         --foreground: #ffffff;
         --card: #272727;
         --card-foreground: #ffffff;
@@ -241,7 +241,7 @@
 
         --background-light: #ffffff;
         --background-dark: #272727;
-        --surface: #1c1c1c;
+        --surface: #171717;
         --divider: #505050;
 
         --text-primary: #ffffff;
@@ -277,7 +277,7 @@
         --btn-danger-active: #a83232;
         --btn-danger-text: #ffffff;
 
-        --navbar-bg: #1c1c1c;
+        --navbar-bg: #171717;
         --navbar-foreground: #aeaeae;
         --navbar-active-foreground: #ffffff;
         --navbar-border: #505050;

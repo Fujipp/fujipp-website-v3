@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Menu, Monitor, Moon, Sun, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { toast } from 'sonner'
 import { cn } from '../../../lib/utils'
 import type { ThemeOption } from '../../../types/theme'
 import type { PageDefinition } from '../../../routes'
@@ -128,6 +129,16 @@ export function AppNavbar({ pages, theme, onThemeChange }: AppNavbarProps) {
                         onClick={() => {
                           onThemeChange(option.value)
                           setIsThemeMenuOpen(false)
+                          if (option.value === 'system') {
+                            toast.warning('Theme: System', {
+                              description: 'This feature may only be fully supported on Safari.',
+                              icon: <Icon className="size-4" strokeWidth={1.75} />,
+                            })
+                          } else {
+                            toast(`Theme: ${option.label}`, {
+                              icon: <Icon className="size-4" strokeWidth={1.75} />,
+                            })
+                          }
                         }}
                         className={cn(styles.themeItem, isActive && styles.themeItemActive)}
                         role="menuitemradio"
