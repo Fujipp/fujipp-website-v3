@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import {
   Globe, Server, Shield, GitBranch,
   Gauge, CheckCircle2, AlertTriangle, Circle, Layers2,
-  RefreshCw, Building2,
+  RefreshCw, Building2, Palette, Type, RectangleHorizontal, MousePointer2,
 } from 'lucide-react';
 import {
   SiReact, SiTypescript, SiVite, SiTailwindcss,
@@ -11,14 +11,166 @@ import {
   SiNginx, SiGithub, SiGithubactions,
   SiGodaddy,
 } from 'react-icons/si';
+import { Button } from '../../components/ui/button';
 import styles from './PerformancePage.module.css';
+
+// ── Design token display data ─────────────────────────────────────────────────
+// Mirrors every token from styles/tokens/base-colors.css & base-fonts.css
+
+const DESIGN_FONTS = [
+  { name: 'Kanit', role: 'Primary', sample: 'Aa Bb Cc สวัสดี กขค' },
+  { name: 'Inter', role: 'Fallback (Latin)', sample: 'Aa Bb Cc 01 23' },
+  { name: 'Noto Sans Thai', role: 'Fallback (Thai)', sample: 'กขค งจ สวัสดี' },
+];
+
+interface TokenColor { name: string; var: string; hex: string }
+interface TokenGroup { group: string; tokens: TokenColor[] }
+
+const DESIGN_COLOR_GROUPS: TokenGroup[] = [
+  {
+    group: 'Base',
+    tokens: [
+      { name: 'Background', var: '--background', hex: '#ffffff' },
+      { name: 'Foreground', var: '--foreground', hex: '#aeaeae' },
+      { name: 'Card', var: '--card', hex: '#ffffff' },
+      { name: 'Card Foreground', var: '--card-foreground', hex: '#aeaeae' },
+      { name: 'Popover', var: '--popover', hex: '#ffffff' },
+      { name: 'Popover Foreground', var: '--popover-foreground', hex: '#aeaeae' },
+    ],
+  },
+  {
+    group: 'Brand',
+    tokens: [
+      { name: 'Primary', var: '--primary', hex: '#7987ac' },
+      { name: 'Primary FG', var: '--primary-foreground', hex: '#ffffff' },
+      { name: 'Secondary', var: '--secondary', hex: '#505050' },
+      { name: 'Secondary FG', var: '--secondary-foreground', hex: '#ffffff' },
+      { name: 'Muted', var: '--muted', hex: '#f5f6fa' },
+      { name: 'Muted FG', var: '--muted-foreground', hex: '#939393' },
+      { name: 'Accent', var: '--accent', hex: '#1c1c1c' },
+      { name: 'Accent FG', var: '--accent-foreground', hex: '#ffffff' },
+      { name: 'Destructive', var: '--destructive', hex: '#e14d4d' },
+    ],
+  },
+  {
+    group: 'Forms',
+    tokens: [
+      { name: 'Border', var: '--border', hex: '#505050' },
+      { name: 'Input', var: '--input', hex: '#dadde7' },
+      { name: 'Ring', var: '--ring', hex: '#7987ac' },
+    ],
+  },
+  {
+    group: 'Semantic',
+    tokens: [
+      { name: 'Success', var: '--success', hex: '#2e9e73' },
+      { name: 'Warning', var: '--warning', hex: '#f2b23a' },
+      { name: 'Info', var: '--info', hex: '#3b82f6' },
+      { name: 'Error', var: '--error', hex: '#e14d4d' },
+    ],
+  },
+  {
+    group: 'Surface',
+    tokens: [
+      { name: 'BG Light', var: '--background-light', hex: '#ffffff' },
+      { name: 'BG Dark', var: '--background-dark', hex: '#272727' },
+      { name: 'Surface', var: '--surface', hex: '#1c1c1c' },
+      { name: 'Divider', var: '--divider', hex: '#505050' },
+    ],
+  },
+  {
+    group: 'Text',
+    tokens: [
+      { name: 'Primary', var: '--text-primary', hex: '#aeaeae' },
+      { name: 'Primary Light', var: '--text-primary-light', hex: '#aeaeae' },
+      { name: 'Primary Dark', var: '--text-primary-dark', hex: '#ffffff' },
+      { name: 'Secondary', var: '--text-secondary', hex: '#939393' },
+      { name: 'Secondary Light', var: '--text-secondary-light', hex: '#939393' },
+      { name: 'Secondary Dark', var: '--text-secondary-dark', hex: '#939393' },
+      { name: 'Muted', var: '--text-muted', hex: 'rgb(147 147 147 / 30%)' },
+      { name: 'Disabled', var: '--text-disabled', hex: '#a0a0a0' },
+    ],
+  },
+  {
+    group: 'Input',
+    tokens: [
+      { name: 'BG', var: '--input-bg', hex: '#ffffff' },
+      { name: 'Border', var: '--input-border', hex: '#dadde7' },
+      { name: 'Border Hover', var: '--input-border-hover', hex: '#b9c1d8' },
+      { name: 'Border Focus', var: '--input-border-focus', hex: '#7987ac' },
+      { name: 'Placeholder', var: '--input-placeholder', hex: '#9aa0aa' },
+      { name: 'Placeholder BG', var: '--input-placeholder-bg', hex: '#f5f6fa' },
+      { name: 'BG Disabled', var: '--input-bg-disabled', hex: '#f5f6fa' },
+      { name: 'Border Disabled', var: '--input-border-disabled', hex: '#e6e8f0' },
+      { name: 'Text', var: '--text-input', hex: '#000000' },
+    ],
+  },
+  {
+    group: 'Buttons',
+    tokens: [
+      { name: 'Primary BG', var: '--btn-primary-bg', hex: '#7987ac' },
+      { name: 'Primary Hover', var: '--btn-primary-hover', hex: '#6b79a0' },
+      { name: 'Primary Active', var: '--btn-primary-active', hex: '#5e6c94' },
+      { name: 'Primary Disabled', var: '--btn-primary-disabled', hex: '#c7cedf' },
+      { name: 'Primary Text', var: '--btn-primary-text', hex: '#ffffff' },
+      { name: 'Secondary BG', var: '--btn-secondary-bg', hex: '#505050' },
+      { name: 'Secondary Hover', var: '--btn-secondary-hover', hex: '#3f3f3f' },
+      { name: 'Secondary Active', var: '--btn-secondary-active', hex: '#2f2f2f' },
+      { name: 'Secondary Text', var: '--btn-secondary-text', hex: '#ffffff' },
+      { name: 'Danger BG', var: '--btn-danger-bg', hex: '#e14d4d' },
+      { name: 'Danger Hover', var: '--btn-danger-hover', hex: '#c93e3e' },
+      { name: 'Danger Active', var: '--btn-danger-active', hex: '#a83232' },
+      { name: 'Danger Text', var: '--btn-danger-text', hex: '#ffffff' },
+    ],
+  },
+  {
+    group: 'Navbar',
+    tokens: [
+      { name: 'BG', var: '--navbar-bg', hex: '#1c1c1c' },
+      { name: 'Foreground', var: '--navbar-foreground', hex: '#aeaeae' },
+      { name: 'Active FG', var: '--navbar-active-foreground', hex: '#ffffff' },
+      { name: 'Border', var: '--navbar-border', hex: '#505050' },
+    ],
+  },
+];
+
+const DESIGN_NEUTRALS = [
+  { name: '50', var: '--neutral-50', hex: '#f8f9fb' },
+  { name: '100', var: '--neutral-100', hex: '#f1f3f7' },
+  { name: '200', var: '--neutral-200', hex: '#e4e7ee' },
+  { name: '300', var: '--neutral-300', hex: '#d1d6e0' },
+  { name: '400', var: '--neutral-400', hex: '#b6bdcc' },
+  { name: '500', var: '--neutral-500', hex: '#939db0' },
+  { name: '600', var: '--neutral-600', hex: '#6e788e' },
+  { name: '700', var: '--neutral-700', hex: '#505a70' },
+  { name: '800', var: '--neutral-800', hex: '#343c4e' },
+  { name: '900', var: '--neutral-900', hex: '#1c2230' },
+];
+
+const DESIGN_PASTELS = [
+  { name: 'Pastel 1', var: '--pastel-1', hex: '#a7b8e8' },
+  { name: 'Pastel 2', var: '--pastel-2', hex: '#9fd9d3' },
+  { name: 'Pastel 3', var: '--pastel-3', hex: '#a8e6b1' },
+  { name: 'Pastel 4', var: '--pastel-4', hex: '#f6e3a1' },
+  { name: 'Pastel 5', var: '--pastel-5', hex: '#f7c7a3' },
+  { name: 'Pastel 6', var: '--pastel-6', hex: '#f5a8a8' },
+  { name: 'Pastel 7', var: '--pastel-7', hex: '#c6b4e8' },
+  { name: 'Pastel 8', var: '--pastel-8', hex: '#f2b6d4' },
+];
+
+const DESIGN_SPACING = [
+  { name: 'Radius', var: '--radius', value: '0.5rem (8px)' },
+  { name: 'Radius SM', var: '--radius-sm', value: 'calc(radius − 4px)' },
+  { name: 'Radius MD', var: '--radius-md', value: 'calc(radius − 2px)' },
+  { name: 'Radius LG', var: '--radius-lg', value: 'var(--radius)' },
+  { name: 'Radius XL', var: '--radius-xl', value: 'calc(radius + 4px)' },
+];
 
 // ── Tech stack data ───────────────────────────────────────────────────────────
 const TECH_STACK = [
   {
     category: 'Frontend',
     icon: Globe,
-    color: 'blue',
     items: [
       { name: 'React 19', icon: SiReact, desc: 'UI Component Library' },
       { name: 'TypeScript', icon: SiTypescript, desc: 'Type-safe JavaScript' },
@@ -30,7 +182,6 @@ const TECH_STACK = [
   {
     category: 'Backend',
     icon: Server,
-    color: 'green',
     items: [
       { name: 'Spring Boot', icon: SiSpring, desc: 'Java REST API Framework' },
       { name: 'Spring Security', icon: Shield, desc: 'Authentication & Authorization' },
@@ -41,7 +192,6 @@ const TECH_STACK = [
   {
     category: 'Infrastructure',
     icon: GitBranch,
-    color: 'purple',
     items: [
       { name: 'GitHub', icon: SiGithub, desc: 'Source Control' },
       { name: 'GitHub Actions', icon: SiGithubactions, desc: 'CI/CD Pipeline' },
@@ -390,9 +540,9 @@ export function PerformancePage() {
           <div className={styles.errorBox}>
             <AlertTriangle size={18} />
             <span>{error}</span>
-            <button onClick={() => fetchScores(true)} className={styles.retryBtn}>
+            <Button variant="destructive" size="sm" onClick={() => fetchScores(true)} className="ml-auto">
               <RefreshCw size={14} /> Retry
-            </button>
+            </Button>
           </div>
         ) : (
           <div className={styles.lighthouseRow}>
@@ -458,15 +608,16 @@ export function PerformancePage() {
               Updated {fetchedAt.toLocaleTimeString()}
             </span>
           )}
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => fetchScores(true)}
-            className={styles.refreshBtn}
             disabled={loading || cooldownSec > 0}
             aria-label="Refresh scores"
           >
             <RefreshCw size={13} className={loading ? styles.spinning : ''} />
             {loading ? 'Fetching…' : cooldownSec > 0 ? `Wait ${cooldownSec}s` : 'Refresh'}
-          </button>
+          </Button>
         </motion.div>
       </section>
 
@@ -528,7 +679,7 @@ export function PerformancePage() {
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 26, delay: gi * 0.1 }}
               >
-                <div className={`${styles.stackGroupHeader} ${styles[`stackGroupHeader_${group.color}` as keyof typeof styles]}`}>
+                <div className={styles.stackGroupHeader}>
                   <GroupIcon size={16} strokeWidth={2} />
                   <span>{group.category}</span>
                 </div>
@@ -546,6 +697,224 @@ export function PerformancePage() {
               </motion.div>
             );
           })}
+        </div>
+      </section>
+
+      {/* ══ SECTION 4 — Design Tokens ══ */}
+      <section className={styles.section}>
+        <motion.div
+          className={styles.sectionHeader}
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+        >
+          <p className={styles.eyebrow}>DESIGN SYSTEM</p>
+          <h2 className={styles.sectionTitle}>Design Tokens</h2>
+          <div className={styles.titleDivider} />
+        </motion.div>
+
+        <div className={styles.tokenWrapper}>
+
+          {/* ── Typography ────────────────────────────── */}
+          <motion.div
+            className={styles.tokenGroup}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 26 }}
+          >
+            <div className={styles.tokenGroupHeader}>
+              <Type size={16} strokeWidth={2} />
+              <span>Typography</span>
+            </div>
+            <div className={styles.fontGrid}>
+              {DESIGN_FONTS.map((font, i) => (
+                <motion.div
+                  key={font.name}
+                  className={styles.fontCard}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.06 }}
+                >
+                  <span
+                    className={styles.fontSample}
+                    style={{ fontFamily: font.name }}
+                  >
+                    {font.sample}
+                  </span>
+                  <div className={styles.fontMeta}>
+                    <span className={styles.fontName}>{font.name}</span>
+                    <span className={styles.fontRole}>{font.role}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── All Color Groups ─────────────────────── */}
+          {DESIGN_COLOR_GROUPS.map((cg, gi) => (
+            <motion.div
+              key={cg.group}
+              className={styles.tokenGroup}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 26, delay: gi * 0.05 }}
+            >
+              <div className={styles.tokenGroupHeader}>
+                <Palette size={16} strokeWidth={2} />
+                <span>{cg.group}</span>
+              </div>
+              <div className={styles.colorGrid}>
+                {cg.tokens.map((color, i) => (
+                  <motion.div
+                    key={color.var}
+                    className={styles.colorCard}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.03 }}
+                  >
+                    <div
+                      className={styles.colorSwatch}
+                      style={{ background: `var(${color.var})` }}
+                    />
+                    <div className={styles.colorMeta}>
+                      <span className={styles.colorName}>{color.name}</span>
+                      <span className={styles.colorVar}>{color.var}</span>
+                      <span className={styles.colorHex}>{color.hex}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+
+          {/* ── Neutral Scale ─────────────────────────── */}
+          <motion.div
+            className={styles.tokenGroup}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 26 }}
+          >
+            <div className={styles.tokenGroupHeader}>
+              <Palette size={16} strokeWidth={2} />
+              <span>Neutral Scale</span>
+            </div>
+            <div className={styles.neutralStrip}>
+              {DESIGN_NEUTRALS.map((n, i) => (
+                <motion.div
+                  key={n.name}
+                  className={styles.neutralCell}
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.03 }}
+                >
+                  <div
+                    className={styles.neutralSwatch}
+                    style={{ background: n.hex }}
+                  />
+                  <span className={styles.neutralLabel}>{n.name}</span>
+                  <span className={styles.neutralHex}>{n.hex}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── Pastel Palette ─────────────────────────── */}
+          <motion.div
+            className={styles.tokenGroup}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 26 }}
+          >
+            <div className={styles.tokenGroupHeader}>
+              <Palette size={16} strokeWidth={2} />
+              <span>Pastels</span>
+            </div>
+            <div className={styles.neutralStrip}>
+              {DESIGN_PASTELS.map((p, i) => (
+                <motion.div
+                  key={p.var}
+                  className={styles.neutralCell}
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.03 }}
+                >
+                  <div
+                    className={styles.neutralSwatch}
+                    style={{ background: p.hex }}
+                  />
+                  <span className={styles.neutralLabel}>{p.name}</span>
+                  <span className={styles.neutralHex}>{p.hex}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── Spacing & Radius ──────────────────────── */}
+          <motion.div
+            className={styles.tokenGroup}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 26, delay: 0.3 }}
+          >
+            <div className={styles.tokenGroupHeader}>
+              <RectangleHorizontal size={16} strokeWidth={2} />
+              <span>Spacing & Radius</span>
+            </div>
+            <div className={styles.spacingGrid}>
+              {DESIGN_SPACING.map((s, i) => (
+                <motion.div
+                  key={s.name}
+                  className={styles.spacingCard}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.05 }}
+                >
+                  <div className={styles.spacingPreview}>
+                    <div className={styles.spacingBox} />
+                  </div>
+                  <div className={styles.spacingMeta}>
+                    <span className={styles.spacingName}>{s.name}</span>
+                    <span className={styles.spacingVar}>{s.var}</span>
+                    <span className={styles.spacingValue}>{s.value}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── Button Variants ─────────────────────────── */}
+          <motion.div
+            className={styles.tokenGroup}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 26, delay: 0.35 }}
+          >
+            <div className={styles.tokenGroupHeader}>
+              <MousePointer2 size={16} strokeWidth={2} />
+              <span>Buttons</span>
+            </div>
+            <div className={styles.buttonShowcase}>
+              <Button variant="default">Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="destructive">Destructive</Button>
+              <Button variant="outline">Outline</Button>
+              <Button variant="ghost">Ghost</Button>
+              <Button variant="link">Link</Button>
+            </div>
+          </motion.div>
+
         </div>
       </section>
 

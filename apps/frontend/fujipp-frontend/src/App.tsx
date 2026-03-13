@@ -1,10 +1,16 @@
-import { Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { PAGES } from './routes'
 import { BackgroundEffect } from './components/layout/BackgroundEffect'
 import { AppNavbar } from './components/layout/AppNavbar'
 import { AppFooter } from './components/layout/AppFooter'
+import { ScrollToTop } from './components/layout/ScrollToTop'
+import { Toaster } from './components/ui/sonner'
 import { useAppTheme } from './hooks/useAppTheme'
+
+const NotFoundPage = lazy(() =>
+  import('./pages/NotFoundPage/index').then((m) => ({ default: m.NotFoundPage }))
+)
 
 function AppLayout() {
   const { theme, setTheme } = useAppTheme()
@@ -14,6 +20,7 @@ function AppLayout() {
   return (
     <div className="relative min-h-svh bg-background text-foreground">
       <BackgroundEffect />
+      <ScrollToTop />
 
       <div className="relative z-10">
         <AppNavbar
@@ -32,6 +39,7 @@ function AppLayout() {
                   element={<page.component />}
                 />
               ))}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
         </main>
@@ -46,6 +54,7 @@ function App() {
   return (
     <BrowserRouter>
       <AppLayout />
+      <Toaster position="bottom-right" duration={2000} />
     </BrowserRouter>
   )
 }
