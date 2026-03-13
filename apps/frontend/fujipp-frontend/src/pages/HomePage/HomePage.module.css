@@ -1,0 +1,142 @@
+/* ──────────────────────────────────────────────
+   HomePage Hero
+   Layout: two surface-coloured trapezoid bands
+   (top / bottom) with a uniform slanted gap
+   in the centre revealing the background.
+   Mascot avatar floats in front, centred.
+
+   Shape (from Figma, ~3.83° angle):
+     Top band  → flat top edge, slanted bottom
+                 left-bottom higher than right-bottom
+     Bot band  → slanted top edge (mirror), flat bottom
+   clip-path is used instead of skewY because only
+   ONE edge per band is slanted (trapezoid, not parallelogram).
+────────────────────────────────────────────── */
+
+/* ── Hero container ────────────────────────── */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100svh;
+    overflow: hidden;
+}
+
+/* ── Shared band style ─────────────────────── */
+/*
+ * Each band takes the full width and ~45% of the hero height.
+ * clip-path cuts one edge diagonally.
+ *
+ * Slant offset ≈ 34% of the band's own height
+ * (derived from tan(3.83°) × 1343px ÷ 265px ≈ 0.34).
+ */
+.band {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 35%;
+    background: var(--surface);
+    pointer-events: none;
+}
+
+/* Top band — flat top, angled bottom
+   bottom-left corner is HIGHER than bottom-right */
+.bandTop {
+    top: 0;
+    clip-path: polygon(0% 0%,
+            /* top-left  */
+            100% 0%,
+            /* top-right */
+            100% 100%,
+            /* bottom-right (lower) */
+            0% 66%
+            /* bottom-left  (higher → 34% from bottom) */
+        );
+}
+
+/* Bottom band — horizontally mirrored from top band */
+.bandBottom {
+    bottom: 0;
+    clip-path: polygon(0% 0%,
+            /* top-left  (flush — mirrored: was top-right of top band) */
+            100% 34%,
+            /* top-right (34% down — mirrored: was top-left of top band) */
+            100% 100%,
+            /* bottom-right */
+            0% 100%
+            /* bottom-left  */
+        );
+}
+
+/* ── Mascot avatar ─────────────────────────── */
+.avatarWrap {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;     /* right-anchored */
+    pointer-events: none;
+}
+
+.avatar {
+    height: 90%;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* ── Text block ────────────────────────────── */
+/*
+ * Sits in the center gap (between the two bands).
+ * Positioned on the right half of the hero.
+ */
+.textBlock {
+    position: absolute;
+    z-index: 10;
+    left: 18%;
+    top: 82%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(8px, 1.2vh, 20px);
+}
+
+/* "HI GUYS, I AM ANAWAT" */
+.greeting {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.25rem, 3vw, 4rem);       /* scale: mobile → 4K */
+    font-weight: 700;
+    color: var(--foreground);               /* adapts: dark in light mode, white in dark */
+    line-height: 1.25;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* Highlighted name "ANAWAT" */
+.name {
+    color: var(--primary);                      /* #7987ac */
+}
+
+/* Role badge box */
+.roleBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 0;
+    background: transparent;
+}
+
+/* "FULLSTACK DEVELOPER" */
+.roleText {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.75rem, 1.8vw, 2rem);     /* scale: mobile → 4K */
+    font-weight: 600;
+    color: var(--text-secondary-dark);           /* #939393 */
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}

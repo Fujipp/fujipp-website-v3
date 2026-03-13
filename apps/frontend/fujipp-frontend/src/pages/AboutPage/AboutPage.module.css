@@ -1,0 +1,1667 @@
+/* ──────────────────────────────────────────────
+   AboutPage — simplified: bg slideshow + card only
+   No skills, no social links
+─────────────────────────────────────────────── */
+
+.page {
+    width: 100%;
+    min-height: 100svh;
+}
+
+/* ── Section ───────────────────────────────── */
+.section {
+    position: relative;
+    width: 100%;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    /* Prevent layout changes inside from propagating to fixed elements */
+    contain: layout;
+}
+
+/* ══════════════════════════════════════════════
+   BACKGROUND SLIDESHOW
+══════════════════════════════════════════════ */
+.bgWrapper {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    /* Own stacking context — isolates compositing from fixed BackgroundEffect */
+    isolation: isolate;
+    will-change: transform;
+}
+
+.bgImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    pointer-events: none;
+    /* Pre-promote to GPU layer so opacity transition doesn't trigger
+       a repaint pass that ripples to the fixed BackgroundEffect */
+    will-change: opacity;
+    transform: translateZ(0);
+}
+
+.bgImageActive {
+    opacity: 1;
+}
+
+.bgOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+    /* GPU layer — no background-color changes so this is stable */
+    transform: translateZ(0);
+    pointer-events: none;
+}
+
+.bgGradientTop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 180px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+    transform: translateZ(0);
+    pointer-events: none;
+}
+
+/*
+  bgGradientBottom: DOES NOT use var(--background) directly in gradient
+  because every theme switch causes a full repaint of this layer which
+  interrupts the GPU-composited slideshow transition.
+
+  Instead, we:
+  1. Use a pure rgba fade (black→transparent) for the blur-to-black edge
+  2. Overlay a solid var(--background) strip at the very bottom that
+     transitions smoothly — this is a flat color, GPU-friendly.
+*/
+.bgGradientBottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 280px;
+    pointer-events: none;
+    transform: translateZ(0);
+}
+
+/* Full-height gradient fade on its own GPU layer.
+   Repaint on theme switch is isolated here, doesn't touch slideshow layers. */
+.bgGradientBottom::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, var(--background) 0%, transparent 100%);
+    transition: background-color 0.4s ease;
+    will-change: background-color;
+    transform: translateZ(0);
+}
+
+/* ══════════════════════════════════════════════
+   CONTENT
+══════════════════════════════════════════════ */
+.content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1rem, 2vh, 1.5rem);
+    padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2rem);
+    width: 100%;
+    max-width: clamp(340px, 82vw, 1100px);
+    box-sizing: border-box;
+}
+
+/* ══════════════════════════════════════════════
+   GLASS CARD
+══════════════════════════════════════════════ */
+.card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.75rem, 1.5vh, 1.25rem);
+
+    /* Fixed height relative to viewport — never resizes on lang switch */
+    height: clamp(420px, 76svh, 820px);
+
+    background: color-mix(in srgb, var(--surface) 68%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+    border-radius: clamp(20px, 3vw, 32px);
+    padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
+
+    box-shadow:
+        0 30px 60px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+/* ── Card top row ──────────────────────────── */
+.cardTop {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.875rem, 2vw, 1.5rem);
+}
+
+.identity {
+    flex: 1;
+}
+
+/* ── Lang toggle ───────────────────────────── */
+.langToggle {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 3px;
+}
+
+.langBtn {
+    padding: clamp(4px, 0.7vh, 6px) clamp(10px, 1.4vw, 16px);
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s;
+}
+
+.langBtnActive {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+/* ── Bio block — 2-column grid, fills remaining card height ─ */
+.bioBlock {
+    flex: 1;               /* fill remaining space in card */
+    min-height: 0;         /* allow flex child to shrink/scroll */
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(0.6rem, 1.2vh, 1rem) clamp(1.5rem, 3vw, 2.5rem);
+    align-content: start;
+    animation: fadeSlide 0.3s ease;
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Avatar ────────────────────────────────── */
+.avatarWrap {
+    width: clamp(56px, 9vw, 96px);
+    height: clamp(56px, 9vw, 96px);
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary);
+    box-shadow:
+        0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent),
+        0 6px 20px rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
+}
+
+.avatarImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* ── Name ──────────────────────────────────── */
+.name {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.2rem, 3vw, 2.5rem);
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+
+/* ── Role ──────────────────────────────────── */
+.role {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.875rem, 1.8vw, 1.5rem);
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ── Divider ───────────────────────────────── */
+.divider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.7;
+    margin: clamp(0.25rem, 0.8vh, 0.5rem) 0;
+}
+
+/* ── Bio text ──────────────────────────────── */
+.bio {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    color: rgba(255, 255, 255, 0.76);
+    line-height: 1.8;
+}
+
+/* Highlighted keywords */
+.highlight {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════
+   IMAGE INDICATORS
+══════════════════════════════════════════════ */
+.indicators {
+    display: flex;
+    gap: clamp(5px, 0.8vw, 8px);
+}
+
+.indicator {
+    width: clamp(7px, 0.9vw, 9px);
+    height: clamp(7px, 0.9vw, 9px);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.38);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.3s, width 0.3s, border-radius 0.3s;
+}
+
+.indicatorActive {
+    width: clamp(22px, 2.8vw, 32px);
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.indicator:hover:not(.indicatorActive) {
+    background: rgba(255, 255, 255, 0.65);
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .content {
+        max-width: 100%;
+        padding: 1rem 0.875rem;
+    }
+
+    .card {
+        padding: 1.75rem 1.25rem;
+        border-radius: 18px;
+    }
+}
+
+/* ══════════════════════════════════════════════
+   SECTION 2 — SKILLS
+══════════════════════════════════════════════ */
+.skillsSection {
+    width: 100%;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2.5rem, 5vh, 4rem);
+    padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 6vw, 7rem);
+    box-sizing: border-box;
+}
+
+/* ── Section header ────────────────────────── */
+.skillsHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.4rem, 0.8vh, 0.75rem);
+    text-align: center;
+}
+
+.skillsEyebrow {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.skillsTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.skillsTitleDivider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.6;
+    margin-top: 0.25rem;
+}
+
+/* ── 3-column group grid ───────────────────── */
+.skillsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1rem, 2vw, 1.75rem);
+    width: 100%;
+    max-width: clamp(340px, 82vw, 1100px);
+}
+
+/* ── Individual group card ─────────────────── */
+.skillGroup {
+    background: var(--surface);
+    border-radius: clamp(14px, 1.8vw, 20px);
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    border: 1px solid transparent;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.skillGroup_blue  { border-color: color-mix(in srgb, var(--primary) 28%, transparent); }
+.skillGroup_green { border-color: color-mix(in srgb, var(--success) 28%, transparent); }
+.skillGroup_purple{ border-color: color-mix(in srgb, var(--pastel-7) 28%, transparent); }
+
+.skillGroup:hover {
+    box-shadow: 0 8px 28px color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.skillGroupLabel {
+    margin: 0 0 clamp(0.75rem, 1.5vh, 1rem);
+    font-family: var(--font-family-base);
+    font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.skillGroup_blue   .skillGroupLabel { color: var(--primary); }
+.skillGroup_green  .skillGroupLabel { color: var(--success); }
+.skillGroup_purple .skillGroupLabel { color: var(--pastel-7); }
+
+.chipRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(5px, 0.8vw, 8px);
+}
+
+/* ── Chips ─────────────────────────────────── */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: clamp(4px, 0.7vh, 6px) clamp(10px, 1.3vw, 14px);
+    border-radius: 999px;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.chip_blue {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
+    border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+}
+.chip_blue:hover {
+    background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.chip_green {
+    background: color-mix(in srgb, var(--success) 12%, transparent);
+    color: var(--success);
+    border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+}
+.chip_green:hover {
+    background: color-mix(in srgb, var(--success) 22%, transparent);
+}
+
+.chip_purple {
+    background: color-mix(in srgb, var(--pastel-7) 12%, transparent);
+    color: var(--pastel-7);
+    border: 1px solid color-mix(in srgb, var(--pastel-7) 30%, transparent);
+}
+.chip_purple:hover {
+    background: color-mix(in srgb, var(--pastel-7) 22%, transparent);
+}
+
+/* ── AI Tools ──────────────────────────────── */
+.aiSection {
+    width: 100%;
+    max-width: clamp(340px, 82vw, 1100px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1rem, 2vh, 1.5rem);
+}
+
+.aiTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.95rem, 1.6vw, 1.25rem);
+    font-weight: 700;
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* lucide icon in AI title */
+.aiIconEl {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.aiGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.aiCard {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    border-radius: clamp(12px, 1.5vw, 18px);
+    background: var(--surface);
+    border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+    box-shadow:
+        0 0 20px color-mix(in srgb, var(--primary) 8%, transparent),
+        0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent);
+    transition: box-shadow 0.25s, border-color 0.25s, transform 0.2s;
+}
+
+/* lucide icon inside AI card */
+.aiCardIcon {
+    color: var(--primary);
+    opacity: 0.8;
+    margin-bottom: 4px;
+}
+
+.aiCard:hover {
+    border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+    box-shadow: 0 0 32px color-mix(in srgb, var(--primary) 18%, transparent);
+    transform: translateY(-2px);
+}
+
+.aiName {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.85rem, 1.3vw, 1rem);
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.aiDesc {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.7rem, 1vw, 0.825rem);
+    color: var(--text-secondary-dark);
+}
+
+/* ── Responsive ────────────────────────────── */
+@media (max-width: 768px) {
+    .skillsSection {
+        padding: 2.5rem 1.25rem;
+    }
+
+    .skillsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .aiGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .aiGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ══════════════════════════════════════════════
+   SECTION 3 — EDUCATION  (Framer Motion horizontal scroll)
+══════════════════════════════════════════════ */
+
+.eduTrack {
+    position: relative;
+    height: 300vh;
+}
+
+/* Sticky pane — centered like Skills section */
+.eduSticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.5rem, 3vh, 2.5rem);
+    overflow: visible;          /* gallery bleeds outside */
+    box-sizing: border-box;
+}
+
+/* ── Section label (centered, same vibe as Skills) ── */
+.eduSectionLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.3rem, 0.6vh, 0.5rem);
+    text-align: center;
+}
+
+.eduEyebrow {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.eduTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.eduTitleDivider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.6;
+    margin-top: 0.25rem;
+}
+
+/* ── Gallery wrapper — the "sticky-wrapper" from reference ── */
+/* Width = one card — first card starts centered on screen    */
+.eduGalleryWrapper {
+    width: 560px;
+    position: relative;
+    overflow: visible;   /* cards bleed left and right */
+    flex-shrink: 0;
+}
+
+/* ── Gallery flex row (motion.div) ─────────── */
+.eduGallery {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    align-items: stretch;
+    will-change: transform;
+}
+
+/* ── Card ───────────────────────────────────── */
+.eduCard {
+    flex-shrink: 0;
+    width: 560px;
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    box-shadow:
+        0 24px 56px -12px color-mix(in srgb, var(--background) 60%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--primary) 10%, transparent);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.eduCard_blue   { border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
+.eduCard_green  { border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
+.eduCard_purple { border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
+
+/* ── Banner image ──────────────────────────── */
+.eduBannerWrap {
+    position: relative;
+    width: 100%;
+    height: clamp(140px, 22vh, 200px);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.eduBanner {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* Gradient fade — deep blend from banner into card body (like hero bgGradientBottom) */
+.eduBannerWrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        color-mix(in srgb, var(--surface) 20%, transparent) 45%,
+        color-mix(in srgb, var(--surface) 78%, transparent) 75%,
+        color-mix(in srgb, var(--surface) 95%, transparent) 100%
+    );
+    pointer-events: none;
+}
+
+/* ── Logo badge — top-right corner of the banner ─── */
+.eduLogoBadge {
+    position: absolute;
+    top: clamp(0.75rem, 1.5vw, 1rem);
+    right: clamp(0.75rem, 1.5vw, 1rem);
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1.5px solid var(--divider);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--background) 40%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.eduLogo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px;
+    box-sizing: border-box;
+    display: block;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+.eduLogoBadge:hover .eduLogo { opacity: 0.85; }
+
+/* ── Text block (below banner) ──────────────── */
+.eduText {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.2rem, 0.5vh, 0.4rem);
+    padding: clamp(1.5rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2rem);
+}
+
+.eduPeriod {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.8rem);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+.eduPeriod_blue   { color: var(--primary); }
+.eduPeriod_green  { color: var(--primary); }
+.eduPeriod_purple { color: var(--primary); }
+
+.eduSchool {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.25rem, 2.8vw, 2rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.eduLevel {
+    margin: 0.2rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.85rem, 1.4vw, 1rem);
+    font-weight: 600;
+    color: var(--text-secondary-dark);
+}
+
+.eduDesc {
+    margin: 0.5rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+    color: var(--text-secondary-dark);
+    line-height: 1.7;
+}
+
+/* ── Number badge (decorative) ──────────────── */
+.eduBadge {
+    position: absolute;
+    bottom: clamp(1rem, 2vw, 1.5rem);
+    right: clamp(1.5rem, 3vw, 2rem);
+    font-family: var(--font-family-base);
+    font-size: clamp(3.5rem, 7vw, 6rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.06em;
+    opacity: 0.08;
+    pointer-events: none;
+    user-select: none;
+}
+.eduBadge_blue   { color: var(--primary); }
+.eduBadge_green  { color: var(--primary); }
+.eduBadge_purple { color: var(--primary); }
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+    .eduTrack { height: auto; }
+
+    .eduSticky {
+        position: static;
+        height: auto;
+        padding: 3rem 0 2rem;
+        align-items: flex-start;
+    }
+
+    .eduSectionLabel {
+        padding: 0 1.25rem;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .eduGalleryWrapper {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .eduGalleryWrapper::-webkit-scrollbar { display: none; }
+
+    .eduGallery {
+        transform: none !important;
+        padding: 0 1.25rem;
+    }
+
+    .eduCard { width: clamp(280px, 82vw, 400px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .eduGallery { transform: none !important; }
+    .eduTrack   { height: auto; }
+    .eduSticky  { position: static; height: auto; }
+}
+
+/* ══════════════════════════════════════════════
+   SECTION 4 — HOBBIES & INTERESTS
+══════════════════════════════════════════════ */
+
+.hobbySection {
+    padding: clamp(4rem, 8vh, 7rem) clamp(1.5rem, 8vw, 8rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2.5rem, 5vh, 4rem);
+}
+
+/* ── Header ─────────────────────────────────── */
+.hobbyHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+}
+
+.hobbyEyebrow {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.hobbyTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.hobbyDivider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.6;
+    margin-top: 0.25rem;
+}
+
+/* ── Grid ───────────────────────────────────── */
+.hobbyGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1rem, 2vw, 1.5rem);
+    width: 100%;
+    max-width: 960px;
+}
+
+/* ── Card ───────────────────────────────────── */
+.hobbyCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: clamp(1.75rem, 3vw, 2.25rem);
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--surface) 75%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    user-select: none;
+    will-change: transform;
+    min-height: 180px;
+}
+
+/* Colour accent borders — semantic tokens */
+.hobbyCard_primary  { border-color: color-mix(in srgb, var(--primary)  30%, transparent); }
+.hobbyCard_success  { border-color: color-mix(in srgb, var(--success)  30%, transparent); }
+.hobbyCard_pastel-7 { border-color: color-mix(in srgb, var(--pastel-7) 30%, transparent); }
+.hobbyCard_warning  { border-color: color-mix(in srgb, var(--warning)  30%, transparent); }
+.hobbyCard_pastel-5 { border-color: color-mix(in srgb, var(--pastel-5) 30%, transparent); }
+.hobbyCard_pastel-2 { border-color: color-mix(in srgb, var(--pastel-2) 30%, transparent); }
+
+/* ── Icon wrapper ───────────────────────────── */
+.hobbyIconWrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Per-token icon colours */
+.hobbyIconWrap_primary  { background: color-mix(in srgb, var(--primary)  18%, transparent); color: var(--primary); }
+.hobbyIconWrap_success  { background: color-mix(in srgb, var(--success)  18%, transparent); color: var(--success); }
+.hobbyIconWrap_pastel-7 { background: color-mix(in srgb, var(--pastel-7) 18%, transparent); color: var(--pastel-7); }
+.hobbyIconWrap_warning  { background: color-mix(in srgb, var(--warning)  18%, transparent); color: var(--warning); }
+.hobbyIconWrap_pastel-5 { background: color-mix(in srgb, var(--pastel-5) 18%, transparent); color: var(--pastel-5); }
+.hobbyIconWrap_pastel-2 { background: color-mix(in srgb, var(--pastel-2) 18%, transparent); color: var(--pastel-2); }
+
+/* ── Card text ──────────────────────────────── */
+.hobbyCardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+}
+
+.hobbyCardTagline {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.hobbyTagline_primary  { color: var(--primary); }
+.hobbyTagline_success  { color: var(--success); }
+.hobbyTagline_pastel-7 { color: var(--pastel-7); }
+.hobbyTagline_warning  { color: var(--warning); }
+.hobbyTagline_pastel-5 { color: var(--pastel-5); }
+.hobbyTagline_pastel-2 { color: var(--pastel-2); }
+
+.hobbyCardName {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    font-weight: 700;
+    color: var(--foreground);
+}
+
+/* ══════════════════════════════════════════════
+   HOBBY MODAL (layoutId expand)
+══════════════════════════════════════════════ */
+
+/* Backdrop — starts BELOW the navbar (52px) so navbar stays visible */
+.hobbyBackdrop {
+    position: fixed;
+    inset: 52px 0 0 0;
+    background: rgba(0, 0, 0, 0.70);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100;
+}
+
+/* Expanded modal card — fixed, centered in the area below navbar */
+.hobbyModal {
+    position: fixed;
+    top: calc(52px + (100vh - 52px) / 2);
+    left: 50%;
+    translate: -50% -50%;
+    z-index: 101;
+    width: min(560px, 90vw);
+    /* Height sized to content — no scroll needed */
+    height: auto;
+    max-height: clamp(420px, 80vh, 680px);
+    border-radius: 28px;
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 40px 80px -16px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Close button */
+.hobbyModalClose {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    z-index: 1;
+}
+.hobbyModalClose:hover { background: rgba(255, 255, 255, 0.16); }
+
+/* ── Zone 1+2: Inline header row — icon left, text right ─── */
+.hobbyModalHeader {
+    width: 100%;
+    padding: 1.75rem 2.25rem 1.25rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.25rem;
+    /* Subtle tinted gradient top */
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--primary) 8%, transparent) 0%,
+        transparent 100%
+    );
+}
+
+/* Per-token header tint */
+.hobbyModalHeader_primary  { background: linear-gradient(to bottom, color-mix(in srgb, var(--primary)  10%, transparent), transparent); }
+
+.hobbyModalHeaderText {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.hobbyModalIconLg {
+    width: 80px;
+    height: 80px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+
+.hobbyModalName {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--foreground);
+    letter-spacing: -0.02em;
+}
+
+.hobbyModalDesc {
+    margin: 0.4rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.9rem, 1.4vw, 1rem);
+    color: rgba(255, 255, 255, 0.58);
+    line-height: 1.7;
+}
+
+/* Image / icon area placeholder */
+.hobbyModalImgArea {
+    margin-top: 1.5rem;
+    width: 100%;
+    min-height: 120px;
+    border-radius: 16px;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.hobbyModalImgPlaceholder {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Zone 3: Game section ────────────────────── */
+.hobbyGameSection {
+    padding: 0.75rem 2.25rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.hobbyGameSectionLabel {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.6rem, 0.9vw, 0.72rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--primary);
+    opacity: 0.7;
+}
+
+/* ── Seamless CSS scroll marquee ─────────────── */
+
+/* Divider line above the marquee strip */
+.hobbyMarqueeDivider {
+    width: 40px;
+    height: 2px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--primary) 45%, transparent);
+    margin: 0 auto;
+}
+
+
+.hobbyMarqueeTrack {
+    width: 100%;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 12%,
+        black 88%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 12%,
+        black 88%,
+        transparent 100%
+    );
+}
+
+/* Inner rail — items duplicated, scrolls exactly -50% then loops */
+.hobbyMarqueeRail {
+    display: flex;
+    flex-direction: row;
+    /* Fixed px gap so translateX(-50%) calculation is exact */
+    gap: 14px;
+    width: max-content;
+    /* GPU-composited animation — no layout repaints */
+    will-change: transform;
+    transform: translateZ(0);
+    animation: hobbyMarqueeScroll 22s linear infinite;
+}
+
+/* Pause on hover */
+.hobbyMarqueeRail:hover {
+    animation-play-state: paused;
+}
+
+/* Keyframe: slide left by exactly half the rail (= original set width) */
+@keyframes hobbyMarqueeScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+/* Single card */
+.hobbyMarqueeCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    width: 100px;
+}
+
+/* Square image — games & restaurants */
+.hobbyMarqueeImg {
+    width: 100px;
+    height: 100px;
+    border-radius: 16px;
+    object-fit: cover;
+    object-position: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: block;
+    /* GPU-promoted so hover scale doesn't cause repaint on rail */
+    will-change: transform;
+    transform: translateZ(0);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.hobbyMarqueeCard:hover .hobbyMarqueeImg {
+    transform: translateZ(0) scale(1.1) translateY(-3px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+/* Portrait override — anime posters (2:3) */
+.hobbyMarqueeImgPortrait {
+    height: 150px;
+    border-radius: 10px;
+    object-position: top center;
+}
+
+/* Caption */
+.hobbyGameName {
+    font-family: var(--font-family-base);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    line-height: 1.2;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+    .hobbyGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hobbySection {
+        padding: 3rem 1.25rem;
+    }
+
+    .hobbyModal {
+        width: min(440px, 92vw);
+    }
+}
+
+@media (max-width: 480px) {
+    .hobbyGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ══════════════════════════════════════════════
+   FADE BRIDGE — Hobbies → Contact
+══════════════════════════════════════════════ */
+.hobbyToContactBridge {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        color-mix(in srgb, var(--surface) 40%, transparent) 50%,
+        var(--background) 100%
+    );
+    pointer-events: none;
+    position: relative;
+    z-index: 0;
+    margin-top: -2px;
+}
+
+/* ══════════════════════════════════════════════
+   SECTION 5 — CONTACT
+══════════════════════════════════════════════ */
+.contactSection {
+    padding: clamp(4rem, 8vh, 7rem) clamp(1.5rem, 3vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(3rem, 6vh, 5rem);
+    overflow: visible;
+}
+
+/* ── Inner wrapper ─────────────────────────── */
+.contactInner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(3rem, 6vh, 5rem);
+}
+
+/* All cards: theme surface only — no platform colors */
+.contactCard_discord,
+.contactCard_facebook,
+.contactCard_instagram,
+.contactCard_github { background: var(--surface); }
+.contactCard_email  { background: var(--surface); }
+
+/* Hover handled by .contactCard:hover conic-gradient above — no per-platform override */
+
+/* ── Header ─────────────────────────────────── */
+.contactHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.4rem, 0.8vh, 0.75rem);
+    text-align: center;
+    width: 100%;
+}
+
+.contactEyebrow {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.65rem, 1vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.contactTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.contactTitleDivider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--primary), var(--pastel-7));
+    opacity: 0.7;
+    margin-top: 0.25rem;
+}
+
+.contactSubtitle {
+    margin: 0.4rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.88rem, 1.4vw, 1rem);
+    color: var(--text-secondary-dark);
+    line-height: 1.8;
+    text-align: center;
+}
+
+/* ── Diagonal stagger card row ───────────────── */
+.contactCardRow {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    overflow: visible;
+    flex-wrap: nowrap;
+}
+
+/* ── Running-light border animation ─────────── */
+@property --borderAngle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes contactBorderRun {
+    to { --borderAngle: 360deg; }
+}
+
+/* ── Card (parallelogram via clip-path) ───────── */
+.contactCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background: var(--surface);
+    border-radius: 0;
+    overflow: hidden;
+    will-change: clip-path;
+    clip-path: polygon(48px 0%, 100% 0%, calc(100% - 48px) 100%, 0% 100%);
+    margin-left: 0;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
+    transition: filter 0.3s ease;
+    min-height: 560px;
+    cursor: pointer;
+    --borderAngle: 0deg;
+}
+.contactCard:first-child { margin-left: 0; }
+
+/* Running-light border on hover via rotating conic-gradient */
+.contactCard:hover {
+    background: conic-gradient(
+        from var(--borderAngle),
+        var(--surface)                                       0deg,
+        var(--surface)                                      80deg,
+        color-mix(in srgb, var(--primary) 50%, transparent) 95deg,
+        var(--primary)                                      120deg,
+        color-mix(in srgb, var(--primary) 80%, white)       135deg,
+        var(--primary)                                      150deg,
+        color-mix(in srgb, var(--primary) 50%, transparent) 165deg,
+        var(--surface)                                      190deg,
+        var(--surface)                                      360deg
+    );
+    animation: contactBorderRun 2s linear infinite;
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--primary) 35%, transparent));
+}
+
+/* contactCardInner: solid fill leaving 3px visible border; padding ≥ 48px to clear top-left clip */
+.contactCardInner {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    margin: 3px;
+    background: var(--surface);
+    padding-left: clamp(50px, 4.5vw, 56px);
+    padding-right: clamp(50px, 4.5vw, 56px);
+    box-sizing: border-box;
+}
+
+/* Remove old ::before shine — replaced by conic border */
+.contactCard::before { display: none; }
+
+/* Platform-specific accent backgrounds (border doesn’t show with clip-path) */
+.contactCard_discord   { background: color-mix(in srgb, var(--surface) 88%, rgba(88, 101, 242, 0.22)); }
+.contactCard_facebook  { background: color-mix(in srgb, var(--surface) 88%, rgba(24, 119, 242, 0.22)); }
+.contactCard_instagram { background: color-mix(in srgb, var(--surface) 88%, rgba(225, 48, 108, 0.22)); }
+.contactCard_github    { background: color-mix(in srgb, var(--surface) 92%, rgba(200, 200, 210, 0.12)); }
+
+.contactCard_discord:hover   { filter: drop-shadow(0 16px 40px rgba(88, 101, 242, 0.30)) drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+.contactCard_facebook:hover  { filter: drop-shadow(0 16px 40px rgba(24, 119, 242, 0.30)) drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+.contactCard_instagram:hover { filter: drop-shadow(0 16px 40px rgba(225, 48, 108, 0.30)) drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+.contactCard_github:hover    { filter: drop-shadow(0 16px 40px rgba(180, 180, 190, 0.20)) drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+
+/* ── Card header (with negative margins so border-bottom is full card width) ── */
+.contactCardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    margin-left: calc(-1 * clamp(50px, 4.5vw, 56px));
+    margin-right: calc(-1 * clamp(50px, 4.5vw, 56px));
+    padding-left: clamp(50px, 4.5vw, 56px);
+    padding-right: clamp(50px, 4.5vw, 56px);
+    border-bottom: 1px solid var(--divider);
+}
+
+.contactPlatformIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.25s;
+}
+
+/* Platform icon uses theme tokens only — no brand colors */
+.contactPlatformIcon_discord,
+.contactPlatformIcon_facebook,
+.contactPlatformIcon_instagram,
+.contactPlatformIcon_github,
+.contactPlatformIcon_email {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--text-secondary-dark);
+}
+
+.contactCard:hover .contactPlatformIcon_discord,
+.contactCard:hover .contactPlatformIcon_facebook,
+.contactCard:hover .contactPlatformIcon_instagram,
+.contactCard:hover .contactPlatformIcon_github,
+.contactCard:hover .contactPlatformIcon_email {
+    color: var(--primary);
+}
+
+.contactPlatformInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.contactPlatformName {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    font-weight: 700;
+    color: var(--foreground);
+    line-height: 1.2;
+}
+
+.contactPlatformHandle {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.72rem, 0.95vw, 0.82rem);
+    color: var(--text-secondary-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* ── Card body ──────────────────────────────── */
+.contactCardBody {
+    flex: 1;
+    padding: 1.25rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* ── Avatar row ─────────────────────────────── */
+.contactProfileRow {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+}
+
+.contactAvatarWrap {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contactAvatar {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.contactAvatarDecor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 96px;
+    height: 96px;
+    pointer-events: none;
+    object-fit: contain;
+}
+
+.contactStatusDot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: var(--surface);
+    border-radius: 50%;
+    padding: 2px;
+    box-sizing: content-box;
+}
+
+.contactProfileInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.contactDisplayName {
+    font-family: var(--font-family-base);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    font-weight: 700;
+    color: var(--foreground);
+    line-height: 1.2;
+}
+
+.contactStatusBadge {
+    display: inline-block;
+    font-family: var(--font-family-base);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.45rem;
+    border-radius: 4px;
+    width: fit-content;
+}
+
+.contactStatusBadge_online  { background: color-mix(in srgb, #43a25a 20%, transparent); color: #43a25a; }
+.contactStatusBadge_idle    { background: color-mix(in srgb, #ca9654 20%, transparent); color: #ca9654; }
+.contactStatusBadge_dnd     { background: color-mix(in srgb, #d83a42 20%, transparent); color: #d83a42; }
+.contactStatusBadge_offline { background: rgba(255,255,255,0.06); color: var(--text-secondary-dark); }
+
+.contactBioText {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.78rem, 1.05vw, 0.88rem);
+    color: var(--text-secondary-dark);
+    line-height: 1.5;
+}
+
+.contactBadgeRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.contactBadgeSpotify,
+.contactBadgeActivity {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 6px;
+    font-family: var(--font-family-base);
+    font-size: 0.7rem;
+    font-weight: 500;
+    overflow: hidden;
+}
+.contactBadgeSpotify span:last-child,
+.contactBadgeActivity span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.contactBadgeSpotify  { background: color-mix(in srgb, #1db954 14%, transparent); color: #1db954; }
+.contactBadgeActivity { background: var(--background); color: var(--text-secondary-dark); }
+
+/* ── View Profile button ─────────────────────── */
+.contactViewBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    text-decoration: none;
+    padding: 0.6rem 1rem;
+    margin: auto 0 1.25rem;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 10px;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.78rem, 1vw, 0.88rem);
+    font-weight: 600;
+    background: var(--background);
+    color: var(--text-secondary-dark);
+    border: 1px solid var(--divider);
+    transform: translateX(-36px);
+    width: calc(100% + 24px);
+    transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.contactViewBtn:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    transform: translateX(-36px) translateY(-2px);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 900px) {
+    .contactCardRow {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+    }
+    .contactCard {
+        /* Remove parallelogram on small screens */
+        clip-path: none;
+        margin-left: 0;
+        width: 100%;
+        max-width: 420px;
+        border-radius: 16px;
+    }
+
+}
+
+@media (max-width: 480px) {
+    .contactTitle { font-size: 2rem; }
+    .contactSection { padding: 4rem 1.25rem 5rem; }
+}
+

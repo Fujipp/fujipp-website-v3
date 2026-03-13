@@ -2,12 +2,61 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.svg" />
+
+    <!-- Viewport & Theme -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fujipp-frontend</title>
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#272727" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- Primary SEO -->
+    <title>Fujipp — Full Stack Developer</title>
+    <meta name="description" content="Anawat Grudtoop (Fujipp) — Full Stack Developer specialising in React, TypeScript, Spring Boot and System Architecture." />
+    <meta name="author" content="Anawat Grudtoop" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph (social sharing) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.fujipp.com/" />
+    <meta property="og:title" content="Fujipp — Full Stack Developer" />
+    <meta property="og:description" content="Anawat Grudtoop (Fujipp) — Full Stack Developer specialising in React, TypeScript, Spring Boot and System Architecture." />
+    <meta property="og:image" content="https://www.fujipp.com/images/users/fujipp/mascot_home.webp" />
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Fujipp — Full Stack Developer" />
+    <meta name="twitter:description" content="Anawat Grudtoop (Fujipp) — Full Stack Developer specialising in React, TypeScript and Spring Boot." />
+    <meta name="twitter:image" content="https://www.fujipp.com/images/users/fujipp/mascot_home.webp" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.fujipp.com/" />
+
+    <!-- Preconnect for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Preload LCP image (mascot on homepage) -->
+    <link
+      rel="preload"
+      as="image"
+      href="/images/users/fujipp/mascot_home.webp"
+      type="image/webp"
+      fetchpriority="high"
+    />
   </head>
   <body>
+    <!-- Skip-to-content link for accessibility -->
+    <a href="#root" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999">Skip to content</a>
     <div id="root"></div>
+    <noscript>You need JavaScript enabled to run this app.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,0 +1,40 @@
+name: Deploy Frontend to Rukcom
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/frontend/fujipp-frontend/**'
+
+jobs:
+  deploy:
+    name: Build & Deploy to Rukcom
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: apps/frontend/fujipp-frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: apps/frontend/fujipp-frontend
+        run: npm run build
+
+      - name: Deploy to Rukcom via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          local-dir: apps/frontend/fujipp-frontend/dist/
+          server-dir: ./

@@ -12,4 +12,21 @@ export default defineConfig({
     },
   },
   base: '/',
+  build: {
+    // Increase the inline asset threshold so small files are inlined
+    assetsInlineLimit: 4096,
+    rollupOptions: {
+      output: {
+        // Split vendor chunks to reduce initial bundle size (improves TBT)
+        manualChunks(id) {
+          if (id.includes('react-dom') || id.includes('react/')) return 'vendor-react';
+          if (id.includes('motion')) return 'vendor-motion';
+          if (id.includes('react-router')) return 'vendor-router';
+          if (id.includes('lucide-react') || id.includes('react-icons')) return 'vendor-icons';
+        },
+      },
+    },
+    // Limit individual chunk size warning threshold
+    chunkSizeWarningLimit: 600,
+  },
 })

@@ -1,0 +1,107 @@
+/* ─────────────────────────────────────────────────────────
+   AppFooter — popular stacked layout (Vercel/Linear style)
+   ───────────────────────────────────────────────────────── */
+
+.footer {
+    position: relative;
+    z-index: 40;
+    width: 100%;
+    border-top: 1px solid var(--divider);
+    background: var(--navbar-bg);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+.inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 2rem clamp(1.25rem, 5vw, 4rem) 1.25rem;
+}
+
+/* ── Top row: brand-block left, links right ────────────── */
+.topRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+/* Brand block */
+.brandBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.brand {
+    font-family: var(--font-family-base);
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--text-primary);
+    text-decoration: none;
+    line-height: 1;
+    transition: opacity 150ms ease;
+}
+.brand:hover { opacity: 0.75; }
+
+.tagline {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: 0.72rem;
+    color: var(--text-secondary-dark);
+    font-weight: 400;
+}
+
+/* Links — horizontal on desktop, wrap on mobile */
+.linkGrid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.15rem 0;
+    justify-content: flex-end;
+}
+
+.footerLink {
+    font-family: var(--font-family-base);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary-dark);
+    text-decoration: none;
+    padding: 0.2rem 0.65rem;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+}
+.footerLink:hover {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+/* ── Divider — matches hobbyDivider in contact card ───── */
+.divider {
+    width: clamp(40px, 5vw, 64px);
+    height: 3px;
+    border-radius: 99px;
+    background: var(--primary);
+    opacity: 0.6;
+    border: none;
+    margin: 0 auto;
+}
+
+/* ── Bottom: copyright ─────────────────────────────────── */
+.copyright {
+    font-family: var(--font-family-base);
+    font-size: 0.7rem;
+    color: var(--text-secondary-dark);
+    margin: 0;
+    text-align: center;
+    width: 100%;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .topRow { flex-direction: column; gap: 1.25rem; }
+    .linkGrid { justify-content: flex-start; }
+}
