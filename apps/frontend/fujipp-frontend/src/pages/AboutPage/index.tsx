@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import {
   Monitor, Server, Wrench, Bot, Cpu, Code2,
-  Gamepad2, Music, Tv2, Utensils, Mic, Dumbbell, X,
+  Gamepad2, Music, Tv2, Utensils, Mic, Dumbbell, X, Send, ExternalLink,
 } from 'lucide-react';
 import {
   SiVuedotjs, SiReact, SiTypescript, SiJavascript,
@@ -13,6 +13,7 @@ import {
   SiFacebook, SiInstagram, SiGithub,
 } from 'react-icons/si';
 import { FaJava } from 'react-icons/fa';
+import { MdEmail } from 'react-icons/md';
 import styles from './AboutPage.module.css';
 
 const BG_IMAGES = [
@@ -60,7 +61,7 @@ const SKILL_GROUPS = [
   },
   {
     label: 'Backend',
-    color: 'green',
+    color: 'blue',
     groupIcon: Server,
     skills: [
       { name: 'Spring Boot', icon: SiSpring },
@@ -72,7 +73,7 @@ const SKILL_GROUPS = [
   },
   {
     label: 'Tools & Other',
-    color: 'purple',
+    color: 'blue',
     groupIcon: Wrench,
     skills: [
       { name: 'Git', icon: SiGit },
@@ -248,21 +249,8 @@ const SOCIAL_CARDS = [
     bio: 'Live status via Lanyard',
     href: `https://discord.com/users/${DISCORD_USER_ID}`,
     color: 'discord',
-    stagger: 0,    // diagonal offset multiplier (0 = highest)
+    stagger: 0,
     Icon: SiDiscord,
-  },
-  {
-    id: 'facebook',
-    platform: 'Facebook',
-    handle: 'fujipp',
-    displayName: 'Anawat Grudtoop',
-    avatar: '/images/users/fujipp/profile-fujipp.png',
-    decoration: '',
-    bio: 'Follow for news and updates',
-    href: 'https://www.facebook.com/fujipp',
-    color: 'facebook',
-    stagger: 1,
-    Icon: SiFacebook,
   },
   {
     id: 'instagram',
@@ -274,21 +262,46 @@ const SOCIAL_CARDS = [
     bio: 'Capturing moments and memories',
     href: 'https://www.instagram.com/f.janw/',
     color: 'instagram',
-    stagger: 2,
+    stagger: 1,
     Icon: SiInstagram,
+  },
+  {
+    id: 'facebook',
+    platform: 'Facebook',
+    handle: '@fujipp',
+    displayName: 'Anawat Grudtoop',
+    avatar: '/images/users/fujipp/profile-fujipp.png',
+    decoration: '',
+    bio: 'Follow for news and updates',
+    href: 'https://www.facebook.com/fujipp',
+    color: 'facebook',
+    stagger: 2,
+    Icon: SiFacebook,
+  },
+  {
+    id: 'email',
+    platform: 'Gmail',
+    handle: 'anawat.grudtoop',
+    displayName: 'Anawat Grudtoop',
+    avatar: '/images/users/fujipp/profile-fujipp.png',
+    decoration: '',
+    bio: 'Feel free to drop me an email',
+    href: 'mailto:anawat.grudtoop@gmail.com',
+    color: 'email',
+    stagger: 3,
+    Icon: MdEmail,
   },
   {
     id: 'github',
     platform: 'GitHub',
     handle: '@Fujipp',
     displayName: 'Fujipp',
-    // Downloaded from avatars.githubusercontent.com — saved as local asset
     avatar: '/avatars/github.jpg',
     decoration: '',
     bio: 'Open source projects and code',
     href: 'https://github.com/Fujipp',
     color: 'github',
-    stagger: 3,
+    stagger: 4,
     Icon: SiGithub,
   },
 ];
@@ -469,20 +482,30 @@ export function AboutPage() {
       <section className={styles.skillsSection}>
 
         {/* Header */}
-        <div className={styles.skillsHeader}>
+        <motion.div
+          className={styles.skillsHeader}
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+        >
           <p className={styles.skillsEyebrow}>WHAT I WORK WITH</p>
           <h2 className={styles.skillsTitle}>Skills & Tools</h2>
           <div className={styles.skillsTitleDivider} />
-        </div>
+        </motion.div>
 
         {/* Tech groups */}
         <div className={styles.skillsGrid}>
-          {SKILL_GROUPS.map((group) => {
+          {SKILL_GROUPS.map((group, i) => {
             const GroupIcon = group.groupIcon;
             return (
-              <div
+              <motion.div
                 key={group.label}
                 className={`${styles.skillGroup} ${styles[`skillGroup_${group.color}` as keyof typeof styles]}`}
+                initial={{ opacity: 0, y: 32 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.1 }}
               >
                 <h3 className={styles.skillGroupLabel}>
                   <GroupIcon size={14} strokeWidth={2.5} />
@@ -502,29 +525,42 @@ export function AboutPage() {
                     );
                   })}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
 
         {/* AI Tools */}
-        <div className={styles.aiSection}>
+        <motion.div
+          className={styles.aiSection}
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 26, delay: 0.25 }}
+        >
           <h3 className={styles.aiTitle}>
             <Bot size={18} strokeWidth={2} className={styles.aiIconEl} /> AI Tools I Use
           </h3>
           <div className={styles.aiGrid}>
-            {AI_TOOLS.map((tool) => {
+            {AI_TOOLS.map((tool, i) => {
               const AiIcon = tool.icon;
               return (
-                <div key={tool.name} className={styles.aiCard}>
+                <motion.div
+                  key={tool.name}
+                  className={styles.aiCard}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ type: 'spring', stiffness: 240, damping: 26, delay: 0.3 + i * 0.07 }}
+                >
                   <AiIcon size={22} className={styles.aiCardIcon} />
                   <span className={styles.aiName}>{tool.name}</span>
                   <span className={styles.aiDesc}>{tool.desc}</span>
-                </div>
+                </motion.div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
       </section>
 
@@ -589,24 +625,32 @@ export function AboutPage() {
 
       {/* ══ SECTION 4 — Hobbies ══ */}
       <section className={styles.hobbySection}>
-        <div className={styles.hobbyHeader}>
+        <motion.div
+          className={styles.hobbyHeader}
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+        >
           <p className={styles.hobbyEyebrow}>OUTSIDE THE CODE</p>
           <h2 className={styles.hobbyTitle}>Hobbies & Interests</h2>
           <div className={styles.hobbyDivider} />
-        </div>
+        </motion.div>
 
         {/* Grid of compact clickable cards */}
         <div className={styles.hobbyGrid}>
-          {HOBBIES.map((h) => (
+          {HOBBIES.map((h, i) => (
             <motion.div
               key={h.id}
               layoutId={`hobby-card-${h.id}`}
               className={`${styles.hobbyCard} ${styles[`hobbyCard_${h.token}` as keyof typeof styles]}`}
-              // Fade the source card OUT immediately so only the flying version is visible
+              initial={{ opacity: 0, y: 36 }}
+              whileInView={{ opacity: selectedHobby === h.id ? 0 : 1, y: 0 }}
               animate={{ opacity: selectedHobby === h.id ? 0 : 1 }}
+              viewport={{ once: true, amount: 0.25 }}
               whileHover={selectedHobby !== null ? {} : { scale: 1.04, y: -6 }}
               whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.09 }}
               onClick={() => setSelectedHobby(h.id)}
               style={{ cursor: 'pointer', pointerEvents: selectedHobby === h.id ? 'none' : 'auto' }}
             >
@@ -746,11 +790,12 @@ export function AboutPage() {
 
                     <a
                       href={card.href}
-                      target="_blank"
-                      rel="noreferrer"
+                      {...(card.id !== 'email' ? { target: '_blank', rel: 'noreferrer' } : {})}
                       className={`${styles.contactViewBtn} ${styles[`contactViewBtn_${card.color}` as keyof typeof styles]}`}
                     >
-                      View Profile
+                      {card.id === 'email'
+                        ? <><Send size={14} strokeWidth={2} /> Send Email</>
+                        : <><ExternalLink size={14} strokeWidth={2} /> View Profile</>}
                     </a>
                   </div>
                 </motion.div>
