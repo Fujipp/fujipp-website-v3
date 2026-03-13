@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { PAGES } from './routes'
 import { BackgroundEffect } from './components/layout/BackgroundEffect'
@@ -8,7 +9,7 @@ import { useAppTheme } from './hooks/useAppTheme'
 function AppLayout() {
   const { theme, setTheme } = useAppTheme()
   const location = useLocation()
-  const showFooter = location.pathname === '/about'
+  const showFooter = location.pathname === '/about' || location.pathname === '/performance'
 
   return (
     <div className="relative min-h-svh bg-background text-foreground">
@@ -22,15 +23,17 @@ function AppLayout() {
         />
 
         <main className="mx-auto flex min-h-svh w-full items-start">
-          <Routes>
-            {PAGES.map((page) => (
-              <Route
-                key={page.id}
-                path={page.path}
-                element={<page.component />}
-              />
-            ))}
-          </Routes>
+          <Suspense fallback={null}>
+            <Routes>
+              {PAGES.map((page) => (
+                <Route
+                  key={page.id}
+                  path={page.path}
+                  element={<page.component />}
+                />
+              ))}
+            </Routes>
+          </Suspense>
         </main>
 
         {showFooter && <AppFooter pages={PAGES} />}

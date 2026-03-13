@@ -1,0 +1,518 @@
+/* ─────────────────────────────────────────────────────────────────
+   PERFORMANCE PAGE — CSS Module
+   Card backgrounds use --navbar-bg for solid visibility in all themes.
+   Score ring colors are dynamic (good / warning / poor).
+───────────────────────────────────────────────────────────────── */
+
+/* ── Page shell ─────────────────────────────────────────────────── */
+.page {
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 7rem;
+}
+
+/* ── Hero ───────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 7rem 2rem 4rem;
+}
+
+.heroBg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0%,
+      color-mix(in srgb, var(--primary) 18%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 70%,
+      color-mix(in srgb, var(--success) 10%, transparent) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.heroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.heroSub {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+/* ── Shared section ─────────────────────────────────────────────── */
+.section {
+  width: 100%;
+  max-width: 1040px;
+  padding: 4rem 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.titleDivider {
+  width: 2.5rem;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 9999px;
+  margin-top: 0.25rem;
+}
+
+/* ── Error box ────────────────────────────────────────────────────── */
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
+  background: var(--navbar-bg);
+  color: var(--error);
+  font-size: 0.85rem;
+}
+
+.retryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
+  background: transparent;
+  color: var(--error);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.retryBtn:hover {
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+}
+
+/* ── Lighthouse score row ───────────────────────────────────────── */
+.lighthouseRow {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.lighthouseCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.75rem 2rem;
+  /* Solid navbar-style background for visibility in both light/dark */
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: 16px;
+  min-width: 148px;
+  transition: border-color 200ms, transform 200ms;
+}
+
+.lighthouseCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-4px);
+}
+
+.lighthouseRingWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lighthouseTrack {
+  fill: none;
+  stroke: color-mix(in srgb, var(--navbar-border) 80%, transparent);
+  stroke-width: 6;
+}
+
+.lighthouseRingFill {
+  fill: none;
+  stroke-width: 6;
+}
+
+/* Dynamic color variants by score range */
+.lighthouseRingFill_good    { stroke: var(--success); }
+.lighthouseRingFill_warning { stroke: var(--warning); }
+.lighthouseRingFill_poor    { stroke: var(--error); }
+
+.lighthouseScore {
+  position: absolute;
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.lighthouseScore_good    { color: var(--success); }
+.lighthouseScore_warning { color: var(--warning); }
+.lighthouseScore_poor    { color: var(--error); }
+
+.lighthouseLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--navbar-foreground);
+  text-align: center;
+}
+
+.lighthouseLabel_good    { color: var(--success); }
+.lighthouseLabel_warning { color: var(--warning); }
+.lighthouseLabel_poor    { color: var(--error); }
+
+/* ── Audit note + refresh row ────────────────────────────────────── */
+.auditMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.auditNote {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+.auditTime {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.refreshBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--navbar-border);
+  background: var(--navbar-bg);
+  color: var(--navbar-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms;
+}
+
+.refreshBtn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.refreshBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Web Vitals grid ────────────────────────────────────────────── */
+.vitalsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 860px) {
+  .vitalsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .vitalsGrid { grid-template-columns: 1fr; }
+}
+
+.vitalCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.4rem;
+  border-radius: 14px;
+  /* Same solid navbar background */
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  transition: border-color 200ms, transform 200ms;
+}
+
+.vitalCard:hover {
+  transform: translateY(-3px);
+}
+
+.vitalCard_loading {
+  opacity: 0.6;
+}
+
+.vitalCard_good    { border-color: color-mix(in srgb, var(--success) 35%, var(--navbar-border)); }
+.vitalCard_warning { border-color: color-mix(in srgb, var(--warning) 35%, var(--navbar-border)); }
+.vitalCard_poor    { border-color: color-mix(in srgb, var(--error)   35%, var(--navbar-border)); }
+
+/* Rings */
+.vitalRing {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringTrack {
+  fill: none;
+  stroke: color-mix(in srgb, var(--navbar-border) 80%, transparent);
+  stroke-width: 5;
+}
+
+.ringFill {
+  fill: none;
+  stroke-width: 5;
+}
+
+.ringFill_good    { stroke: var(--success); }
+.ringFill_warning { stroke: var(--warning); }
+.ringFill_poor    { stroke: var(--error); }
+
+.ringScore {
+  position: absolute;
+  font-size: 0.88rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.ringScore_good    { color: var(--success); }
+.ringScore_warning { color: var(--warning); }
+.ringScore_poor    { color: var(--error); }
+
+/* Vital text */
+.vitalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.vitalTop {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.vitalStatusIcon { flex-shrink: 0; }
+.vitalStatusIcon_good    { color: var(--success); }
+.vitalStatusIcon_warning { color: var(--warning); }
+.vitalStatusIcon_poor    { color: var(--error); }
+
+.vitalShort {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--navbar-active-foreground);
+}
+
+.vitalShort_good    { color: var(--success); }
+.vitalShort_warning { color: var(--warning); }
+.vitalShort_poor    { color: var(--error); }
+
+.vitalValue {
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+
+.vitalValue_good    { color: var(--success); }
+.vitalValue_warning { color: var(--warning); }
+.vitalValue_poor    { color: var(--error); }
+
+.vitalLabel {
+  font-size: 0.72rem;
+  color: var(--navbar-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vitalDesc {
+  font-size: 0.68rem;
+  color: var(--navbar-foreground);
+  opacity: 0.65;
+  line-height: 1.4;
+}
+
+/* ── Skeleton loader ────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--navbar-border) 25%,
+    color-mix(in srgb, var(--navbar-border) 50%, transparent) 50%,
+    var(--navbar-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ── Tech stack ─────────────────────────────────────────────────── */
+.stackWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.stackGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stackGroupHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.stackGroupHeader_blue {
+  /* var(--surface) is #1c1c1c in both light & dark — always visible */
+  background: var(--surface);
+  color: var(--info);
+  border: 1px solid color-mix(in srgb, var(--info) 40%, transparent);
+}
+
+.stackGroupHeader_green {
+  background: var(--surface);
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+.stackGroupHeader_purple {
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.techCardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.85rem;
+}
+
+.techCard {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.2rem;
+  /* Solid navbar background — visible in both light & dark */
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: 12px;
+  cursor: default;
+  transition: border-color 200ms;
+}
+
+.techCard:hover {
+  border-color: var(--primary);
+}
+
+.techCardIcon {
+  flex-shrink: 0;
+  /* Use navbar active foreground for icon clarity */
+  color: var(--navbar-active-foreground);
+  display: flex;
+  align-items: center;
+}
+
+.techCardText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.techCardName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--navbar-active-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.techCardDesc {
+  font-size: 0.7rem;
+  color: var(--navbar-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -19,12 +19,20 @@ export function HomePage() {
 
       {/* Mascot avatar — left side, bottom-anchored */}
       <div className={styles.avatarWrap}>
-        <img
-          src="/images/users/fujipp/mascot_home.PNG"
-          alt="Fujipp mascot"
-          className={styles.avatar}
-          draggable={false}
-        />
+        <picture style={{ display: 'contents' }}>
+          <source
+            srcSet="/images/users/fujipp/mascot_home.webp"
+            type="image/webp"
+          />
+          <img
+            src="/images/users/fujipp/mascot_home.PNG"
+            alt="Fujipp mascot"
+            className={styles.avatar}
+            draggable={false}
+            fetchPriority="high"
+            loading="eager"
+          />
+        </picture>
       </div>
 
       {/* Text block — positioned in the center gap, right side */}

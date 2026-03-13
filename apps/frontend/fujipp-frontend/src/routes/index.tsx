@@ -1,9 +1,19 @@
+import { lazy } from 'react'
 import type { ComponentType } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { Home, User, FolderOpen } from 'lucide-react'
-import { AboutPage } from '../pages/AboutPage/index'
+import { Home, User, FolderOpen, BarChart2 } from 'lucide-react'
 import { HomePage } from '../pages/HomePage/index'
-import { ProjectsPage } from '../pages/ProjectsPage'
+
+// Lazy-load non-landing pages — these won't be in the initial JS bundle
+const AboutPage = lazy(() =>
+  import('../pages/AboutPage/index').then((m) => ({ default: m.AboutPage }))
+)
+const ProjectsPage = lazy(() =>
+  import('../pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage }))
+)
+const PerformancePage = lazy(() =>
+  import('../pages/PerformancePage/index').then((m) => ({ default: m.PerformancePage }))
+)
 
 export interface PageDefinition {
   id: string
@@ -11,6 +21,8 @@ export interface PageDefinition {
   path: string
   component: ComponentType
   icon: LucideIcon
+  /** If true, the item is hidden from the desktop nav bar but still shown in the mobile sidebar */
+  mobileOnly?: boolean
 }
 
 export const PAGES: PageDefinition[] = [
@@ -34,5 +46,13 @@ export const PAGES: PageDefinition[] = [
     path: '/projects',
     component: ProjectsPage,
     icon: FolderOpen,
+  },
+  {
+    id: 'performance',
+    label: 'PERFORMANCE',
+    path: '/performance',
+    component: PerformancePage,
+    icon: BarChart2,
+    mobileOnly: true,
   },
 ]

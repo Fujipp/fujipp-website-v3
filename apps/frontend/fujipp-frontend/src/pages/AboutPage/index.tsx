@@ -389,10 +389,9 @@ export function AboutPage() {
   const totalDistance = (EDUCATION.length - 1) * (CARD_WIDTH + CARD_GAP);
   const eduX = useTransform(eduScrollYProgress, [0, 1], [0, -totalDistance]);
 
-  // Progress for the dots (0‒1)
-  const [eduProgress, setEduProgress] = useState(0);
+  // Progress for the dots — subscribe to keep the value reactive (value is read via motion transform)
   useEffect(() => {
-    return eduScrollYProgress.on('change', (v) => setEduProgress(v));
+    return eduScrollYProgress.on('change', () => {});
   }, [eduScrollYProgress]);
 
   useEffect(() => {
@@ -868,26 +867,19 @@ export function AboutPage() {
 
                   type MarqueeEntry = { src: string; name: string; portrait?: boolean };
 
-                  let label = '';
                   let entries: MarqueeEntry[] = [];
 
                   if ('games' in h && h.games) {
-                    label = 'เกมที่ชอบ';
                     entries = (h.games as GameItem[]).map(g => ({ src: g.logo, name: g.name }));
                   } else if ('animes' in h && h.animes) {
-                    label = 'อนิเมะที่ชอบ';
                     entries = (h.animes as AnimeItem[]).map(a => ({ src: a.poster, name: a.name, portrait: true }));
                   } else if ('restaurants' in h && h.restaurants) {
-                    label = 'ร้านอาหารโปรด';
                     entries = (h.restaurants as RestItem[]).map(r => ({ src: r.photo, name: r.name }));
                   } else if ('artists' in h && h.artists) {
-                    label = 'ศิลปินที่ชอบ';
                     entries = (h.artists as { name: string; photo: string }[]).map(a => ({ src: a.photo, name: a.name, portrait: true }));
                   } else if ('sports' in h && h.sports) {
-                    label = 'กีฬาที่ชอบ';
                     entries = (h.sports as { name: string; photo: string }[]).map(s => ({ src: s.photo, name: s.name }));
                   } else if ('speakers' in h && h.speakers) {
-                    label = 'นักพูดที่ชอบ';
                     entries = (h.speakers as { name: string; photo: string }[]).map(s => ({ src: s.photo, name: s.name, portrait: true }));
                   }
 

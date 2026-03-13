@@ -71,9 +71,9 @@ export function AppNavbar({ pages, theme, onThemeChange }: AppNavbarProps) {
             </NavLink>
           </div>
 
-          {/* Center: Desktop nav links */}
+          {/* Center: Desktop nav links (mobileOnly pages are excluded) */}
           <nav className={styles.desktopNav} aria-label="Main navigation">
-            {pages.map((page) => (
+            {pages.filter((p) => !p.mobileOnly).map((page) => (
               <NavLink
                 key={page.id}
                 to={page.path}
