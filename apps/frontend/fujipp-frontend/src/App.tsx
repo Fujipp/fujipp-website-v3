@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { PAGES } from './routes'
 import { BackgroundEffect } from './components/layout/BackgroundEffect'
@@ -16,6 +16,16 @@ function AppLayout() {
   const { theme, setTheme } = useAppTheme()
   const location = useLocation()
   const showFooter = location.pathname === '/about' || location.pathname === '/performance'
+
+  // Dynamic page title
+  useEffect(() => {
+    const currentPage = PAGES.find((p) =>
+      p.path === '/' ? location.pathname === '/' : location.pathname.startsWith(p.path)
+    )
+    document.title = currentPage
+      ? `FUJIPP | ${currentPage.label}`
+      : 'FUJIPP | NOT FOUND'
+  }, [location.pathname])
 
   return (
     <div className="relative min-h-svh bg-background text-foreground">
