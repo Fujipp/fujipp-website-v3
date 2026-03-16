@@ -143,8 +143,8 @@ const POLICY_BLOCKS: PolicyBlock[] = [
     body: (
       <div className={styles.contactRow}>
         <span>Questions about this policy? Reach out at</span>
-        <a href="mailto:contact@fujipp.com" className={styles.contactLink}>
-          contact@fujipp.com
+        <a href="mailto:fujipp.official@gmail.com" className={styles.contactLink}>
+          fujipp.official@gmail.com
         </a>
       </div>
     ),
