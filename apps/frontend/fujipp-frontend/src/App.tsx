@@ -15,7 +15,7 @@ const NotFoundPage = lazy(() =>
 function AppLayout() {
   const { theme, setTheme } = useAppTheme()
   const location = useLocation()
-  const showFooter = location.pathname === '/about' || location.pathname === '/performance'
+  const showFooter = location.pathname === '/about' || location.pathname === '/performance' || location.pathname === '/changelog'
 
   // Dynamic page title
   useEffect(() => {

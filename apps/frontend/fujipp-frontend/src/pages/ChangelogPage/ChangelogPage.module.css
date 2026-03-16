@@ -1,0 +1,458 @@
+/* ─────────────────────────────────────────────────────────────────
+   CHANGELOG PAGE — CSS Module
+   Uses project design tokens for all colors, fonts, and spacing.
+   Card backgrounds use --navbar-bg for solid visibility in all themes.
+───────────────────────────────────────────────────────────────── */
+
+/* ── Page shell ─────────────────────────────────────────────────── */
+.page {
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 7rem;
+  font-family: var(--font-family-base);
+}
+
+/* ── Hero ───────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 7rem 2rem 4rem;
+}
+
+.heroBg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0%,
+      color-mix(in srgb, var(--primary) 18%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 70%,
+      color-mix(in srgb, var(--primary) 8%, transparent) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.heroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.heroSub {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+/* ── Shared section ─────────────────────────────────────────────── */
+.section {
+  width: 100%;
+  max-width: 1040px;
+  padding: 4rem 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.titleDivider {
+  width: 2.5rem;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 9999px;
+  margin-top: 0.25rem;
+}
+
+/* ── Timeline ──────────────────────────────────────────────────── */
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 2rem;
+}
+
+.timelineLine {
+  position: absolute;
+  left: 7px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--navbar-border);
+}
+
+/* ── Version entry ─────────────────────────────────────────────── */
+.versionEntry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 3rem;
+}
+
+.versionEntry:last-child {
+  padding-bottom: 0;
+}
+
+.versionDot {
+  position: absolute;
+  left: -2rem;
+  top: 0.15rem;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid var(--navbar-bg);
+  z-index: 1;
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.versionDot_latest {
+  width: 18px;
+  height: 18px;
+  left: calc(-2rem - 1px);
+  background: var(--success);
+  box-shadow: 0 0 0 2px var(--success), 0 0 12px color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+.versionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.versionTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--navbar-active-foreground);
+  letter-spacing: -0.01em;
+}
+
+.versionDate {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.latestBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.versionDesc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 640px;
+}
+
+/* ── Change group (feat / fix / refactor etc.) ─────────────────── */
+.changeGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.changeGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.changeGroupLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.7rem;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.changeGroupLabel_feat {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.changeGroupLabel_fix {
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+  color: var(--error);
+  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+}
+
+.changeGroupLabel_refactor {
+  background: color-mix(in srgb, var(--info) 12%, transparent);
+  color: var(--info);
+  border: 1px solid color-mix(in srgb, var(--info) 30%, transparent);
+}
+
+.changeGroupLabel_style {
+  background: color-mix(in srgb, var(--pastel-7) 18%, transparent);
+  color: var(--pastel-7);
+  border: 1px solid color-mix(in srgb, var(--pastel-7) 35%, transparent);
+}
+
+.changeGroupLabel_perf {
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  color: var(--warning);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+}
+
+.changeGroupLabel_chore {
+  background: color-mix(in srgb, var(--navbar-foreground) 12%, transparent);
+  color: var(--navbar-foreground);
+  border: 1px solid color-mix(in srgb, var(--navbar-foreground) 30%, transparent);
+}
+
+.changeGroupLabel_docs {
+  background: color-mix(in srgb, var(--pastel-2) 15%, transparent);
+  color: var(--pastel-2);
+  border: 1px solid color-mix(in srgb, var(--pastel-2) 35%, transparent);
+}
+
+.changeGroupLabel_build {
+  background: color-mix(in srgb, var(--pastel-5) 15%, transparent);
+  color: var(--pastel-5);
+  border: 1px solid color-mix(in srgb, var(--pastel-5) 35%, transparent);
+}
+
+.changeGroupLabel_ci {
+  background: color-mix(in srgb, var(--pastel-1) 15%, transparent);
+  color: var(--pastel-1);
+  border: 1px solid color-mix(in srgb, var(--pastel-1) 35%, transparent);
+}
+
+/* ── Change list ───────────────────────────────────────────────── */
+.changeList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.changeItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: var(--radius);
+  transition: border-color 200ms;
+}
+
+.changeItem:hover {
+  border-color: var(--primary);
+}
+
+.changeItemIcon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--primary);
+}
+
+.changeItemText {
+  font-size: 0.82rem;
+  color: var(--navbar-active-foreground);
+  line-height: 1.5;
+}
+
+.changeItemScope {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  margin-right: 0.35rem;
+  white-space: nowrap;
+}
+
+/* ── Stats row ─────────────────────────────────────────────────── */
+.statsRow {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.5rem 2rem;
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: 16px;
+  min-width: 140px;
+  transition: border-color 200ms, transform 200ms;
+}
+
+.statCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-4px);
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--navbar-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Loading skeleton ──────────────────────────────────────────── */
+.loadingRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--navbar-border) 25%,
+    color-mix(in srgb, var(--navbar-border) 50%, transparent) 50%,
+    var(--navbar-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ── Error box ─────────────────────────────────────────────────── */
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
+  background: var(--navbar-bg);
+  color: var(--error);
+  font-size: 0.85rem;
+}
+
+/* ── Timeline content (dangerouslySetInnerHTML wrapper) ─────────── */
+.timelineContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .timeline {
+    padding-left: 1.5rem;
+  }
+
+  .versionDot {
+    left: -1.5rem;
+  }
+
+  .versionDot_latest {
+    left: calc(-1.5rem - 1px);
+  }
+
+  .versionTag {
+    font-size: 0.95rem;
+  }
+
+  .statsRow {
+    gap: 0.85rem;
+  }
+
+  .statCard {
+    min-width: 110px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+}
