@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 import type { ComponentType } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { Home, User, FolderOpen, BarChart2, ScrollText } from 'lucide-react'
+import { Home, User, FolderOpen, BarChart2, ScrollText, ShieldCheck } from 'lucide-react'
 import { HomePage } from '../pages/HomePage/index'
 
 // Lazy-load non-landing pages — these won't be in the initial JS bundle
@@ -16,6 +16,9 @@ const PerformancePage = lazy(() =>
 )
 const ChangelogPage = lazy(() =>
   import('../pages/ChangelogPage/index').then((m) => ({ default: m.ChangelogPage }))
+)
+const PrivacyPage = lazy(() =>
+  import('../pages/PrivacyPage/index').then((m) => ({ default: m.PrivacyPage }))
 )
 
 export interface PageDefinition {
@@ -64,6 +67,14 @@ export const PAGES: PageDefinition[] = [
     path: '/changelog',
     component: ChangelogPage,
     icon: ScrollText,
+    mobileOnly: true,
+  },
+  {
+    id: 'privacy',
+    label: 'PRIVACY',
+    path: '/privacy',
+    component: PrivacyPage,
+    icon: ShieldCheck,
     mobileOnly: true,
   },
 ]
