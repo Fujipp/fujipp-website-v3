@@ -9,7 +9,7 @@ const AboutPage = lazy(() =>
   import('../pages/AboutPage/index').then((m) => ({ default: m.AboutPage }))
 )
 const ProjectsPage = lazy(() =>
-  import('../pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage }))
+  import('../pages/ProjectsPage/index').then((m) => ({ default: m.ProjectsPage }))
 )
 const PerformancePage = lazy(() =>
   import('../pages/PerformancePage/index').then((m) => ({ default: m.PerformancePage }))

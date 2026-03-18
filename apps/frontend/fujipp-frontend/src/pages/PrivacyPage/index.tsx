@@ -158,7 +158,6 @@ export function PrivacyPage() {
 
       {/* ══ HERO ══ */}
       <section className={styles.hero}>
-        <div className={styles.heroBg} aria-hidden />
         <motion.div
           className={styles.heroContent}
           initial={{ opacity: 0, y: 32 }}

@@ -1,0 +1,201 @@
+/* ─────────────────────────────────────────────────────────────────
+   CERTIFICATE MODAL — CSS Module
+───────────────────────────────────────────────────────────────── */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modal {
+  background: var(--navbar-bg);
+  border: 1px solid var(--navbar-border);
+  border-radius: 20px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 780px;
+  max-height: 90svh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--navbar-border);
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.headerIcon {
+  flex-shrink: 0;
+  color: var(--success);
+}
+
+.headerTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--navbar-active-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* ── Download button ────────────────────────────────────────────── */
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.85rem;
+  border-radius: 99px;
+  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  color: var(--success);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.downloadBtn:hover {
+  background: color-mix(in srgb, var(--success) 18%, transparent);
+  border-color: color-mix(in srgb, var(--success) 60%, transparent);
+}
+
+/* ── Close button ───────────────────────────────────────────────── */
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--navbar-border);
+  background: transparent;
+  color: var(--navbar-foreground);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.closeBtn:hover {
+  color: var(--navbar-active-foreground);
+  background: color-mix(in srgb, var(--navbar-border) 60%, transparent);
+}
+
+/* ── Image wrapper ──────────────────────────────────────────────── */
+.imageWrapper {
+  overflow-y: auto;
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.25rem;
+  background: color-mix(in srgb, var(--navbar-bg) 60%, transparent);
+}
+
+.imageNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  z-index: 2;
+}
+
+.imageNav:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.imageNavPrev {
+  left: 1rem;
+}
+
+.imageNavNext {
+  right: 1rem;
+}
+
+.imageCounter {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  padding: 0.2rem 0.65rem;
+  border-radius: 99px;
+  pointer-events: none;
+  letter-spacing: 0.05em;
+  z-index: 2;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  user-select: none;
+}
+
+.imageGallery {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  user-select: none;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .backdrop {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-height: 95svh;
+    border-radius: 20px 20px 12px 12px;
+  }
+
+  .downloadBtn span {
+    display: none;
+  }
+}
