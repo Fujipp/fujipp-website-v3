@@ -11,11 +11,15 @@ import { useAppTheme } from './hooks/useAppTheme'
 const NotFoundPage = lazy(() =>
   import('./pages/NotFoundPage/index').then((m) => ({ default: m.NotFoundPage }))
 )
+const ProjectDetailPage = lazy(() =>
+  import('./pages/ProjectDetailPage/index').then((m) => ({ default: m.ProjectDetailPage }))
+)
 
 function AppLayout() {
   const { theme, setTheme } = useAppTheme()
   const location = useLocation()
-  const showFooter = location.pathname === '/about' || location.pathname === '/performance'
+  const showFooter = ['/about', '/performance', '/changelog', '/privacy', '/terms', '/projects'].includes(location.pathname)
+    || location.pathname.startsWith('/projects/')
 
   // Dynamic page title
   useEffect(() => {
@@ -49,6 +53,7 @@ function AppLayout() {
                   element={<page.component />}
                 />
               ))}
+              <Route path="/projects/:id" element={<ProjectDetailPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
