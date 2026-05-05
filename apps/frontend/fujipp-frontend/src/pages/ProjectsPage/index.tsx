@@ -1,12 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, useDeferredValue, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { CertificateModal } from '../../components/ui/CertificateModal/index';
 import { Button } from '../../components/ui/button';
 import { useScrollLock } from '../../hooks/useScrollLock';
-import { motion, AnimatePresence } from 'motion/react';
 import { FolderOpen, Github, ExternalLink, Star, Briefcase, GraduationCap, Bot, Package, Layers, Award, Building2, FileCheck2, X, ZoomIn, ChevronLeft, ChevronRight, FileText, FlaskConical, BookOpen, Heart, Gamepad2, Fish,
   Shield, ShoppingBag, ArrowRightLeft, Users, Tag, UserCircle, MessageSquare, Code2, Ticket, Banknote,
-  ChevronDown, TrendingDown, LayoutList, LayoutGrid, Check, ArrowRight } from 'lucide-react';
+  ChevronDown, TrendingDown, LayoutList, LayoutGrid, Check, ArrowRight, Search, SearchX, Sparkles } from 'lucide-react';
 import { useProjectFilter } from '../../stores/use-project-filter';
 import styles from './ProjectsPage.module.css';
 
@@ -346,18 +345,35 @@ export const PROJECTS: Project[] = [
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-function getCategoryCount(cat: Category): number {
-  if (cat === 'all') return PROJECTS.length;
-  return PROJECTS.filter((p) => p.category === cat).length;
-}
+const CATEGORY_LABEL: Record<Category, string> = CATEGORIES.reduce(
+  (acc, c) => ({ ...acc, [c.id]: c.label }),
+  {} as Record<Category, string>,
+);
+
+// Pre-computed once — counts never change at runtime
+const CATEGORY_COUNTS: Record<Category, number> = (() => {
+  const counts: Record<Category, number> = { all: PROJECTS.length } as Record<Category, number>;
+  for (const c of CATEGORIES) {
+    if (c.id !== 'all') counts[c.id] = PROJECTS.filter((p) => p.category === c.id).length;
+  }
+  return counts;
+})();
 
 const STATUS_ORDER: Record<Status, number> = { active: 0, wip: 1, archived: 2 };
 const CATEGORY_ORDER: Record<Exclude<Category, 'all'>, number> = {
   internship: 0, discord: 1, university: 2, library: 3, personal: 4,
 };
 
-function filterAndSort(cat: Category, sort: SortBy = 'priority'): Project[] {
-  const list = cat === 'all' ? PROJECTS : PROJECTS.filter((p) => p.category === cat);
+function filterAndSort(cat: Category, sort: SortBy = 'priority', query = ''): Project[] {
+  const q = query.trim().toLowerCase();
+  let list = cat === 'all' ? PROJECTS : PROJECTS.filter((p) => p.category === cat);
+  if (q) {
+    list = list.filter((p) =>
+      p.title.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.tech.some((t) => t.toLowerCase().includes(q)),
+    );
+  }
   return [...list].sort((a, b) => {
     if (sort === 'status')   return STATUS_ORDER[a.status]   - STATUS_ORDER[b.status]   || b.priority - a.priority;
     if (sort === 'category') return CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category] || b.priority - a.priority;
@@ -400,36 +416,28 @@ function SortDropdown({ value, onChange }: { value: SortBy; onChange: (v: SortBy
         />
       </Button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className={styles.sortDropdownPanel}
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0,  scale: 1    }}
-            exit={{    opacity: 0, y: -6, scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-          >
-            {SORT_OPTIONS.map((opt) => {
-              const Icon = opt.icon;
-              const isActive = value === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  className={`${styles.sortOption} ${isActive ? styles.sortOptionActive : ''}`}
-                  onClick={() => { onChange(opt.value); setOpen(false); }}
-                >
-                  <span className={styles.sortOptionIcon}><Icon size={15} strokeWidth={1.75} /></span>
-                  <span className={styles.sortOptionText}>
-                    <span className={styles.sortOptionLabel}>{opt.label}</span>
-                    <span className={styles.sortOptionSub}>{opt.sub}</span>
-                  </span>
-                  {isActive && <Check size={13} strokeWidth={2.5} className={styles.sortOptionCheck} />}
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {open && (
+        <div className={styles.sortDropdownPanel}>
+          {SORT_OPTIONS.map((opt) => {
+            const Icon = opt.icon;
+            const isActive = value === opt.value;
+            return (
+              <button
+                key={opt.value}
+                className={`${styles.sortOption} ${isActive ? styles.sortOptionActive : ''}`}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+              >
+                <span className={styles.sortOptionIcon}><Icon size={15} strokeWidth={1.75} /></span>
+                <span className={styles.sortOptionText}>
+                  <span className={styles.sortOptionLabel}>{opt.label}</span>
+                  <span className={styles.sortOptionSub}>{opt.sub}</span>
+                </span>
+                {isActive && <Check size={13} strokeWidth={2.5} className={styles.sortOptionCheck} />}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -470,184 +478,321 @@ function ProjectDetailModal({
   const images = project?.images ?? [];
 
   return (
-    <AnimatePresence>
+    <>
       {project && Icon && (
-        <motion.div
-          className={styles.detailBackdrop}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-        >
-          <motion.div
-            className={styles.detailModal}
-            initial={{ opacity: 0, y: 48, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.96 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={styles.detailClose} onClick={onClose} aria-label="Close">
-              <X size={18} />
-            </button>
+        <div className={styles.detailBackdrop} onClick={onClose}>
+          <div className={styles.detailModal} onClick={(e) => e.stopPropagation()}>
 
-            <div className={`${styles.detailBody} ${images.length > 0 ? styles.detailBodyGrid : ''}`}>
-              <div className={styles.detailContent}>
-                <div className={styles.detailHeader}>
-                  <div className={styles.detailIconWrap}>
-                    <Icon size={32} strokeWidth={1.5} />
-                  </div>
-                  <div className={styles.detailHeadText}>
-                    <h2 className={styles.detailTitle}>{project.title}</h2>
-                    <div className={styles.detailBadges}>
-                      <span className={`${styles.cardCategory} ${CATEGORY_CLASS[project.category]}`}>
-                        {CATEGORIES.find((c) => c.id === project.category)?.label}
-                      </span>
-                      <span className={`${styles.statusBadge} ${STATUS_CLASS[project.status]}`}>
-                        {STATUS_LABEL[project.status]}
-                      </span>
-                    </div>
-                  </div>
+            {/* ── Header ── */}
+            <div className={styles.detailTop}>
+              <div className={styles.detailTopIcon} data-category={project.category}>
+                <Icon size={20} strokeWidth={1.75} />
+              </div>
+              <div className={styles.detailTopMeta}>
+                <div className={styles.detailBadges}>
+                  <span className={`${styles.cardCategory} ${CATEGORY_CLASS[project.category]}`}>
+                    {CATEGORIES.find((c) => c.id === project.category)?.label}
+                  </span>
+                  <span className={`${styles.statusBadge} ${STATUS_CLASS[project.status]}`}>
+                    {STATUS_LABEL[project.status]}
+                  </span>
+                  {project.featured && (
+                    <span className={styles.rowFeatured}>
+                      <Star size={9} strokeWidth={2.5} /> Featured
+                    </span>
+                  )}
+                  {project.commissioned && (
+                    <span className={styles.rowCommissioned}>
+                      <Banknote size={10} strokeWidth={2.5} /> Commissioned
+                    </span>
+                  )}
                 </div>
+                <h2 className={styles.detailTitle}>{project.title}</h2>
+              </div>
+              <button className={styles.detailClose} onClick={onClose} aria-label="Close">
+                <X size={16} />
+              </button>
+            </div>
 
-                <div className={styles.detailDivider} />
-
-                <p className={styles.detailDesc}>{project.description}</p>
-
-                <div className={styles.detailSection}>
-                  <p className={styles.detailSectionLabel}>Tech Stack</p>
-                  <div className={styles.techRow}>
-                    {project.tech.map((t) => (
-                      <span key={t} className={styles.techTag}>{t}</span>
-                    ))}
-                  </div>
-                </div>
-
-                {(project.github || project.live || project.certificate) && (
-                  <div className={styles.detailSection}>
-                    <p className={styles.detailSectionLabel}>Links</p>
-                    <div className={styles.detailLinks}>
-                      {project.github && (
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={project.github} target="_blank" rel="noopener noreferrer">
-                            <Github size={14} /> GitHub
-                          </a>
-                        </Button>
-                      )}
-                      {project.live && (
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={project.live} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink size={14} /> Live Demo
-                          </a>
-                        </Button>
-                      )}
-                      {project.certificate && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-[color-mix(in_srgb,var(--success)_35%,transparent)] text-[var(--success)] hover:bg-[color-mix(in_srgb,var(--success)_10%,transparent)]"
-                          onClick={() => onCertificateView(project.certificate!)}
-                        >
-                          <Award size={14} /> Certificate
-                        </Button>
-                      )}
+            {/* ── Slideshow (if images) ── */}
+            {images.length > 0 && (
+              <div
+                className={styles.detailSlideshow}
+                style={{ cursor: 'zoom-in' }}
+                onClick={() => onImageView(images[slideIdx], project.title, images, slideIdx)}
+              >
+                {images.map((src, i) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt=""
+                    className={`${styles.detailSlideshowImg} ${i === slideIdx ? styles.detailSlideshowImgActive : ''}`}
+                    draggable={false}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                  />
+                ))}
+                <div className={styles.zoomHint}><ZoomIn size={13} strokeWidth={2} /></div>
+                {images.length > 1 && (
+                  <>
+                    <button
+                      className={`${styles.slideshowNav} ${styles.slideshowNavPrev}`}
+                      onClick={(e) => { e.stopPropagation(); setSlideIdx((slideIdx - 1 + images.length) % images.length); }}
+                      aria-label="Previous image"
+                    ><ChevronLeft size={16} strokeWidth={2.5} /></button>
+                    <button
+                      className={`${styles.slideshowNav} ${styles.slideshowNavNext}`}
+                      onClick={(e) => { e.stopPropagation(); setSlideIdx((slideIdx + 1) % images.length); }}
+                      aria-label="Next image"
+                    ><ChevronRight size={16} strokeWidth={2.5} /></button>
+                    <div className={styles.slideshowCounter}>{slideIdx + 1} / {images.length}</div>
+                    <div className={styles.slideshowDots}>
+                      {images.map((_, i) => (
+                        <button
+                          key={i}
+                          className={`${styles.slideshowDot} ${i === slideIdx ? styles.slideshowDotActive : ''}`}
+                          onClick={(e) => { e.stopPropagation(); setSlideIdx(i); }}
+                        />
+                      ))}
                     </div>
-                  </div>
+                  </>
                 )}
+              </div>
+            )}
 
-                <div className={styles.detailDivider} />
-                <Button asChild className="w-full rounded-lg">
-                  <Link to={`/projects/${project.id}`} onClick={onClose}>
-                    View Full Page
-                    <ArrowRight size={14} strokeWidth={2.5} />
-                  </Link>
-                </Button>
+            {/* ── Body ── */}
+            <div className={styles.detailBody}>
+              <p className={styles.detailDesc}>{project.description}</p>
+
+              <div className={styles.detailSection}>
+                <p className={styles.detailSectionLabel}>Tech Stack</p>
+                <div className={styles.techRow}>
+                  {project.tech.map((t) => (
+                    <span key={t} className={styles.techTag}>{t}</span>
+                  ))}
+                </div>
               </div>
 
-              {images.length > 0 && (
-                <div className={styles.detailImageSide}>
-                  <div
-                    className={styles.detailSlideshow}
-                    style={{ cursor: 'zoom-in' }}
-                    onClick={() => onImageView(images[slideIdx], project.title, images, slideIdx)}
-                  >
-                    {images.map((src, i) => (
-                      <img
-                        key={src}
-                        src={src}
-                        alt=""
-                        className={`${styles.detailSlideshowImg} ${i === slideIdx ? styles.detailSlideshowImgActive : ''}`}
-                        draggable={false}
-                      />
-                    ))}
-                    <div className={styles.zoomHint}>
-                      <ZoomIn size={14} strokeWidth={2} />
-                    </div>
-                    {images.length > 1 && (
-                      <>
-                        <button
-                          className={`${styles.slideshowNav} ${styles.slideshowNavPrev}`}
-                          onClick={(e) => { e.stopPropagation(); setSlideIdx((slideIdx - 1 + images.length) % images.length); }}
-                          aria-label="Previous image"
-                        >
-                          <ChevronLeft size={18} strokeWidth={2.5} />
-                        </button>
-                        <button
-                          className={`${styles.slideshowNav} ${styles.slideshowNavNext}`}
-                          onClick={(e) => { e.stopPropagation(); setSlideIdx((slideIdx + 1) % images.length); }}
-                          aria-label="Next image"
-                        >
-                          <ChevronRight size={18} strokeWidth={2.5} />
-                        </button>
-                        <div className={styles.slideshowCounter}>
-                          {slideIdx + 1} / {images.length}
-                        </div>
-                        <div className={styles.slideshowDots}>
-                          {images.map((_, i) => (
-                            <button
-                              key={i}
-                              className={`${styles.slideshowDot} ${i === slideIdx ? styles.slideshowDotActive : ''}`}
-                              onClick={(e) => { e.stopPropagation(); setSlideIdx(i); }}
-                            />
-                          ))}
-                        </div>
-                      </>
+              {(project.github || project.live || project.certificate) && (
+                <div className={styles.detailSection}>
+                  <p className={styles.detailSectionLabel}>Links</p>
+                  <div className={styles.detailLinks}>
+                    {project.github && (
+                      <a href={project.github} target="_blank" rel="noopener noreferrer" className={styles.detailLinkBtn}>
+                        <Github size={14} /> GitHub
+                      </a>
+                    )}
+                    {project.live && (
+                      <a href={project.live} target="_blank" rel="noopener noreferrer" className={styles.detailLinkBtn}>
+                        <ExternalLink size={14} /> Live Demo
+                      </a>
+                    )}
+                    {project.certificate && (
+                      <button
+                        type="button"
+                        className={`${styles.detailLinkBtn} ${styles.detailLinkBtnCert}`}
+                        onClick={() => onCertificateView(project.certificate!)}
+                      >
+                        <Award size={14} /> Certificate
+                      </button>
                     )}
                   </div>
                 </div>
               )}
             </div>
-          </motion.div>
-        </motion.div>
+
+            {/* ── Footer CTA ── */}
+            <div className={styles.detailFooter}>
+              <Link to={`/projects/${project.id}`} onClick={onClose} className={styles.detailCta}>
+                View Full Page
+                <ArrowRight size={15} strokeWidth={2.5} />
+              </Link>
+            </div>
+
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
+
+// ── Memoised project row (editorial layout) ──────────────────────────────────
+interface ProjectRowProps {
+  project: Project;
+  onSelect: (p: Project) => void;
+  onSetCert: (c: NonNullable<Project['certificate']>) => void;
+}
+
+const ProjectRow = memo(function ProjectRow({
+  project,
+  onSelect,
+  onSetCert,
+}: ProjectRowProps) {
+  const Icon = project.icon;
+  const handleClick = useCallback(() => onSelect(project), [onSelect, project]);
+  const handleCert = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (project.certificate) onSetCert(project.certificate);
+    },
+    [onSetCert, project.certificate],
+  );
+  const handleKey = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onSelect(project);
+      }
+    },
+    [onSelect, project],
+  );
+
+  const techPreview =
+    project.tech.length > 6
+      ? `${project.tech.slice(0, 6).join(' · ')}  +${project.tech.length - 6} more`
+      : project.tech.join(' · ');
+
+  return (
+    <article
+      className={styles.row}
+      data-category={project.category}
+      onClick={handleClick}
+      onKeyDown={handleKey}
+      role="button"
+      tabIndex={0}
+    >
+      <span className={styles.rowAccent} aria-hidden />
+
+      <header className={styles.rowMeta}>
+        <span className={styles.rowIcon}><Icon size={14} strokeWidth={2.25} /></span>
+        <span className={styles.rowCategory}>{CATEGORY_LABEL[project.category]}</span>
+        <span className={styles.rowDot} aria-hidden>·</span>
+        <span className={`${styles.rowStatus} ${STATUS_CLASS[project.status]}`}>
+          {STATUS_LABEL[project.status]}
+        </span>
+        {project.featured && (
+          <>
+            <span className={styles.rowDot} aria-hidden>·</span>
+            <span className={styles.rowFeatured}>
+              <Star size={10} strokeWidth={2.5} />
+              Featured
+            </span>
+          </>
+        )}
+        {project.commissioned && (
+          <>
+            <span className={styles.rowDot} aria-hidden>·</span>
+            <span className={styles.rowCommissioned}>
+              <Banknote size={11} strokeWidth={2.5} />
+              Commissioned
+            </span>
+          </>
+        )}
+      </header>
+
+      <h3 className={styles.rowTitle}>{project.title}</h3>
+      <p className={styles.rowDesc}>{project.description}</p>
+
+      {project.tech.length > 0 && (
+        <p className={styles.rowTech}>{techPreview}</p>
+      )}
+
+      <footer className={styles.rowFooter}>
+        <div className={styles.rowLinks}>
+          {project.github && (
+            <a
+              href={project.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.rowLink}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Github size={13} strokeWidth={2} />
+              GitHub
+            </a>
+          )}
+          {project.live && (
+            <a
+              href={project.live}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.rowLink}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLink size={13} strokeWidth={2} />
+              Live
+            </a>
+          )}
+          {project.certificate && (
+            <button type="button" className={styles.rowLink} onClick={handleCert}>
+              <Award size={13} strokeWidth={2} />
+              Certificate
+            </button>
+          )}
+        </div>
+        <Link
+          to={`/projects/${project.id}`}
+          className={styles.rowReadMore}
+          onClick={(e) => e.stopPropagation()}
+        >
+          Read details
+          <ArrowRight size={13} strokeWidth={2.25} />
+        </Link>
+      </footer>
+    </article>
+  );
+});
 
 // ── Main component ────────────────────────────────────────────────────────────
 export function ProjectsPage() {
   const { activeCategory: active, setActiveCategory: setActive } = useProjectFilter();
   const [sort, setSort] = useState<SortBy>('priority');
+  const [query, setQuery] = useState('');
   const [cert, setCert] = useState<{ image: string; pdf?: string; label: string } | null>(null);
-  const [slideIndex, setSlideIndex] = useState(0);
   const [imgView, setImgView] = useState<{ image: string; label: string; images: string[]; idx: number } | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  const filtered = filterAndSort(active, sort);
-  const featured = filtered.find((p) => p.featured);
-  const rest = filtered.filter((p) => !p.featured);
+  // Deferred query keeps typing snappy — filtering runs at lower priority
+  const deferredQuery = useDeferredValue(query);
 
-  const featuredImages = featured?.images ?? [];
-  const FeaturedIcon = featured?.icon ?? null;
+  const filtered = useMemo(
+    () => filterAndSort(active, sort, deferredQuery),
+    [active, sort, deferredQuery],
+  );
 
-  useEffect(() => {
-    setSlideIndex(0);
-    if (!featuredImages.length) return;
-    const id = setInterval(() => {
-      setSlideIndex((prev) => (prev + 1) % featuredImages.length);
-    }, 4000);
-    return () => clearInterval(id);
-  }, [featured?.id]);
+  // Group rows by category when viewing the default unfiltered list
+  const groups = useMemo(() => {
+    if (active !== 'all' || deferredQuery.trim() !== '') return null;
+    type Cat = Exclude<Category, 'all'>;
+    const map = new Map<Cat, Project[]>();
+    for (const c of CATEGORIES) {
+      if (c.id !== 'all') map.set(c.id as Cat, []);
+    }
+    for (const p of filtered) map.get(p.category)?.push(p);
+    return CATEGORIES
+      .filter((c) => c.id !== 'all')
+      .map((c) => ({
+        id: c.id,
+        label: c.label,
+        icon: c.icon,
+        projects: map.get(c.id as Cat) ?? [],
+      }))
+      .filter((g) => g.projects.length > 0);
+  }, [filtered, active, deferredQuery]);
+
+  const totalProjects = PROJECTS.length;
+  const totalActive = useMemo(() => PROJECTS.filter((p) => p.status === 'active').length, []);
+  const totalCategories = CATEGORIES.length - 1; // exclude 'all'
+
+  const isFiltering = active !== 'all' || query.trim() !== '';
+  const activeLabel = CATEGORY_LABEL[active] ?? 'All Projects';
+
+  const handleSelectProject = useCallback((p: Project) => setSelectedProject(p), []);
+  const handleSetCert = useCallback(
+    (c: NonNullable<Project['certificate']>) => setCert(c),
+    [],
+  );
+  const resetFilters = useCallback(() => { setActive('all'); setQuery(''); }, [setActive]);
 
   return (
     <main className={styles.page}>
@@ -655,12 +800,7 @@ export function ProjectsPage() {
       {/* ══ HERO ══ */}
       <section className={styles.hero}>
         <div className={styles.heroBg} aria-hidden />
-        <motion.div
-          className={styles.heroContent}
-          initial={{ opacity: 0, y: 32 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 180, damping: 24 }}
-        >
+        <div className={styles.heroContent}>
           <p className={styles.heroEyebrow}>
             <FolderOpen size={14} strokeWidth={2.5} />
             PORTFOLIO
@@ -669,30 +809,30 @@ export function ProjectsPage() {
           <p className={styles.heroSub}>
             A curated collection of work across internships, university, Discord bots, libraries, and personal experiments.
           </p>
-        </motion.div>
+
+          <div className={styles.heroStats}>
+            <div className={styles.heroStat}>
+              <span className={styles.heroStatNum}>{totalProjects}</span>
+              <span className={styles.heroStatLabel}>Projects</span>
+            </div>
+            <span className={styles.heroStatDivider} aria-hidden />
+            <div className={styles.heroStat}>
+              <span className={styles.heroStatNum}>{totalCategories}</span>
+              <span className={styles.heroStatLabel}>Categories</span>
+            </div>
+            <span className={styles.heroStatDivider} aria-hidden />
+            <div className={styles.heroStat}>
+              <span className={`${styles.heroStatNum} ${styles.heroStatNumActive}`}>{totalActive}</span>
+              <span className={styles.heroStatLabel}>Active</span>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* ══ FILTER + GRID ══ */}
+      {/* ══ CONTROLS + LIST ══ */}
       <section className={styles.section}>
 
-        {/* Filter bar */}
-        <motion.div
-          className={styles.sectionHeader}
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 26, delay: 0.1 }}
-        >
-          <p className={styles.eyebrow}>BROWSE</p>
-          <h2 className={styles.sectionTitle}>All Work</h2>
-          <div className={styles.titleDivider} />
-        </motion.div>
-
-        <motion.div
-          className={styles.filterBar}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 26, delay: 0.15 }}
-        >
+        <div className={styles.filterBar}>
           <div className={styles.filterCategories}>
             {CATEGORIES.map((cat) => {
               const CatIcon = cat.icon;
@@ -707,192 +847,125 @@ export function ProjectsPage() {
                 >
                   <CatIcon size={12} strokeWidth={2.5} />
                   {cat.label}
-                  <span className={styles.filterCount}>{getCategoryCount(cat.id)}</span>
+                  <span className={styles.filterCount}>{CATEGORY_COUNTS[cat.id]}</span>
                 </Button>
               );
             })}
           </div>
-          <SortDropdown value={sort} onChange={setSort} />
-        </motion.div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={active}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ type: 'spring', stiffness: 240, damping: 28 }}
-          >
+          <div className={styles.filterTools}>
+            <div className={styles.searchWrap}>
+              <Search size={14} strokeWidth={2.25} className={styles.searchIcon} aria-hidden />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search title, tech, or keyword…"
+                className={styles.searchInput}
+                aria-label="Search projects"
+              />
+              {query && (
+                <button
+                  type="button"
+                  className={styles.searchClear}
+                  onClick={() => setQuery('')}
+                  aria-label="Clear search"
+                >
+                  <X size={12} strokeWidth={2.5} />
+                </button>
+              )}
+            </div>
+            <SortDropdown value={sort} onChange={setSort} />
+          </div>
+        </div>
 
-            {/* Featured card */}
-            {featured && (
-              <motion.div
-                className={styles.featuredCard}
-                style={{ marginBottom: '1.25rem', cursor: 'pointer' }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 26 }}
-                whileHover={{ scale: 1.005, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-                onClick={() => setSelectedProject(featured)}
-              >
-                <div className={styles.featuredBadge}>
-                  <Star size={10} strokeWidth={2.5} />
-                  Featured
-                </div>
+        <div className={styles.resultsMeta}>
+          <span className={styles.resultsCount}>
+            <Sparkles size={12} strokeWidth={2.25} />
+            <strong>{filtered.length}</strong>
+            {filtered.length === 1 ? ' project' : ' projects'}
+            {isFiltering && (
+              <span className={styles.resultsContext}>
+                {active !== 'all' && <> in <em>{activeLabel}</em></>}
+                {query.trim() && <> matching “<em>{query.trim()}</em>”</>}
+              </span>
+            )}
+          </span>
+          {isFiltering && (
+            <button
+              type="button"
+              className={styles.resetBtn}
+              onClick={resetFilters}
+            >
+              Reset filters
+            </button>
+          )}
+        </div>
 
-                <div className={styles.featuredBody}>
-                  <span className={`${styles.cardCategory} ${CATEGORY_CLASS[featured.category]}`}>
-                    {CATEGORIES.find((c) => c.id === featured.category)?.label}
-                  </span>
-                  <h3 className={styles.cardTitle} style={{ fontSize: '1.35rem' }}>{featured.title}</h3>
-                  <p className={styles.cardDesc}>{featured.description}</p>
-
-                  <div className={styles.techRow}>
-                    {featured.tech.map((t) => (
-                      <span key={t} className={styles.techTag}>{t}</span>
-                    ))}
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                    <span className={`${styles.statusBadge} ${STATUS_CLASS[featured.status]}`}>
-                      {STATUS_LABEL[featured.status]}
-                    </span>
-                    {featured.github && (
-                      <a href={featured.github} target="_blank" rel="noopener noreferrer" className={styles.iconLink} onClick={(e) => e.stopPropagation()}>
-                        <Github size={14} />
-                      </a>
-                    )}
-                    {featured.live && (
-                      <a href={featured.live} target="_blank" rel="noopener noreferrer" className={styles.iconLink} onClick={(e) => e.stopPropagation()}>
-                        <ExternalLink size={14} />
-                      </a>
-                    )}
-                    {featured.certificate && (
-                      <button className={styles.certBtn} onClick={(e) => { e.stopPropagation(); setCert(featured.certificate!); }}>
-                        <Award size={13} strokeWidth={2} />
-                        View Certificate
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className={`${styles.featuredVisual} ${featuredImages.length ? styles.featuredSlideshow : ''}`} aria-hidden>
-                  {featuredImages.length > 0 ? (
-                    <>
-                      {featuredImages.map((src, i) => (
-                        <img
-                          key={src}
-                          src={src}
-                          alt=""
-                          className={`${styles.slideshowImg} ${i === slideIndex ? styles.slideshowImgActive : ''}`}
-                          draggable={false}
+        {filtered.length > 0 ? (
+          <div className={styles.list}>
+            {groups ? (
+              groups.map((g) => {
+                const GroupIcon = g.icon;
+                return (
+                  <section key={g.id} className={styles.group} data-category={g.id}>
+                    <header className={styles.groupHeader}>
+                      <span className={styles.groupIcon}><GroupIcon size={14} strokeWidth={2.25} /></span>
+                      <h3 className={styles.groupTitle}>{g.label}</h3>
+                      <span className={styles.groupCount}>{g.projects.length}</span>
+                      <span className={styles.groupLine} aria-hidden />
+                    </header>
+                    <div className={styles.groupRows}>
+                      {g.projects.map((project) => (
+                        <ProjectRow
+                          key={project.id}
+                          project={project}
+                          onSelect={handleSelectProject}
+                          onSetCert={handleSetCert}
                         />
                       ))}
-                      <div className={styles.slideshowDots}>
-                        {featuredImages.map((_, i) => (
-                          <button
-                            key={i}
-                            aria-label={`Image ${i + 1}`}
-                            onClick={(e) => { e.stopPropagation(); setSlideIndex(i); }}
-                            className={`${styles.slideshowDot} ${i === slideIndex ? styles.slideshowDotActive : ''}`}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    FeaturedIcon ? <FeaturedIcon size={72} strokeWidth={1} className={styles.featuredIcon} /> : null
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Project grid */}
-            {rest.length > 0 ? (
-              <div className={styles.grid}>
-                {rest.map((project, i) => { const CardIcon = project.icon; return (
-                  <motion.div
-                    key={project.id}
-                    className={styles.card}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 220, damping: 28, delay: i * 0.05 }}
-                    whileHover={{ y: -4, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-                    onClick={() => setSelectedProject(project)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {project.images && project.images.length > 0 && (
-                      <div className={styles.cardThumb} style={{ cursor: 'zoom-in' }} onClick={(e) => { e.stopPropagation(); setImgView({ image: project.images![0], label: project.title, images: project.images!, idx: 0 }); }}>
-                        <img src={project.images[0]} alt="" draggable={false} className={styles.cardThumbImg} />
-                      </div>
-                    )}
-                    <div className={styles.cardHeader}>
-                      <div className={styles.cardIcon}><CardIcon size={20} strokeWidth={1.5} /></div>
-                      <div className={styles.cardLinks}>
-                        {project.github && (
-                          <a href={project.github} target="_blank" rel="noopener noreferrer" className={styles.iconLink} data-tooltip="GitHub" onClick={(e) => e.stopPropagation()}>
-                            <Github size={14} />
-                          </a>
-                        )}
-                        {project.live && (
-                          <a href={project.live} target="_blank" rel="noopener noreferrer" className={styles.iconLink} data-tooltip="Live Site" onClick={(e) => e.stopPropagation()}>
-                            <ExternalLink size={14} />
-                          </a>
-                        )}
-                        {project.certificate && (
-                          <button className={styles.iconLink} data-tooltip="Certificate" onClick={(e) => { e.stopPropagation(); setCert(project.certificate!); }}>
-                            <Award size={14} />
-                          </button>
-                        )}
-                        <Link
-                          to={`/projects/${project.id}`}
-                          className={styles.iconLink}
-                          data-tooltip="View Page"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FileText size={14} />
-                        </Link>
-                      </div>
                     </div>
-
-                    <span className={`${styles.cardCategory} ${CATEGORY_CLASS[project.category]}`}>
-                      {CATEGORIES.find((c) => c.id === project.category)?.label}
-                    </span>
-
-                    <h3 className={styles.cardTitle}>{project.title}</h3>
-                    <p className={styles.cardDesc}>{project.description}</p>
-
-                    <div className={styles.techRow}>
-                      {project.tech.map((t) => (
-                        <span key={t} className={styles.techTag}>{t}</span>
-                      ))}
-                    </div>
-
-                    <div className={styles.cardFooter}>
-                      <span className={`${styles.statusBadge} ${STATUS_CLASS[project.status]}`}>
-                        {STATUS_LABEL[project.status]}
-                      </span>
-                      {project.commissioned && (
-                        <span className={styles.commissionedBadge}>
-                          <Banknote size={11} strokeWidth={2.5} />
-                          Commissioned
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                );})}
-              </div>
+                  </section>
+                );
+              })
             ) : (
-              !featured && (
-                <div className={styles.empty}>
-                  <FolderOpen size={32} strokeWidth={1.5} />
-                  <span>No projects in this category yet.</span>
-                </div>
-              )
+              <div className={styles.groupRows}>
+                {filtered.map((project) => (
+                  <ProjectRow
+                    key={project.id}
+                    project={project}
+                    onSelect={handleSelectProject}
+                    onSetCert={handleSetCert}
+                  />
+                ))}
+              </div>
             )}
-
-          </motion.div>
-        </AnimatePresence>
+          </div>
+        ) : (
+          <div className={styles.empty}>
+            {query.trim() ? (
+              <>
+                <SearchX size={36} strokeWidth={1.5} />
+                <div className={styles.emptyTitle}>No projects match “{query.trim()}”</div>
+                <div className={styles.emptySub}>Try a different keyword, or reset the filters.</div>
+                <button
+                  type="button"
+                  className={styles.emptyAction}
+                  onClick={resetFilters}
+                >
+                  Reset filters
+                </button>
+              </>
+            ) : (
+              <>
+                <FolderOpen size={32} strokeWidth={1.5} />
+                <span>No projects in this category yet.</span>
+              </>
+            )}
+          </div>
+        )}
       </section>
+
       <CertificateModal
         open={cert !== null}
         imageUrl={cert?.image ?? ''}
@@ -907,12 +980,12 @@ export function ProjectsPage() {
         onClose={() => setImgView(null)}
         images={imgView?.images}
         currentIndex={imgView?.idx ?? 0}
-        onNavigate={(i) => setImgView(prev => prev ? { ...prev, image: prev.images[i], idx: i } : null)}
+        onNavigate={(i) => setImgView((prev) => (prev ? { ...prev, image: prev.images[i], idx: i } : null))}
       />
       <ProjectDetailModal
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
-        onCertificateView={(cert) => { setSelectedProject(null); setCert(cert); }}
+        onCertificateView={(c) => { setSelectedProject(null); setCert(c); }}
         onImageView={(src, title, images, idx) => setImgView({ image: src, label: title, images, idx })}
       />
     </main>

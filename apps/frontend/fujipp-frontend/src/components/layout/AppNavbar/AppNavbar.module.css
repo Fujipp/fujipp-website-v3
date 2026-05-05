@@ -27,16 +27,17 @@
 }
 
 .brand {
-  color: var(--text-primary);
+  color: var(--navbar-active-foreground);
   font-size: 24px;
   font-weight: 600;
   line-height: 1;
   text-decoration: none;
-  transition: opacity 150ms ease;
+  transition: color 150ms ease;
 }
 
-.brand:hover {
-  opacity: 0.75;
+.brand:hover,
+.brand:focus-visible {
+  color: var(--navbar-active-foreground);
 }
 
 /* ── Mobile hamburger button ─────────────────────────────────────── */

@@ -79,7 +79,7 @@
 }
 
 .avatar {
-    height: 90%;
+    height: min(90%, 920px);
     width: auto;
     object-fit: contain;
     display: block;
@@ -95,48 +95,285 @@
 .textBlock {
     position: absolute;
     z-index: 10;
-    left: 18%;
-    top: 82%;
+    left: clamp(24px, 8vw, 136px);
+    right: min(52vw, 740px);
+    top: 64%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: clamp(8px, 1.2vh, 20px);
+    gap: clamp(22px, 3.4vh, 40px);
+}
+
+.heroCopy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(8px, 1.2vh, 14px);
+    transform: translateY(clamp(-84px, -7vh, -48px));
 }
 
 /* "HI GUYS, I AM ANAWAT" */
 .greeting {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(1.25rem, 3vw, 4rem);       /* scale: mobile → 4K */
-    font-weight: 700;
-    color: var(--foreground);               /* adapts: dark in light mode, white in dark */
-    line-height: 1.25;
-    white-space: nowrap;
+    font-size: clamp(0.9rem, 1.2vw, 1.15rem);
+    font-weight: 800;
+    color: var(--secondary);
+    line-height: 1.2;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45em;
 }
 
 /* Highlighted name "ANAWAT" */
 .name {
-    color: var(--primary);                      /* #7987ac */
+    color: var(--primary);
 }
 
-/* Role badge box */
-.roleBadge {
-    display: inline-flex;
+.roleGroup {
+    display: flex;
     align-items: center;
-    padding: 4px 0;
-    background: transparent;
+    gap: clamp(10px, 1.4vw, 18px);
+    min-width: 0;
+}
+
+.roleMark {
+    width: clamp(36px, 5vw, 78px);
+    height: clamp(4px, 0.55vw, 7px);
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 8%, transparent));
 }
 
 /* "FULLSTACK DEVELOPER" */
 .roleText {
+    margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(0.75rem, 1.8vw, 2rem);     /* scale: mobile → 4K */
-    font-weight: 600;
-    color: var(--text-secondary-dark);           /* #939393 */
+    font-size: clamp(2.4rem, 5.8vw, 7rem);
+    font-weight: 800;
+    color: var(--surface);
+    line-height: 0.88;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    white-space: nowrap;
+    letter-spacing: 0;
+    max-width: 8.8em;
+    text-wrap: balance;
+}
+
+:global(.dark) .greeting,
+:global([data-theme="dark"]) .greeting {
+    color: var(--text-secondary);
+}
+
+:global(.dark) .roleText,
+:global([data-theme="dark"]) .roleText {
+    color: var(--text-primary-dark);
+}
+
+.heroSummary {
+    margin: 0;
+    max-width: min(34rem, 100%);
+    font-family: var(--font-family-base);
+    font-size: clamp(0.96rem, 1.18vw, 1.25rem);
+    font-weight: 650;
+    line-height: 1.45;
+    color: var(--secondary);
+    text-wrap: balance;
+}
+
+:global(.dark) .heroSummary,
+:global([data-theme="dark"]) .heroSummary {
+    color: var(--text-secondary);
+}
+
+.statsRow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: min(100%, 680px);
+    gap: clamp(10px, 1.4vw, 16px);
+    transform: translateY(clamp(18px, 2.4vh, 28px));
+}
+
+.statItem {
+    position: relative;
+    min-width: 0;
+    min-height: clamp(126px, 12vw, 162px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    padding: clamp(14px, 1.8vw, 22px);
+    border: 1px solid color-mix(in srgb, var(--primary) 34%, transparent);
+    border-radius: var(--radius);
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--surface) 88%, transparent), color-mix(in srgb, var(--primary) 12%, var(--surface))),
+        var(--surface);
+    box-shadow: 0 18px 50px color-mix(in srgb, var(--surface) 44%, transparent);
+}
+
+.statItem::after {
+    content: "";
+    position: absolute;
+    inset: auto 14px 0 14px;
+    height: 3px;
+    border-radius: 999px 999px 0 0;
+    background: var(--primary);
+}
+
+.statValueRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    color: var(--text-primary-dark);
+}
+
+.statNumber {
+    font-family: var(--font-family-base);
+    font-size: clamp(2.2rem, 4vw, 4.25rem);
+    font-weight: 800;
+    line-height: 0.85;
+    letter-spacing: 0;
+}
+
+.statUnit {
+    margin-top: 0.28em;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.78rem, 1vw, 1rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0;
+}
+
+.statLabel {
+    font-family: var(--font-family-base);
+    font-size: clamp(0.82rem, 1vw, 1rem);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text-primary-dark);
+    text-transform: uppercase;
+    letter-spacing: 0;
+}
+
+.statDetail {
+    display: block;
+    min-height: 2.4em;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.72rem, 0.9vw, 0.9rem);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text-secondary-dark);
+}
+
+@media (max-width: 980px) {
+    .avatar {
+        height: min(78%, 760px);
+        opacity: 0.82;
+    }
+
+    .textBlock {
+        right: clamp(20px, 6vw, 72px);
+        top: 60%;
+    }
+
+    .heroSummary {
+        max-width: 28rem;
+    }
+}
+
+@media (max-width: 720px) {
+    .band {
+        height: 38%;
+    }
+
+    .avatarWrap {
+        justify-content: center;
+    }
+
+    .avatar {
+        height: min(58%, 520px);
+        opacity: 0.5;
+    }
+
+    .textBlock {
+        left: 20px;
+        right: 20px;
+        top: 57%;
+        gap: 18px;
+    }
+
+    .roleGroup {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .heroCopy {
+        transform: translateY(clamp(-48px, -6vh, -28px));
+    }
+
+    .roleText {
+        font-size: clamp(2.3rem, 14vw, 4.4rem);
+        max-width: 7em;
+    }
+
+    .heroSummary {
+        max-width: 30rem;
+    }
+
+    .statsRow {
+        grid-template-columns: 1fr;
+        width: min(100%, 390px);
+        gap: 8px;
+        transform: translateY(clamp(10px, 1.6vh, 16px));
+    }
+
+    .statItem {
+        min-height: 82px;
+        display: grid;
+        grid-template-columns: minmax(74px, 0.4fr) minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        align-items: center;
+        gap: 2px 14px;
+        padding: 12px 14px;
+    }
+
+    .statValueRow {
+        grid-row: 1 / 3;
+    }
+
+    .statDetail {
+        min-height: 0;
+    }
+}
+
+@media (max-width: 380px) {
+    .textBlock {
+        top: 58%;
+    }
+
+    .roleText {
+        font-size: clamp(2rem, 13vw, 3rem);
+    }
+
+    .heroSummary {
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+
+    .statItem {
+        min-height: 76px;
+        padding: 10px 12px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .textBlock {
+        left: clamp(120px, 10vw, 220px);
+        top: 64%;
+    }
 }

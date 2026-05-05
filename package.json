@@ -1,0 +1,15 @@
+{
+  "name": "website-fujipp-official",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.13",
+  "workspaces": [
+    "apps/frontend/fujipp-frontend"
+  ],
+  "scripts": {
+    "dev": "bun run --filter fujipp-frontend dev",
+    "build": "bun run --filter fujipp-frontend build",
+    "lint": "bun run --filter fujipp-frontend lint",
+    "preview": "bun run --filter fujipp-frontend preview"
+  }
+}
