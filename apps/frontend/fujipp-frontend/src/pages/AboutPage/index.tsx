@@ -310,21 +310,35 @@ export function AboutPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lang, setLang] = useState<Lang>('en');
   const [selectedHobby, setSelectedHobby] = useState<number | null>(null);
+  const lanyardSnapshotRef = useRef<string>('');
 
   // ── Discord Lanyard live status ──────────────────────────────────────────
   const [lanyardData, setLanyardData] = useState<LanyardData | null>(null);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
     const fetchLanyard = async () => {
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
         const json = await res.json();
-        if (json.success && json.data) setLanyardData(json.data);
+        if (!json.success || !json.data) return;
+
+        const data = json.data as LanyardData;
+        const snapshot = JSON.stringify({
+          user: data.discord_user,
+          status: data.discord_status,
+          activities: data.activities,
+          spotify: data.spotify,
+          listening: data.listening_to_spotify,
+        });
+
+        if (snapshot !== lanyardSnapshotRef.current) {
+          lanyardSnapshotRef.current = snapshot;
+          setLanyardData(data);
+        }
       } catch { /* silent */ }
     };
     fetchLanyard();
-    timer = setInterval(fetchLanyard, 5000);
+    const timer = setInterval(fetchLanyard, 15000);
     return () => clearInterval(timer);
   }, []);
 
@@ -388,11 +402,6 @@ export function AboutPage() {
   const CARD_GAP = 32;
   const totalDistance = (EDUCATION.length - 1) * (CARD_WIDTH + CARD_GAP);
   const eduX = useTransform(eduScrollYProgress, [0, 1], [0, -totalDistance]);
-
-  // Progress for the dots — subscribe to keep the value reactive (value is read via motion transform)
-  useEffect(() => {
-    return eduScrollYProgress.on('change', () => {});
-  }, [eduScrollYProgress]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -685,7 +694,7 @@ export function AboutPage() {
             <div className={styles.hobbyDivider} />
           </motion.div>
 
-          {/* Parallelogram card row — skewed like the reference image */}
+          {/* Contact cards */}
           <div className={styles.contactCardRow}>
             {SOCIAL_CARDS.map((card) => {
               const CardIcon = card.Icon;
@@ -700,13 +709,12 @@ export function AboutPage() {
                   key={card.id}
                   className={`${styles.contactCard} ${styles[`contactCard_${card.color}` as keyof typeof styles]}`}
                   style={{ zIndex: card.stagger + 1 }}
-                  initial={{ opacity: 0, x: 40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ type: 'spring', stiffness: 220, damping: 24, delay: card.stagger * 0.08 }}
-                  whileHover={{ scale: 1.03, zIndex: 10, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
+                  whileHover={{ y: -6, zIndex: 10, transition: { type: 'spring', stiffness: 300, damping: 24 } }}
                 >
-                  {/* Counter-skewed inner wrapper so text stays upright */}
                   <div className={styles.contactCardInner}>
 
                     {/* Header row */}
