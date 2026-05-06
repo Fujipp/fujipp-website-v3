@@ -17,11 +17,14 @@ const STATUS_DOT: Record<Status, string> = {
 };
 
 const CAT_CLASS: Record<string, string> = {
-  internship: styles.catInternship,
-  discord:    styles.catDiscord,
-  university: styles.catUniversity,
-  library:    styles.catLibrary,
-  personal:   styles.catPersonal,
+  'ui-design': styles.catUiDesign,
+  frontend:    styles.catFrontend,
+  backend:     styles.catBackend,
+  fullstack:   styles.catFullstack,
+  database:    styles.catDatabase,
+  library:     styles.catLibrary,
+  internship:  styles.catInternship,
+  discord:     styles.catDiscord,
 };
 
 export function ProjectDetailPage() {

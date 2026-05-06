@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Category = 'all' | 'internship' | 'discord' | 'university' | 'library' | 'personal';
+export type Category = 'all' | 'ui-design' | 'frontend' | 'backend' | 'fullstack' | 'database' | 'library' | 'internship' | 'discord';
 
 interface ProjectFilterState {
   activeCategory: Category;

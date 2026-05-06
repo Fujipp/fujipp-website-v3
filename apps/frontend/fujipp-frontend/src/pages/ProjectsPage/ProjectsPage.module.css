@@ -198,6 +198,161 @@
   margin-top: 0.25rem;
 }
 
+/* ── AI workflow ───────────────────────────────────────────────── */
+.aiSection {
+  padding-top: 0;
+}
+
+.aiShell {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  gap: clamp(1rem, 2vw, 1.25rem);
+  padding: clamp(1.15rem, 2.6vw, 2rem);
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--divider));
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.aiShell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--pastel-2) 48%, var(--primary)), transparent 58%) top left / 100% 2px no-repeat,
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 5%, transparent), transparent 44%);
+}
+
+.aiIntro,
+.aiCards,
+.aiPrinciples {
+  position: relative;
+  z-index: 1;
+}
+
+.aiIntro {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.aiIntro .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.aiTitle {
+  margin: 0;
+  max-width: 10ch;
+  font-family: var(--font-family-base);
+  font-size: clamp(1.8rem, 4vw, 3.15rem);
+  font-weight: 800;
+  color: var(--text-primary-dark);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.aiLead {
+  margin: 0;
+  max-width: 48ch;
+  font-size: clamp(0.9rem, 1.15vw, 1rem);
+  font-weight: 500;
+  line-height: 1.75;
+  color: color-mix(in srgb, var(--text-primary-dark) 76%, transparent);
+}
+
+.aiCards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.aiCard {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--background) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, var(--divider));
+  border-radius: 10px;
+}
+
+.aiCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.aiIcon {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+}
+
+.aiName {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary-dark);
+  line-height: 1.2;
+}
+
+.aiPlan {
+  margin: 0.14rem 0 0;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  line-height: 1.35;
+}
+
+.aiRole {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.72;
+  color: var(--text-secondary-dark);
+}
+
+.aiPrinciples {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.15rem;
+}
+
+.aiPrinciple {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--divider));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: color-mix(in srgb, var(--text-primary-dark) 80%, transparent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.aiPrinciple svg {
+  color: var(--success);
+  flex-shrink: 0;
+}
+
 /* ── Filter bar ────────────────────────────────────────────────── */
 .filterBar {
   position: sticky;
@@ -632,11 +787,14 @@
   opacity: 1;
 }
 
-.card[data-category="internship"] { --cat-color: var(--primary); }
-.card[data-category="discord"]    { --cat-color: #5865f2; }
-.card[data-category="university"] { --cat-color: var(--success); }
+.card[data-category="ui-design"]  { --cat-color: var(--pastel-8); }
+.card[data-category="frontend"]   { --cat-color: var(--pastel-2); }
+.card[data-category="backend"]    { --cat-color: var(--primary); }
+.card[data-category="fullstack"]  { --cat-color: var(--success); }
+.card[data-category="database"]   { --cat-color: var(--info); }
 .card[data-category="library"]    { --cat-color: var(--warning); }
-.card[data-category="personal"]   { --cat-color: var(--info); }
+.card[data-category="internship"] { --cat-color: var(--pastel-7); }
+.card[data-category="discord"]    { --cat-color: var(--pastel-1); }
 
 /* ── Card thumbnail ────────────────────────────────────────────── */
 .cardThumb {
@@ -855,35 +1013,14 @@
 }
 
 /* ── Category colors ───────────────────────────────────────────── */
-.cat_internship {
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
-  color: var(--primary);
-  border-color: color-mix(in srgb, var(--primary) 25%, transparent);
-}
-
-.cat_discord {
-  background: color-mix(in srgb, #5865f2 12%, transparent);
-  color: #5865f2;
-  border-color: color-mix(in srgb, #5865f2 25%, transparent);
-}
-
-.cat_university {
-  background: color-mix(in srgb, var(--success) 12%, transparent);
-  color: var(--success);
-  border-color: color-mix(in srgb, var(--success) 25%, transparent);
-}
-
-.cat_library {
-  background: color-mix(in srgb, var(--warning) 12%, transparent);
-  color: var(--warning);
-  border-color: color-mix(in srgb, var(--warning) 25%, transparent);
-}
-
-.cat_personal {
-  background: color-mix(in srgb, var(--info) 12%, transparent);
-  color: var(--info);
-  border-color: color-mix(in srgb, var(--info) 25%, transparent);
-}
+.cat_ui_design  { background: color-mix(in srgb, var(--pastel-8) 12%, transparent); color: var(--pastel-8); border-color: color-mix(in srgb, var(--pastel-8) 25%, transparent); }
+.cat_frontend   { background: color-mix(in srgb, var(--pastel-2) 12%, transparent); color: var(--pastel-2); border-color: color-mix(in srgb, var(--pastel-2) 25%, transparent); }
+.cat_backend    { background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); border-color: color-mix(in srgb, var(--primary) 25%, transparent); }
+.cat_fullstack  { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success); border-color: color-mix(in srgb, var(--success) 25%, transparent); }
+.cat_database   { background: color-mix(in srgb, var(--info) 12%, transparent); color: var(--info); border-color: color-mix(in srgb, var(--info) 25%, transparent); }
+.cat_library    { background: color-mix(in srgb, var(--warning) 12%, transparent); color: var(--warning); border-color: color-mix(in srgb, var(--warning) 25%, transparent); }
+.cat_internship { background: color-mix(in srgb, var(--pastel-7) 12%, transparent); color: var(--pastel-7); border-color: color-mix(in srgb, var(--pastel-7) 25%, transparent); }
+.cat_discord    { background: color-mix(in srgb, var(--pastel-1) 12%, transparent); color: var(--pastel-1); border-color: color-mix(in srgb, var(--pastel-1) 25%, transparent); }
 
 /* ── Certificate button ────────────────────────────────────────── */
 .certBtn {
@@ -966,6 +1103,18 @@
 
 /* ── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+  .aiShell {
+    grid-template-columns: 1fr;
+  }
+
+  .aiTitle {
+    max-width: none;
+  }
+
+  .aiCards {
+    grid-template-columns: 1fr;
+  }
+
   .featuredCard {
     grid-template-columns: 1fr;
   }
@@ -1005,6 +1154,15 @@
 }
 
 @media (max-width: 480px) {
+  .aiShell {
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .aiPrinciple {
+    width: 100%;
+  }
+
   .grid {
     grid-template-columns: 1fr;
   }
@@ -1065,11 +1223,14 @@
   flex-shrink: 0;
 }
 
-.group[data-category="internship"] .groupIcon { background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); }
-.group[data-category="discord"]    .groupIcon { background: color-mix(in srgb, #5865f2 12%, transparent);        color: #5865f2; }
-.group[data-category="university"] .groupIcon { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success); }
-.group[data-category="library"]    .groupIcon { background: color-mix(in srgb, var(--warning) 12%, transparent); color: var(--warning); }
-.group[data-category="personal"]   .groupIcon { background: color-mix(in srgb, var(--info) 12%, transparent);    color: var(--info); }
+.group[data-category="ui-design"]  .groupIcon { background: color-mix(in srgb, var(--pastel-8) 12%, transparent); color: var(--pastel-8); }
+.group[data-category="frontend"]   .groupIcon { background: color-mix(in srgb, var(--pastel-2) 12%, transparent); color: var(--pastel-2); }
+.group[data-category="backend"]    .groupIcon { background: color-mix(in srgb, var(--primary) 12%, transparent);  color: var(--primary); }
+.group[data-category="fullstack"]  .groupIcon { background: color-mix(in srgb, var(--success) 12%, transparent);  color: var(--success); }
+.group[data-category="database"]   .groupIcon { background: color-mix(in srgb, var(--info) 12%, transparent);     color: var(--info); }
+.group[data-category="library"]    .groupIcon { background: color-mix(in srgb, var(--warning) 12%, transparent);  color: var(--warning); }
+.group[data-category="internship"] .groupIcon { background: color-mix(in srgb, var(--pastel-7) 12%, transparent); color: var(--pastel-7); }
+.group[data-category="discord"]    .groupIcon { background: color-mix(in srgb, var(--pastel-1) 12%, transparent); color: var(--pastel-1); }
 
 .groupTitle {
   font-size: 0.75rem;
@@ -1144,11 +1305,14 @@
   opacity: 1;
 }
 
-.row[data-category="internship"] { --cat-color: var(--primary); }
-.row[data-category="discord"]    { --cat-color: #5865f2; }
-.row[data-category="university"] { --cat-color: var(--success); }
+.row[data-category="ui-design"]  { --cat-color: var(--pastel-8); }
+.row[data-category="frontend"]   { --cat-color: var(--pastel-2); }
+.row[data-category="backend"]    { --cat-color: var(--primary); }
+.row[data-category="fullstack"]  { --cat-color: var(--success); }
+.row[data-category="database"]   { --cat-color: var(--info); }
 .row[data-category="library"]    { --cat-color: var(--warning); }
-.row[data-category="personal"]   { --cat-color: var(--info); }
+.row[data-category="internship"] { --cat-color: var(--pastel-7); }
+.row[data-category="discord"]    { --cat-color: var(--pastel-1); }
 
 /* ── Row meta line ─────────────────────────────────────────────── */
 .rowMeta {
@@ -1354,11 +1518,14 @@
   margin-top: 0.1rem;
 }
 
-.detailTopIcon[data-category="internship"] { --cat-color: var(--primary); }
-.detailTopIcon[data-category="discord"]    { --cat-color: #5865f2; }
-.detailTopIcon[data-category="university"] { --cat-color: var(--success); }
+.detailTopIcon[data-category="ui-design"]  { --cat-color: var(--pastel-8); }
+.detailTopIcon[data-category="frontend"]   { --cat-color: var(--pastel-2); }
+.detailTopIcon[data-category="backend"]    { --cat-color: var(--primary); }
+.detailTopIcon[data-category="fullstack"]  { --cat-color: var(--success); }
+.detailTopIcon[data-category="database"]   { --cat-color: var(--info); }
 .detailTopIcon[data-category="library"]    { --cat-color: var(--warning); }
-.detailTopIcon[data-category="personal"]   { --cat-color: var(--info); }
+.detailTopIcon[data-category="internship"] { --cat-color: var(--pastel-7); }
+.detailTopIcon[data-category="discord"]    { --cat-color: var(--pastel-1); }
 
 .detailTopMeta {
   flex: 1;
@@ -1519,7 +1686,7 @@
   padding: 0.72rem 1.25rem;
   border-radius: 10px;
   background: var(--primary);
-  color: #fff;
+  color: var(--primary-foreground);
   font-family: var(--font-family-base);
   font-size: 0.84rem;
   font-weight: 700;

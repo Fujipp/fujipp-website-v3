@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import { CertificateModal } from '../../components/ui/CertificateModal/index';
 import { Button } from '../../components/ui/button';
 import { useScrollLock } from '../../hooks/useScrollLock';
-import { FolderOpen, Github, ExternalLink, Star, Briefcase, GraduationCap, Bot, Package, Layers, Award, Building2, FileCheck2, X, ZoomIn, ChevronLeft, ChevronRight, FileText, FlaskConical, BookOpen, Heart, Gamepad2, Fish,
+import { FolderOpen, Github, ExternalLink, Star, Briefcase, Bot, Package, Layers, Award, Building2, FileCheck2, X, ZoomIn, ChevronLeft, ChevronRight, FileText, FlaskConical, BookOpen, Heart, Gamepad2, Fish,
   Shield, ShoppingBag, ArrowRightLeft, Users, Tag, UserCircle, MessageSquare, Code2, Ticket, Banknote,
-  ChevronDown, TrendingDown, LayoutList, LayoutGrid, Check, ArrowRight, Search, SearchX, Sparkles } from 'lucide-react';
+  ChevronDown, TrendingDown, LayoutList, LayoutGrid, Check, ArrowRight, Search, SearchX, Sparkles, Palette, Monitor, Server, Database } from 'lucide-react';
 import { useProjectFilter } from '../../stores/use-project-filter';
 import styles from './ProjectsPage.module.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
-export type Category = 'all' | 'internship' | 'discord' | 'university' | 'library' | 'personal';
+export type Category = 'all' | 'ui-design' | 'frontend' | 'backend' | 'fullstack' | 'database' | 'library' | 'internship' | 'discord';
 export type Status = 'active' | 'archived' | 'wip';
 type SortBy = 'priority' | 'status' | 'category';
 
@@ -33,20 +33,26 @@ export interface Project {
 
 // ── Category metadata ─────────────────────────────────────────────────────────
 export const CATEGORIES: { id: Category; label: string; icon: React.ElementType }[] = [
-  { id: 'all',        label: 'All Projects', icon: Layers },
-  { id: 'internship', label: 'Internship',   icon: Briefcase },
-  { id: 'discord',    label: 'Discord Bots', icon: Bot },
-  { id: 'university', label: 'University',   icon: GraduationCap },
-  { id: 'library',    label: 'Libraries',    icon: Package },
-  { id: 'personal',   label: 'Personal',     icon: FolderOpen },
+  { id: 'all',        label: 'All Projects',        icon: Layers },
+  { id: 'ui-design',  label: 'UI Designer',         icon: Palette },
+  { id: 'frontend',   label: 'Frontend Only',       icon: Monitor },
+  { id: 'backend',    label: 'Backend Only',        icon: Server },
+  { id: 'fullstack',  label: 'Full Stack',          icon: Code2 },
+  { id: 'database',   label: 'Database',            icon: Database },
+  { id: 'library',    label: 'Library',             icon: Package },
+  { id: 'internship', label: 'Internship',          icon: Briefcase },
+  { id: 'discord',    label: 'Discord Bot Project', icon: Bot },
 ];
 
 const CATEGORY_CLASS: Record<Exclude<Category, 'all'>, string> = {
+  'ui-design': styles.cat_ui_design,
+  frontend:   styles.cat_frontend,
+  backend:    styles.cat_backend,
+  fullstack:  styles.cat_fullstack,
+  database:   styles.cat_database,
   internship: styles.cat_internship,
   discord:    styles.cat_discord,
-  university: styles.cat_university,
   library:    styles.cat_library,
-  personal:   styles.cat_personal,
 };
 
 const STATUS_CLASS: Record<Status, string> = {
@@ -61,8 +67,70 @@ export const STATUS_LABEL: Record<Status, string> = {
   wip:      '◐ In Progress',
 };
 
+const AI_WORKFLOW_TOOLS: {
+  name: string;
+  plan: string;
+  role: string;
+  icon: React.ElementType;
+}[] = [
+  {
+    name: 'Claude Code',
+    plan: 'Claude Pro Plan',
+    role: 'ใช้ช่วยวางแผน อ่านภาพรวม และเขียนโค้ดส่วนหลัก โดยเน้น reasoning กับ structure ก่อนลงมือจริง',
+    icon: Layers,
+  },
+  {
+    name: 'Codex',
+    plan: 'GPT Plus Plan',
+    role: 'ใช้ช่วยตรวจสอบโค้ด ทบทวนความเสี่ยง และเขียนโค้ดเพิ่มในจุดที่ต้องการความละเอียด',
+    icon: Code2,
+  },
+  {
+    name: 'Gemini CLI',
+    plan: 'Google Gemini Pro Plan',
+    role: 'ใช้คุมโครงสร้าง หาข้อมูล ตรวจมุมกว้าง และช่วยงานโค้ดเล็กน้อยเมื่อต้องการอีกมุมมอง',
+    icon: Search,
+  },
+];
+
+const AI_WORKFLOW_PRINCIPLES = [
+  'วางแผนก่อนเขียน',
+  'ตรวจซ้ำจากหลายมุม',
+  'ไม่ปล่อยให้ AI ตัวเดียวสุดโต่ง',
+  'รวมจุดแข็งของแต่ละตัวให้เหมาะกับงาน',
+];
+
 // ── Projects data (sorted by priority desc within each category) ──────────────
 export const PROJECTS: Project[] = [
+  // ── UI DESIGN ───────────────────────────────────────────────────────────────
+  {
+    id: 'portfolio-ui-direction',
+    title: 'Fujipp Portfolio — UI Direction & Interaction System',
+    description:
+      'Personal portfolio design direction focused on a polished dark interface, structured navigation, readable project storytelling, responsive layouts, and small interaction details that make the site feel professional without becoming a marketing page.',
+    category: 'ui-design',
+    status: 'active',
+    tech: ['UI Design', 'Responsive Design', 'Design Tokens', 'Motion', 'Accessibility'],
+    icon: Palette,
+    priority: 94,
+    featured: true,
+  },
+
+  // ── FRONTEND ONLY ───────────────────────────────────────────────────────────
+  {
+    id: 'fujipp-website-frontend',
+    title: 'Fujipp Website — React Portfolio Frontend',
+    description:
+      'Frontend portfolio website built with React, TypeScript, Vite, TailwindCSS, CSS Modules, and shadcn/ui. Focuses on fast page loading, reusable layout structure, theme tokens, responsive pages, project filtering, and interactive profile/detail experiences.',
+    category: 'frontend',
+    status: 'active',
+    tech: ['React', 'TypeScript', 'Vite', 'TailwindCSS', 'CSS Modules', 'shadcn/ui'],
+    icon: Monitor,
+    priority: 96,
+    featured: true,
+    github: 'https://github.com/Fujipp/website-fujipp-official',
+  },
+
   // ── INTERNSHIP ──────────────────────────────────────────────────────────────
   {
     id: 'yip-rpa-sftp',
@@ -263,7 +331,7 @@ export const PROJECTS: Project[] = [
     title: 'Chat2Date — Dating & Matching Application',
     description:
       'Capstone project — a full-stack mobile dating application that connects users through intelligent matching and real-time chat. Built with Flutter for cross-platform iOS/Android UI and Spring Boot for the backend API, covering user profiles, match algorithms, and messaging features. Currently in active development.',
-    category: 'university',
+    category: 'fullstack',
     status: 'wip',
     tech: ['Flutter', 'Dart', 'Spring Boot', 'Java', 'MySQL'],
     icon: Heart,
@@ -274,7 +342,7 @@ export const PROJECTS: Project[] = [
     title: 'Integrated Project — Homework Board Website',
     description:
       'Full-stack homework management board built as an integrated project at university. Allows students to post, manage, and track assignments across subjects. Features role-based access, assignment status tracking, and a responsive UI. Built with Vue.js on the frontend and Spring Boot on the backend.',
-    category: 'university',
+    category: 'fullstack',
     status: 'archived',
     tech: ['Vue.js', 'JavaScript', 'Spring Boot', 'Java', 'MySQL'],
     icon: BookOpen,
@@ -297,7 +365,7 @@ export const PROJECTS: Project[] = [
     title: 'SIT 30th Anniversary Festival Minigame',
     description:
       'Interactive browser-based minigame developed for the SIT Faculty 30th anniversary celebration event. Built as a fun, playable activity for festival attendees featuring multiple mini-challenges directly in the browser.',
-    category: 'university',
+    category: 'frontend',
     status: 'archived',
     tech: ['Vue.js', 'JavaScript', 'HTML', 'CSS'],
     icon: Gamepad2,
@@ -309,7 +377,7 @@ export const PROJECTS: Project[] = [
     title: 'Fishing Game — Refactored Edition',
     description:
       'Browser-based fishing game originally built as a group project under course INT203. This edition is a personal refactor of the original codebase, applying clean code principles and modern JavaScript patterns using a combination of AI assistance and personal knowledge.',
-    category: 'university',
+    category: 'frontend',
     status: 'archived',
     tech: ['JavaScript', 'HTML', 'CSS'],
     icon: Fish,
@@ -317,19 +385,34 @@ export const PROJECTS: Project[] = [
     live: 'https://webgame-fishing.vercel.app/',
   },
 
-  // ── LIBRARIES ──────────────────────────────────────────────────────────────
+  // ── BACKEND ONLY ───────────────────────────────────────────────────────────
   {
     id: 'api-truemoney',
     title: 'API-TRUEMONEY (api-tmnwl) — TrueWallet Voucher Redeem API',
     description:
       'Backend API service for redeeming TrueWallet/TrueMoney vouchers. Provides RESTful endpoints for voucher redemption and status checking, secured with API key-based authentication and Argon2 hashing. Includes built-in rate limiting (60 req/min) and CLI tools for API key management (generate/revoke/rotate). Deployed on Railway.',
-    category: 'library',
+    category: 'backend',
     status: 'active',
     tech: ['NestJS', 'Prisma', 'PostgreSQL', 'Argon2', 'Helmet', 'TypeScript'],
-    icon: Ticket,
+    icon: Server,
     priority: 88,
 
   },
+
+  // ── DATABASE ───────────────────────────────────────────────────────────────
+  {
+    id: 'discord-shop-data-layer',
+    title: 'Discord Shop Data Layer — JSON to PostgreSQL/Neon Migration',
+    description:
+      'Database-focused migration work for a Discord shop system, moving persistent shop and credit data away from JSON files toward PostgreSQL/Neon. Emphasizes cleaner schemas, safer data access, and easier future reporting.',
+    category: 'database',
+    status: 'wip',
+    tech: ['PostgreSQL', 'Neon', 'Data Migration', 'Schema Design', 'TypeScript'],
+    icon: Database,
+    priority: 86,
+  },
+
+  // ── LIBRARIES ──────────────────────────────────────────────────────────────
   {
     id: 'slipok-library',
     title: '@fujipp/slipok — Bank Slip Verification Library',
@@ -361,7 +444,14 @@ const CATEGORY_COUNTS: Record<Category, number> = (() => {
 
 const STATUS_ORDER: Record<Status, number> = { active: 0, wip: 1, archived: 2 };
 const CATEGORY_ORDER: Record<Exclude<Category, 'all'>, number> = {
-  internship: 0, discord: 1, university: 2, library: 3, personal: 4,
+  'ui-design': 0,
+  frontend: 1,
+  backend: 2,
+  fullstack: 3,
+  database: 4,
+  library: 5,
+  internship: 6,
+  discord: 7,
 };
 
 function filterAndSort(cat: Category, sort: SortBy = 'priority', query = ''): Project[] {
@@ -385,7 +475,7 @@ function filterAndSort(cat: Category, sort: SortBy = 'priority', query = ''): Pr
 const SORT_OPTIONS: { value: SortBy; label: string; sub: string; icon: React.ElementType }[] = [
   { value: 'priority', label: 'Priority',  sub: 'High → Low',                               icon: TrendingDown },
   { value: 'status',   label: 'Status',    sub: 'Active · WIP · Archived  →  then priority', icon: LayoutList   },
-  { value: 'category', label: 'Category',  sub: 'Internship · Discord · University …',       icon: LayoutGrid   },
+  { value: 'category', label: 'Category',  sub: 'UI · Frontend · Backend · Full Stack …',    icon: LayoutGrid   },
 ];
 
 function SortDropdown({ value, onChange }: { value: SortBy; onChange: (v: SortBy) => void }) {
@@ -807,7 +897,7 @@ export function ProjectsPage() {
           </p>
           <h1 className={styles.heroTitle}>Projects</h1>
           <p className={styles.heroSub}>
-            A curated collection of work across internships, university, Discord bots, libraries, and personal experiments.
+            A curated collection of UI design, frontend, backend, full stack, database, library, internship, and Discord bot work.
           </p>
 
           <div className={styles.heroStats}>
@@ -825,6 +915,51 @@ export function ProjectsPage() {
               <span className={`${styles.heroStatNum} ${styles.heroStatNumActive}`}>{totalActive}</span>
               <span className={styles.heroStatLabel}>Active</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ AI WORKFLOW ══ */}
+      <section className={`${styles.section} ${styles.aiSection}`}>
+        <div className={styles.aiShell}>
+          <div className={styles.aiIntro}>
+            <p className={styles.eyebrow}>
+              <Sparkles size={14} strokeWidth={2.5} />
+              AI WORKFLOW
+            </p>
+            <h2 className={styles.aiTitle}>AI ที่ใช้ทำงานร่วมกัน</h2>
+            <p className={styles.aiLead}>
+              ผมใช้ Claude Code, Codex และ Gemini CLI ร่วมกันแบบมีบทบาทชัดเจน ให้แต่ละตัวช่วยเสริมกันแทนที่จะเชื่อผลลัพธ์จากตัวเดียวทั้งหมด
+            </p>
+          </div>
+
+          <div className={styles.aiCards}>
+            {AI_WORKFLOW_TOOLS.map((tool) => {
+              const ToolIcon = tool.icon;
+              return (
+                <article key={tool.name} className={styles.aiCard}>
+                  <div className={styles.aiCardHeader}>
+                    <span className={styles.aiIcon}>
+                      <ToolIcon size={18} strokeWidth={2.25} />
+                    </span>
+                    <div>
+                      <h3 className={styles.aiName}>{tool.name}</h3>
+                      <p className={styles.aiPlan}>{tool.plan}</p>
+                    </div>
+                  </div>
+                  <p className={styles.aiRole}>{tool.role}</p>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className={styles.aiPrinciples} aria-label="AI workflow principles">
+            {AI_WORKFLOW_PRINCIPLES.map((principle) => (
+              <span key={principle} className={styles.aiPrinciple}>
+                <Check size={12} strokeWidth={2.75} />
+                {principle}
+              </span>
+            ))}
           </div>
         </div>
       </section>
