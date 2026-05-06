@@ -1,183 +1,213 @@
 /* ──────────────────────────────────────────────
-   AboutPage — simplified: bg slideshow + card only
-   No skills, no social links
+   AboutPage
 ─────────────────────────────────────────────── */
 
 .page {
     width: 100%;
     min-height: 100svh;
+    overflow-x: hidden;
 }
 
-/* ── Section ───────────────────────────────── */
+/* ── Section 1 — About Me ──────────────────── */
 .section {
     position: relative;
     width: 100%;
-    height: 100svh;
+    min-height: 100svh;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    /* Prevent layout changes inside from propagating to fixed elements */
+    padding: calc(52px + clamp(1rem, 3vh, 2.5rem)) clamp(0.75rem, 2vw, 1.5rem) clamp(2rem, 5vh, 4rem);
+    box-sizing: border-box;
+    background: var(--background);
     contain: layout;
 }
 
-/* ══════════════════════════════════════════════
-   BACKGROUND SLIDESHOW
-══════════════════════════════════════════════ */
-.bgWrapper {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    /* Own stacking context — isolates compositing from fixed BackgroundEffect */
-    isolation: isolate;
-    contain: paint;
-}
-
-.bgImage {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transition: opacity 900ms ease;
-    pointer-events: none;
-    /* Pre-promote to GPU layer so opacity transition doesn't trigger
-       a repaint pass that ripples to the fixed BackgroundEffect */
-    will-change: opacity;
-    transform: translateZ(0);
-}
-
-.bgImageActive {
-    opacity: 1;
-}
-
-.bgOverlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.52);
-    /* GPU layer — no background-color changes so this is stable */
-    transform: translateZ(0);
-    pointer-events: none;
-}
-
-.bgGradientTop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 180px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
-    transform: translateZ(0);
-    pointer-events: none;
-}
-
-/*
-  bgGradientBottom: DOES NOT use var(--background) directly in gradient
-  because every theme switch causes a full repaint of this layer which
-  interrupts the GPU-composited slideshow transition.
-
-  Instead, we:
-  1. Use a pure rgba fade (black→transparent) for the blur-to-black edge
-  2. Overlay a solid var(--background) strip at the very bottom that
-     transitions smoothly — this is a flat color, GPU-friendly.
-*/
-.bgGradientBottom {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 280px;
-    pointer-events: none;
-    transform: translateZ(0);
-}
-
-/* Full-height gradient fade on its own GPU layer.
-   Repaint on theme switch is isolated here, doesn't touch slideshow layers. */
-.bgGradientBottom::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, var(--background) 0%, transparent 100%);
-    transition: background-color 0.4s ease;
-    will-change: background-color;
-    transform: translateZ(0);
-}
-
-/* ══════════════════════════════════════════════
-   CONTENT
-══════════════════════════════════════════════ */
-.content {
+.aboutShell {
     position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: clamp(1rem, 2vh, 1.5rem);
-    padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2rem);
+    z-index: 1;
     width: 100%;
-    max-width: clamp(340px, 82vw, 1100px);
+    max-width: 1520px;
+    height: min(760px, calc(100svh - 132px));
+    min-height: 620px;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    gap: 12px;
     box-sizing: border-box;
 }
 
-/* ══════════════════════════════════════════════
-   GLASS CARD
-══════════════════════════════════════════════ */
-.card {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: clamp(0.75rem, 1.5vh, 1.25rem);
-
-    /* Fixed height relative to viewport — never resizes on lang switch */
-    height: clamp(420px, 76svh, 820px);
-
-    background: color-mix(in srgb, var(--surface) 84%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid color-mix(in srgb, var(--primary) 36%, transparent);
-    border-radius: clamp(20px, 3vw, 32px);
-    padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
-
-    box-shadow:
-        0 30px 60px -12px rgba(0, 0, 0, 0.5),
-        0 0 0 1px color-mix(in srgb, var(--primary) 12%, transparent);
+.introPanel,
+.mascotPanel,
+.bioPanel {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    background: var(--surface);
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--divider));
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
 }
 
-/* ── Card top row ──────────────────────────── */
-.cardTop {
+.introPanel {
+    grid-column: 1 / 7;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: clamp(1rem, 1.8vh, 1.4rem);
+    padding: clamp(1.25rem, 2.6vw, 2.6rem);
+}
+
+.introTop {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
-    gap: clamp(0.875rem, 2vw, 1.5rem);
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.introPanel::before,
+.bioPanel::before,
+.mascotPanel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--pastel-2) 48%, var(--primary)), transparent 58%) top left / 100% 2px no-repeat,
+        linear-gradient(135deg, color-mix(in srgb, var(--primary) 4%, transparent), transparent 44%);
 }
 
 .identity {
-    flex: 1;
+    position: relative;
+    z-index: 1;
+    min-width: 0;
 }
 
-/* ── Lang toggle ───────────────────────────── */
-.langToggle {
+.profileKicker,
+.bioEyebrow,
+.modelHeader,
+.modelFooter {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.68rem, 0.9vw, 0.8rem);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.name {
+    margin: 0;
+    max-width: 8.5ch;
+    font-family: var(--font-family-base);
+    font-size: clamp(2.5rem, 5.8vw, 5.8rem);
+    font-weight: 800;
+    color: var(--text-primary-dark);
+    line-height: 0.9;
+    letter-spacing: 0;
+}
+
+.role {
+    margin: 1rem 0 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.9rem, 1.4vw, 1.18rem);
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.heroLead {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    max-width: 48ch;
+    font-family: var(--font-family-base);
+    font-size: clamp(0.96rem, 1.25vw, 1.12rem);
+    font-weight: 500;
+    line-height: 1.7;
+    color: color-mix(in srgb, var(--text-primary-dark) 78%, transparent);
+}
+
+.aboutTextBlock {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.aboutTextBlock {
+    flex: 1;
     display: flex;
-    gap: 4px;
+    flex-direction: column;
+    gap: clamp(0.72rem, 1.2vh, 0.9rem);
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.35rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+    animation: fadeSlide 0.3s ease;
+}
+
+.highlightGrid {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.highlightBlock {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.52rem 0.7rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--divider));
+    background: color-mix(in srgb, var(--background) 14%, transparent);
+    color: var(--text-primary-dark);
+    font-family: var(--font-family-base);
+    font-size: clamp(0.72rem, 0.9vw, 0.86rem);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.highlightBlock svg {
+    color: var(--primary);
     flex-shrink: 0;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 999px;
+}
+
+.langToggle {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    width: auto;
+    flex-shrink: 0;
+    gap: 3px;
     padding: 3px;
+    border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--divider));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-primary-dark) 7%, transparent);
 }
 
 .langBtn {
-    padding: clamp(4px, 0.7vh, 6px) clamp(10px, 1.4vw, 16px);
-    border-radius: 999px;
+    min-height: 30px;
+    padding: 0 0.78rem;
     border: none;
+    border-radius: 999px;
     background: transparent;
     font-family: var(--font-family-base);
-    font-size: clamp(0.7rem, 1vw, 0.85rem);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: rgba(255,255,255,0.5);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    color: color-mix(in srgb, var(--text-primary-dark) 58%, transparent);
     cursor: pointer;
-    transition: background 0.25s, color 0.25s;
+    transition: background 0.2s, color 0.2s;
 }
 
 .langBtnActive {
@@ -185,17 +215,290 @@
     color: var(--primary-foreground);
 }
 
-/* ── Bio block — 2-column grid, fills remaining card height ─ */
+.mascotPanel {
+    grid-column: 7 / 13;
+    grid-row: 1;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, var(--primary)), var(--surface)),
+        var(--surface);
+}
+
+.modelHeader,
+.modelFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--primary) 14%, var(--divider));
+}
+
+.modelFooter {
+    border-top: 1px solid color-mix(in srgb, var(--primary) 14%, var(--divider));
+    border-bottom: none;
+    color: color-mix(in srgb, var(--text-primary-dark) 62%, transparent);
+}
+
+.musicControls {
+    position: absolute;
+    right: clamp(0.65rem, 1.4vw, 0.95rem);
+    bottom: clamp(0.65rem, 1.4vw, 0.95rem);
+    z-index: 4;
+}
+
+.musicIconBtn {
+    width: 26px;
+    height: 26px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--divider));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--background) 12%, transparent);
+    color: color-mix(in srgb, var(--text-primary-dark) 72%, transparent);
+    cursor: pointer;
+    transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.musicIconBtn:hover {
+    border-color: color-mix(in srgb, var(--primary) 42%, var(--divider));
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
+    color: var(--primary);
+}
+
+.volumeControl {
+    min-width: 0;
+    display: contents;
+}
+
+.volumeLabel,
+.volumeValue {
+    font-family: var(--font-family-base);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.volumeLabel {
+    display: none;
+}
+
+.volumeValue {
+    color: color-mix(in srgb, var(--text-primary-dark) 58%, transparent);
+    text-align: right;
+    font-size: 0.64rem;
+}
+
+.volumeSlider {
+    width: 100%;
+    min-width: 0;
+    height: 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.volumeSlider::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 20%, var(--divider));
+}
+
+.volumeSlider::-webkit-slider-thumb {
+    width: 11px;
+    height: 11px;
+    margin-top: -4px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid var(--surface);
+    border-radius: 999px;
+    background: var(--primary);
+}
+
+.volumeSlider::-moz-range-track {
+    height: 3px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 20%, var(--divider));
+}
+
+.volumeSlider::-moz-range-thumb {
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--surface);
+    border-radius: 999px;
+    background: var(--primary);
+}
+
+.mascotViewport {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+    min-width: 0;
+    overflow: hidden;
+    cursor: progress;
+    touch-action: none;
+    background:
+        linear-gradient(180deg, transparent, color-mix(in srgb, var(--primary) 5%, transparent)),
+        color-mix(in srgb, var(--background) 6%, transparent);
+}
+
+.mascotViewportReady {
+    cursor: grab;
+}
+
+.mascotViewportReady:active {
+    cursor: grabbing;
+}
+
+.mascotCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    min-width: 0;
+    min-height: 0;
+    transform: translateY(-3%);
+    opacity: 0;
+    transition: opacity 0.28s ease;
+}
+
+.mascotCanvasReady {
+    opacity: 1;
+}
+
+.modelLoading {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    background: color-mix(in srgb, var(--surface) 58%, transparent);
+    color: color-mix(in srgb, var(--text-primary-dark) 74%, transparent);
+    font-family: var(--font-family-base);
+    font-size: clamp(0.78rem, 1vw, 0.92rem);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+.mascotSpeech {
+    position: absolute;
+    top: clamp(0.85rem, 2vw, 1.35rem);
+    left: clamp(0.85rem, 2vw, 1.35rem);
+    z-index: 3;
+    max-width: min(320px, calc(100% - 2rem));
+    padding: 0.72rem 0.88rem;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--divider));
+    box-shadow: none;
+    color: color-mix(in srgb, var(--text-primary-dark) 86%, transparent);
+    font-family: var(--font-family-base);
+    font-size: clamp(0.78rem, 1vw, 0.92rem);
+    font-weight: 700;
+    line-height: 1.45;
+    letter-spacing: 0;
+    pointer-events: none;
+    animation: speechIn 0.28s ease both;
+}
+
+.mascotSpeech::after {
+    content: '';
+    position: absolute;
+    left: 1.15rem;
+    bottom: -0.42rem;
+    width: 0.78rem;
+    height: 0.78rem;
+    background: inherit;
+    border-right: 1px solid color-mix(in srgb, var(--primary) 24%, var(--divider));
+    border-bottom: 1px solid color-mix(in srgb, var(--primary) 24%, var(--divider));
+    transform: rotate(45deg);
+}
+
+.mascotSpeechActive {
+    border-color: color-mix(in srgb, var(--primary) 42%, var(--divider));
+    color: var(--text-primary-dark);
+    transform: translateY(-2px);
+}
+
+.modelSpinner {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    border: 2px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    border-top-color: var(--primary);
+    animation: modelSpin 0.85s linear infinite;
+}
+
+@keyframes modelSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes speechIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.bioPanel {
+    grid-column: 1 / 7;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.25rem, 2.3vw, 2rem);
+}
+
+.bioHeader {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+}
+
+.bioHeading {
+    min-width: 0;
+}
+
+.bioTitle {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: clamp(1.35rem, 2.15vw, 2.25rem);
+    font-weight: 800;
+    color: var(--text-primary-dark);
+    line-height: 1.1;
+    letter-spacing: 0;
+}
+
+.divider {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 1px;
+    margin: clamp(0.9rem, 1.7vh, 1.25rem) 0;
+    background: color-mix(in srgb, var(--primary) 34%, var(--divider));
+}
+
 .bioBlock {
-    flex: 1;               /* fill remaining space in card */
-    min-height: 0;         /* allow flex child to shrink/scroll */
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    padding-right: 0.35rem;
     scrollbar-width: thin;
     scrollbar-color: var(--primary) transparent;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(0.6rem, 1.2vh, 1rem) clamp(1.5rem, 3vw, 2.5rem);
-    align-content: start;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.72rem, 1.35vh, 0.95rem);
     animation: fadeSlide 0.3s ease;
 }
 
@@ -204,116 +507,105 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Avatar ────────────────────────────────── */
-.avatarWrap {
-    width: clamp(56px, 9vw, 96px);
-    height: clamp(56px, 9vw, 96px);
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid var(--primary);
-    box-shadow:
-        0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent),
-        0 6px 20px rgba(0, 0, 0, 0.4);
-    flex-shrink: 0;
-}
-
-.avatarImg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    user-select: none;
-    -webkit-user-drag: none;
-}
-
-/* ── Name ──────────────────────────────────── */
-.name {
-    margin: 0;
-    font-family: var(--font-family-base);
-    font-size: clamp(1.2rem, 3vw, 2.5rem);
-    font-weight: 800;
-    color: var(--text-primary-dark);
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-}
-
-/* ── Role ──────────────────────────────────── */
-.role {
-    margin: 0;
-    font-family: var(--font-family-base);
-    font-size: clamp(0.875rem, 1.8vw, 1.5rem);
-    font-weight: 600;
-    color: var(--primary);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-/* ── Divider ───────────────────────────────── */
-.divider {
-    width: clamp(40px, 5vw, 64px);
-    height: 3px;
-    border-radius: 99px;
-    background: var(--primary);
-    opacity: 0.7;
-    margin: clamp(0.25rem, 0.8vh, 0.5rem) 0;
-}
-
-/* ── Bio text ──────────────────────────────── */
 .bio {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
-    color: color-mix(in srgb, var(--text-primary-dark) 82%, transparent);
-    line-height: 1.8;
+    font-size: clamp(0.86rem, 1vw, 0.98rem);
+    color: color-mix(in srgb, var(--text-primary-dark) 76%, transparent);
+    line-height: 1.72;
 }
 
-/* Highlighted keywords */
+.bio:first-child {
+    color: color-mix(in srgb, var(--text-primary-dark) 92%, transparent);
+    font-weight: 600;
+}
+
 .highlight {
     color: var(--primary);
     font-weight: 600;
 }
 
-/* ══════════════════════════════════════════════
-   IMAGE INDICATORS
-══════════════════════════════════════════════ */
-.indicators {
-    display: flex;
-    gap: clamp(5px, 0.8vw, 8px);
-}
-
-.indicator {
-    width: clamp(7px, 0.9vw, 9px);
-    height: clamp(7px, 0.9vw, 9px);
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--primary) 30%, var(--text-primary-dark));
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: background 0.3s, width 0.3s, border-radius 0.3s;
-}
-
-.indicatorActive {
-    width: clamp(22px, 2.8vw, 32px);
-    border-radius: 4px;
-    background: var(--primary);
-}
-
-.indicator:hover:not(.indicatorActive) {
-    background: rgba(255, 255, 255, 0.65);
-}
-
-/* ══════════════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════════════ */
-@media (max-width: 480px) {
-    .content {
-        max-width: 100%;
-        padding: 1rem 0.875rem;
+@media (max-width: 980px) {
+    .section {
+        min-height: auto;
+        align-items: flex-start;
+        overflow: visible;
     }
 
-    .card {
-        padding: 1.75rem 1.25rem;
-        border-radius: 18px;
+    .aboutShell {
+        max-width: 720px;
+        height: auto;
+        min-height: auto;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .introPanel,
+    .mascotPanel,
+    .bioPanel {
+        grid-column: 1;
+        grid-row: auto;
+    }
+
+    .mascotViewport {
+        min-height: 460px;
+        aspect-ratio: 1 / 1;
+    }
+
+    .aboutTextBlock,
+    .bioBlock {
+        overflow: visible;
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .section {
+        padding: calc(52px + 1rem) 0.875rem 2.5rem;
+    }
+
+    .introPanel,
+    .bioPanel {
+        padding: 1rem;
+    }
+
+    .introTop {
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .name {
+        max-width: 100%;
+        font-size: clamp(2.35rem, 14vw, 3.45rem);
+    }
+
+    .mascotViewport {
+        min-height: 360px;
+    }
+
+    .modelHeader,
+    .modelFooter {
+        padding: 0.75rem;
+        font-size: 0.66rem;
+    }
+
+    .musicControls {
+        right: 0.6rem;
+        bottom: 0.6rem;
+        grid-template-columns: auto auto minmax(64px, 1fr) 3ch;
+        width: min(220px, calc(100% - 1.2rem));
+        padding: 0.34rem;
+        gap: 0.34rem;
+    }
+
+    .musicIconBtn {
+        width: 25px;
+        height: 25px;
+    }
+
+    .bioHeader {
+        grid-template-columns: 1fr;
+        gap: 0.45rem;
     }
 }
 
@@ -327,8 +619,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(2.5rem, 5vh, 4rem);
-    padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 6vw, 7rem);
+    gap: clamp(2rem, 4vh, 3rem);
+    padding: clamp(3.5rem, 6vw, 6rem) clamp(1rem, 5vw, 6rem);
     box-sizing: border-box;
 }
 
@@ -354,200 +646,169 @@
 .skillsTitle {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(2rem, 5vw, 4rem);
+    font-size: clamp(2.35rem, 5vw, 4.5rem);
     font-weight: 800;
     color: var(--secondary);
     line-height: 1.1;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
 }
 
 .skillsTitleDivider {
     width: clamp(40px, 5vw, 64px);
     height: 3px;
     border-radius: 99px;
-    background: var(--primary);
-    opacity: 0.6;
+    background: linear-gradient(90deg, var(--primary), var(--pastel-7));
+    opacity: 0.72;
     margin-top: 0.25rem;
 }
 
-/* ── 3-column group grid ───────────────────── */
+/* ── Auto-fill group grid ──────────────────── */
 .skillsGrid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(1rem, 2vw, 1.75rem);
+    grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+    gap: clamp(0.85rem, 1.35vw, 1.15rem);
     width: 100%;
-    max-width: clamp(340px, 82vw, 1100px);
+    max-width: clamp(340px, 92vw, 1420px);
 }
 
 /* ── Individual group card ─────────────────── */
 .skillGroup {
-    background: color-mix(in srgb, var(--surface) 96%, transparent);
-    border-radius: clamp(14px, 1.8vw, 20px);
-    padding: clamp(1.25rem, 2.5vw, 2rem);
-    border: 1px solid transparent;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    --group-accent: var(--primary);
+    position: relative;
+    min-width: 0;
+    min-height: 100%;
+    padding: clamp(0.95rem, 1.45vw, 1.25rem);
+    border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--divider));
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface) 98%, var(--primary)), var(--surface)),
+        var(--surface);
+    box-shadow:
+        0 14px 36px color-mix(in srgb, var(--background) 38%, transparent),
+        0 1px 0 color-mix(in srgb, var(--text-primary-dark) 7%, transparent) inset;
+    overflow: hidden;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
 }
 
-.skillGroup_blue  { border-color: color-mix(in srgb, var(--primary) 28%, transparent); }
-.skillGroup_green { border-color: color-mix(in srgb, var(--success) 28%, transparent); }
-.skillGroup_purple{ border-color: color-mix(in srgb, var(--pastel-7) 28%, transparent); }
+.skillGroup::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, var(--group-accent), transparent 62%) top left / 100% 2px no-repeat,
+        radial-gradient(circle at 16% 0%, color-mix(in srgb, var(--group-accent) 11%, transparent), transparent 36%);
+    opacity: 0.72;
+}
+
+.skillGroup_blue  { --group-accent: var(--primary); }
+.skillGroup_green { --group-accent: var(--success); }
+.skillGroup_purple{ --group-accent: var(--pastel-7); }
 
 .skillGroup:hover {
-    box-shadow: 0 8px 28px color-mix(in srgb, var(--primary) 10%, transparent);
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--group-accent) 42%, var(--divider));
+    box-shadow:
+        0 20px 46px color-mix(in srgb, var(--background) 48%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--group-accent) 10%, transparent);
 }
 
 .skillGroupLabel {
-    margin: 0 0 clamp(0.75rem, 1.5vh, 1rem);
+    position: relative;
+    z-index: 1;
+    margin: 0 0 clamp(0.85rem, 1.5vh, 1.1rem);
     font-family: var(--font-family-base);
-    font-size: clamp(0.7rem, 1.1vw, 0.9rem);
-    font-weight: 700;
-    letter-spacing: 0.12em;
+    font-size: clamp(0.72rem, 0.92vw, 0.84rem);
+    font-weight: 800;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.55rem;
+    color: var(--text-primary-dark);
 }
 
-.skillGroup_blue   .skillGroupLabel { color: var(--primary); }
-.skillGroup_green  .skillGroupLabel { color: var(--success); }
-.skillGroup_purple .skillGroupLabel { color: var(--pastel-7); }
+.skillGroupIcon {
+    width: 30px;
+    height: 30px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--group-accent) 14%, transparent);
+    color: var(--group-accent);
+}
 
 .chipRow {
-    display: flex;
-    flex-wrap: wrap;
-    gap: clamp(5px, 0.8vw, 8px);
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+    gap: 0.55rem;
 }
 
 /* ── Chips ─────────────────────────────────── */
 .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: clamp(4px, 0.7vh, 6px) clamp(10px, 1.3vw, 14px);
-    border-radius: 999px;
-    font-family: var(--font-family-base);
-    font-size: clamp(0.7rem, 1vw, 0.85rem);
-    font-weight: 500;
-    transition: background 0.2s, color 0.2s;
-}
-
-.chip_blue {
-    background: color-mix(in srgb, var(--primary) 12%, transparent);
-    color: var(--primary);
-    border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-}
-.chip_blue:hover {
-    background: color-mix(in srgb, var(--primary) 22%, transparent);
-}
-
-.chip_green {
-    background: color-mix(in srgb, var(--success) 12%, transparent);
-    color: var(--success);
-    border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
-}
-.chip_green:hover {
-    background: color-mix(in srgb, var(--success) 22%, transparent);
-}
-
-.chip_purple {
-    background: color-mix(in srgb, var(--pastel-7) 12%, transparent);
-    color: var(--pastel-7);
-    border: 1px solid color-mix(in srgb, var(--pastel-7) 30%, transparent);
-}
-.chip_purple:hover {
-    background: color-mix(in srgb, var(--pastel-7) 22%, transparent);
-}
-
-/* ── AI Tools ──────────────────────────────── */
-.aiSection {
-    width: 100%;
-    max-width: clamp(340px, 82vw, 1100px);
-    display: flex;
-    flex-direction: column;
-    gap: clamp(1rem, 2vh, 1.5rem);
-}
-
-.aiTitle {
-    margin: 0;
-    font-family: var(--font-family-base);
-    font-size: clamp(0.95rem, 1.6vw, 1.25rem);
-    font-weight: 700;
-    color: var(--secondary);
+    --skill-brand: var(--primary);
+    min-width: 0;
+    min-height: 44px;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.58rem;
+    padding: 0.46rem 0.58rem;
+    border: 1px solid color-mix(in srgb, var(--skill-brand) 24%, var(--divider));
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--skill-brand) 8%, transparent), transparent 66%),
+        color-mix(in srgb, var(--surface) 94%, transparent);
+    color: var(--text-primary-dark);
+    font-family: var(--font-family-base);
+    font-size: clamp(0.76rem, 0.95vw, 0.86rem);
+    font-weight: 750;
+    line-height: 1.2;
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--text-primary-dark) 5%, transparent) inset;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
-/* lucide icon in AI title */
-.aiIconEl {
-    color: var(--primary);
-    flex-shrink: 0;
-}
-
-.aiGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: clamp(0.75rem, 1.5vw, 1.25rem);
-}
-
-.aiCard {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: clamp(1rem, 2vw, 1.5rem);
-    border-radius: clamp(12px, 1.5vw, 18px);
-    background: color-mix(in srgb, var(--surface) 96%, transparent);
-    border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
-    box-shadow:
-        0 0 20px color-mix(in srgb, var(--primary) 8%, transparent),
-        0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent);
-    transition: box-shadow 0.25s, border-color 0.25s, transform 0.2s;
-}
-
-/* lucide icon inside AI card */
-.aiCardIcon {
-    color: var(--primary);
-    opacity: 0.8;
-    margin-bottom: 4px;
-}
-
-.aiCard:hover {
-    border-color: color-mix(in srgb, var(--primary) 50%, transparent);
-    box-shadow: 0 0 32px color-mix(in srgb, var(--primary) 18%, transparent);
+.chip:hover {
     transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--skill-brand) 48%, var(--divider));
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--skill-brand) 13%, transparent), transparent 70%),
+        color-mix(in srgb, var(--surface) 98%, var(--skill-brand));
 }
 
-.aiName {
-    font-family: var(--font-family-base);
-    font-size: clamp(0.85rem, 1.3vw, 1rem);
-    font-weight: 700;
-    color: var(--primary);
+.skillIconWrap {
+    width: 28px;
+    height: 28px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--skill-brand) 14%, transparent);
+    color: var(--skill-brand);
 }
 
-.aiDesc {
-    font-family: var(--font-family-base);
-    font-size: clamp(0.7rem, 1vw, 0.825rem);
-    color: var(--text-secondary-dark);
+.skillName {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 /* ── Responsive ────────────────────────────── */
 @media (max-width: 768px) {
     .skillsSection {
-        padding: 2.5rem 1.25rem;
+        min-height: auto;
+        padding: 3rem 1rem;
     }
 
     .skillsGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .aiGrid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     }
 }
 
 @media (max-width: 480px) {
-    .aiGrid {
-        grid-template-columns: 1fr 1fr;
+    .chipRow {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -555,33 +816,25 @@
    SECTION 3 — EDUCATION  (Framer Motion horizontal scroll)
 ══════════════════════════════════════════════ */
 
-.eduTrack {
-    position: relative;
-    height: 300vh;
-}
-
-/* Sticky pane — centered like Skills section */
-.eduSticky {
-    position: sticky;
-    top: 0;
-    height: 100svh;
+.eduSection {
     width: 100%;
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: clamp(1.5rem, 3vh, 2.5rem);
-    overflow: visible;          /* gallery bleeds outside */
+    gap: clamp(2.25rem, 4.5vh, 3.6rem);
+    padding: clamp(4rem, 7vw, 7rem) clamp(1rem, 5vw, 6rem);
     box-sizing: border-box;
 }
 
-/* ── Section label (centered, same vibe as Skills) ── */
 .eduSectionLabel {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: clamp(0.3rem, 0.6vh, 0.5rem);
     text-align: center;
+    width: 100%;
+    max-width: 760px;
 }
 
 .eduEyebrow {
@@ -597,69 +850,75 @@
 .eduTitle {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(2rem, 5vw, 4rem);
+    font-size: clamp(2.35rem, 5vw, 4.5rem);
     font-weight: 800;
     color: var(--secondary);
     line-height: 1.1;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
 }
 
 .eduTitleDivider {
     width: clamp(40px, 5vw, 64px);
     height: 3px;
     border-radius: 99px;
-    background: var(--primary);
-    opacity: 0.6;
+    background: linear-gradient(90deg, var(--primary), var(--pastel-7));
+    opacity: 0.72;
     margin-top: 0.25rem;
 }
 
-/* ── Gallery wrapper — the "sticky-wrapper" from reference ── */
-/* Width = one card — first card starts centered on screen    */
-.eduGalleryWrapper {
-    width: 560px;
-    position: relative;
-    overflow: visible;   /* cards bleed left and right */
-    flex-shrink: 0;
-}
-
-/* ── Gallery flex row (motion.div) ─────────── */
-.eduGallery {
-    display: flex;
-    flex-direction: row;
-    gap: 32px;
-    align-items: stretch;
-    will-change: transform;
-}
-
-/* ── Card ───────────────────────────────────── */
-.eduCard {
-    flex-shrink: 0;
-    width: 560px;
-    border-radius: 24px;
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
-    box-shadow:
-        0 24px 56px -12px color-mix(in srgb, var(--background) 60%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--primary) 10%, transparent);
-    position: relative;
-    overflow: hidden;
+.eduCarousel {
+    width: 100%;
+    max-width: 1180px;
     display: flex;
     flex-direction: column;
+    gap: clamp(0.85rem, 1.7vw, 1.2rem);
 }
 
-.eduCard_blue   { border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
-.eduCard_green  { border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
-.eduCard_purple { border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
-
-/* ── Banner image ──────────────────────────── */
-.eduBannerWrap {
-    position: relative;
+.eduStage {
     width: 100%;
-    height: clamp(140px, 22vh, 200px);
     overflow: hidden;
-    flex-shrink: 0;
+    border-radius: 8px;
+}
+
+.eduCard {
+    --edu-accent: var(--primary);
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(270px, 0.9fr) minmax(0, 1.1fr);
+    min-height: clamp(330px, 42vw, 460px);
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--edu-accent) 28%, var(--divider));
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, var(--edu-accent)), var(--surface)),
+        var(--surface);
+    box-shadow:
+        0 24px 64px color-mix(in srgb, var(--background) 56%, transparent),
+        0 1px 0 color-mix(in srgb, var(--text-primary-dark) 7%, transparent) inset;
+}
+
+.eduCard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, var(--edu-accent), transparent 65%) top left / 100% 2px no-repeat,
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--edu-accent) 13%, transparent), transparent 36%);
+}
+
+.eduCard_blue   { --edu-accent: var(--primary); }
+.eduCard_green  { --edu-accent: var(--success); }
+.eduCard_purple { --edu-accent: var(--pastel-7); }
+
+.eduMedia {
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+    min-height: 100%;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--edu-accent) 10%, var(--surface));
 }
 
 .eduBanner {
@@ -668,165 +927,253 @@
     object-fit: cover;
     object-position: center;
     display: block;
+    min-height: 100%;
+    filter: saturate(1.08) contrast(1.04);
+    transform: scale(1.01);
+    transition: transform 0.55s ease, filter 0.55s ease;
 }
 
-/* Gradient fade — deep blend from banner into card body (like hero bgGradientBottom) */
-.eduBannerWrap::after {
-    content: '';
+.eduCard:hover .eduBanner {
+    transform: scale(1.045);
+    filter: saturate(1.16) contrast(1.06);
+}
+
+.eduMediaOverlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        color-mix(in srgb, var(--surface) 20%, transparent) 45%,
-        color-mix(in srgb, var(--surface) 78%, transparent) 75%,
-        color-mix(in srgb, var(--surface) 95%, transparent) 100%
-    );
+    background:
+        linear-gradient(90deg, transparent 10%, color-mix(in srgb, var(--surface) 46%, transparent) 100%),
+        linear-gradient(180deg, color-mix(in srgb, var(--background) 8%, transparent), color-mix(in srgb, var(--background) 42%, transparent));
     pointer-events: none;
 }
 
-/* ── Logo badge — top-right corner of the banner ─── */
 .eduLogoBadge {
     position: absolute;
-    top: clamp(0.75rem, 1.5vw, 1rem);
-    right: clamp(0.75rem, 1.5vw, 1rem);
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--surface) 85%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1.5px solid var(--divider);
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--background) 40%, transparent);
+    right: clamp(0.85rem, 1.6vw, 1.2rem);
+    bottom: clamp(0.85rem, 1.6vw, 1.2rem);
+    width: 68px;
+    height: 68px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in srgb, var(--edu-accent) 26%, var(--divider));
+    box-shadow:
+        0 12px 28px color-mix(in srgb, var(--background) 42%, transparent),
+        0 1px 0 color-mix(in srgb, var(--text-primary-dark) 8%, transparent) inset;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    z-index: 2;
+    z-index: 3;
+}
+
+.eduLogoFallback {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 0.35rem;
+    color: var(--edu-accent);
+    font-family: var(--font-family-base);
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
 }
 
 .eduLogo {
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    padding: 6px;
+    padding: 8px;
     box-sizing: border-box;
     display: block;
-    opacity: 0.5;
+    opacity: 0.82;
     transition: opacity 0.2s;
 }
-.eduLogoBadge:hover .eduLogo { opacity: 0.85; }
+.eduLogoBadge:hover .eduLogo { opacity: 1; }
 
-/* ── Text block (below banner) ──────────────── */
 .eduText {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: clamp(0.2rem, 0.5vh, 0.4rem);
-    padding: clamp(1.5rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2rem);
+    justify-content: center;
+    gap: clamp(0.58rem, 1vw, 0.9rem);
+    padding: clamp(1.6rem, 3.8vw, 3rem);
+    min-width: 0;
+}
+
+.eduMetaRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    margin-bottom: 0.15rem;
+}
+
+.eduPhase {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 0.72rem;
+    border: 1px solid color-mix(in srgb, var(--edu-accent) 28%, var(--divider));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--edu-accent) 10%, transparent);
+    color: var(--edu-accent);
+    font-family: var(--font-family-base);
+    font-size: clamp(0.68rem, 0.9vw, 0.78rem);
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
 }
 
 .eduPeriod {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(0.65rem, 1vw, 0.8rem);
-    font-weight: 700;
-    letter-spacing: 0.2em;
+    font-size: clamp(0.68rem, 0.95vw, 0.82rem);
+    font-weight: 800;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    color: color-mix(in srgb, var(--text-primary-dark) 58%, transparent);
+    text-align: right;
+    white-space: nowrap;
 }
-.eduPeriod_blue   { color: var(--primary); }
-.eduPeriod_green  { color: var(--primary); }
-.eduPeriod_purple { color: var(--primary); }
+
+.eduPhase_blue,
+.eduPeriod_blue { --edu-accent: var(--primary); }
+.eduPhase_green,
+.eduPeriod_green { --edu-accent: var(--success); }
+.eduPhase_purple,
+.eduPeriod_purple { --edu-accent: var(--pastel-7); }
 
 .eduSchool {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(1.25rem, 2.8vw, 2rem);
+    font-size: clamp(1.65rem, 3.3vw, 2.8rem);
     font-weight: 800;
     color: var(--text-primary-dark);
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    line-height: 1.04;
+    letter-spacing: 0;
 }
 
 .eduLevel {
-    margin: 0.2rem 0 0;
+    margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(0.85rem, 1.4vw, 1rem);
-    font-weight: 600;
-    color: var(--text-secondary-dark);
+    font-size: clamp(0.92rem, 1.25vw, 1.05rem);
+    font-weight: 750;
+    color: color-mix(in srgb, var(--text-primary-dark) 72%, transparent);
 }
 
 .eduDesc {
-    margin: 0.5rem 0 0;
+    margin: 0.1rem 0 0;
     font-family: var(--font-family-base);
-    font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+    font-size: clamp(0.84rem, 1.05vw, 0.95rem);
     color: var(--text-secondary-dark);
-    line-height: 1.7;
+    line-height: 1.72;
+    max-width: 56ch;
 }
 
-/* ── Number badge (decorative) ──────────────── */
-.eduBadge {
-    position: absolute;
-    bottom: clamp(1rem, 2vw, 1.5rem);
-    right: clamp(1.5rem, 3vw, 2rem);
+.eduDots {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.eduDot {
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 0.78rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--divider));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    color: color-mix(in srgb, var(--text-primary-dark) 58%, transparent);
     font-family: var(--font-family-base);
-    font-size: clamp(3.5rem, 7vw, 6rem);
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: -0.06em;
-    opacity: 0.08;
-    pointer-events: none;
-    user-select: none;
+    font-size: clamp(0.72rem, 0.95vw, 0.84rem);
+    font-weight: 800;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
-.eduBadge_blue   { color: var(--primary); }
-.eduBadge_green  { color: var(--primary); }
-.eduBadge_purple { color: var(--primary); }
 
-/* ── Responsive ─────────────────────────────── */
+.eduDot span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.eduDot:hover,
+.eduDotActive {
+    border-color: color-mix(in srgb, var(--primary) 48%, var(--divider));
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
+}
+
 @media (max-width: 768px) {
-    .eduTrack { height: auto; }
-
-    .eduSticky {
-        position: static;
-        height: auto;
-        padding: 3rem 0 2rem;
-        align-items: flex-start;
+    .eduSection {
+        min-height: auto;
+        align-items: stretch;
+        gap: 2rem;
+        padding: 3rem 1rem;
     }
 
     .eduSectionLabel {
-        padding: 0 1.25rem;
         align-items: flex-start;
         text-align: left;
     }
 
-    .eduGalleryWrapper {
-        width: 100%;
-        overflow-x: auto;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-    }
-    .eduGalleryWrapper::-webkit-scrollbar { display: none; }
-
-    .eduGallery {
-        transform: none !important;
-        padding: 0 1.25rem;
+    .eduCard {
+        grid-template-columns: 1fr;
+        min-height: 0;
     }
 
-    .eduCard { width: clamp(280px, 82vw, 400px); }
+    .eduMedia {
+        min-height: 210px;
+        aspect-ratio: 16 / 9;
+    }
+
+    .eduMediaOverlay {
+        background:
+            linear-gradient(180deg, transparent 18%, color-mix(in srgb, var(--surface) 70%, transparent) 100%),
+            linear-gradient(90deg, color-mix(in srgb, var(--background) 18%, transparent), transparent 58%);
+    }
+
+    .eduText {
+        padding: 1.25rem;
+    }
+
+    .eduMetaRow {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .eduPeriod {
+        text-align: left;
+    }
+
+    .eduDots {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bgImage,
     .bioBlock,
-    .hobbyMarqueeRail,
+    .mascotCanvas,
+    .mascotSpeech,
+    .modelSpinner,
+    .eduCard,
+    .eduBanner,
     .contactCard,
     .contactViewBtn {
         animation: none !important;
         transition: none !important;
     }
-
-    .eduGallery { transform: none !important; }
-    .eduTrack   { height: auto; }
-    .eduSticky  { position: static; height: auto; }
 }
 
 /* ══════════════════════════════════════════════
@@ -834,14 +1181,15 @@
 ══════════════════════════════════════════════ */
 
 .hobbySection {
-    padding: clamp(4rem, 8vh, 7rem) clamp(1.5rem, 8vw, 8rem);
+    position: relative;
+    padding: clamp(4rem, 8vh, 7rem) clamp(1rem, 5vw, 6rem);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(2.5rem, 5vh, 4rem);
+    gap: clamp(2.25rem, 4.8vh, 3.6rem);
+    overflow: hidden;
 }
 
-/* ── Header ─────────────────────────────────── */
 .hobbyHeader {
     display: flex;
     flex-direction: column;
@@ -863,69 +1211,103 @@
 .hobbyTitle {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-size: clamp(2.35rem, 5vw, 4.5rem);
     font-weight: 800;
     color: var(--secondary);
     line-height: 1.1;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
 }
 
 .hobbyDivider {
     width: clamp(40px, 5vw, 64px);
     height: 3px;
     border-radius: 99px;
-    background: var(--primary);
-    opacity: 0.6;
+    background: linear-gradient(90deg, var(--primary), var(--pastel-7));
+    opacity: 0.72;
     margin-top: 0.25rem;
 }
 
-/* ── Grid ───────────────────────────────────── */
 .hobbyGrid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(1rem, 2vw, 1.5rem);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(0.8rem, 1.25vw, 1rem);
     width: 100%;
-    max-width: 960px;
+    max-width: 1180px;
 }
 
-/* ── Card ───────────────────────────────────── */
 .hobbyCard {
+    --hobby-accent: var(--primary);
     position: relative;
+    grid-column: span 2;
+    min-width: 0;
+    min-height: 238px;
     display: flex;
     flex-direction: column;
-    gap: 1.1rem;
-    padding: clamp(1.75rem, 3vw, 2.25rem);
-    border-radius: 22px;
-    background: color-mix(in srgb, var(--surface) 94%, transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1.5px solid color-mix(in srgb, var(--primary) 18%, transparent);
-    cursor: pointer;
-    user-select: none;
-    will-change: transform;
-    min-height: 180px;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(1rem, 1.8vw, 1.35rem);
+    border: 1px solid color-mix(in srgb, var(--hobby-accent) 26%, var(--divider));
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, var(--hobby-accent)), var(--surface)),
+        var(--surface);
+    box-shadow:
+        0 18px 44px color-mix(in srgb, var(--background) 44%, transparent),
+        0 1px 0 color-mix(in srgb, var(--text-primary-dark) 7%, transparent) inset;
+    color: inherit;
+    overflow: hidden;
+    isolation: isolate;
+    text-align: left;
+    transition:
+        border-color 0.22s ease,
+        box-shadow 0.22s ease,
+        background 0.22s ease;
 }
 
-/* Colour accent borders — semantic tokens */
-.hobbyCard_primary  { border-color: color-mix(in srgb, var(--primary)  30%, transparent); }
-.hobbyCard_success  { border-color: color-mix(in srgb, var(--success)  30%, transparent); }
-.hobbyCard_pastel-7 { border-color: color-mix(in srgb, var(--pastel-7) 30%, transparent); }
-.hobbyCard_warning  { border-color: color-mix(in srgb, var(--warning)  30%, transparent); }
-.hobbyCard_pastel-5 { border-color: color-mix(in srgb, var(--pastel-5) 30%, transparent); }
-.hobbyCard_pastel-2 { border-color: color-mix(in srgb, var(--pastel-2) 30%, transparent); }
+.hobbyCard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        linear-gradient(90deg, var(--hobby-accent), transparent 62%) top left / 100% 2px no-repeat,
+        radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--hobby-accent) 16%, transparent), transparent 38%);
+    opacity: 0.86;
+}
 
-/* ── Icon wrapper ───────────────────────────── */
+.hobbyCard:hover {
+    border-color: color-mix(in srgb, var(--hobby-accent) 54%, var(--divider));
+    box-shadow:
+        0 24px 54px color-mix(in srgb, var(--background) 54%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--hobby-accent) 10%, transparent);
+}
+
+.hobbyCard_primary  { --hobby-accent: var(--primary); }
+.hobbyCard_success  { --hobby-accent: var(--success); }
+.hobbyCard_pastel-7 { --hobby-accent: var(--pastel-7); }
+.hobbyCard_warning  { --hobby-accent: var(--warning); }
+.hobbyCard_pastel-5 { --hobby-accent: var(--pastel-5); }
+.hobbyCard_pastel-2 { --hobby-accent: var(--pastel-2); }
+
+.hobbyCardTop {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+}
+
 .hobbyIconWrap {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
-/* Per-token icon colours */
 .hobbyIconWrap_primary  { background: color-mix(in srgb, var(--primary)  18%, transparent); color: var(--primary); }
 .hobbyIconWrap_success  { background: color-mix(in srgb, var(--success)  18%, transparent); color: var(--success); }
 .hobbyIconWrap_pastel-7 { background: color-mix(in srgb, var(--pastel-7) 18%, transparent); color: var(--pastel-7); }
@@ -933,12 +1315,30 @@
 .hobbyIconWrap_pastel-5 { background: color-mix(in srgb, var(--pastel-5) 18%, transparent); color: var(--pastel-5); }
 .hobbyIconWrap_pastel-2 { background: color-mix(in srgb, var(--pastel-2) 18%, transparent); color: var(--pastel-2); }
 
-/* ── Card text ──────────────────────────────── */
+.hobbyCount {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.62rem;
+    border: 1px solid color-mix(in srgb, var(--hobby-accent) 22%, var(--divider));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--hobby-accent) 8%, transparent);
+    color: color-mix(in srgb, var(--text-primary-dark) 64%, transparent);
+    font-family: var(--font-family-base);
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+}
+
 .hobbyCardBody {
+    position: relative;
+    z-index: 2;
     display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
     flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.22rem;
 }
 
 .hobbyCardTagline {
@@ -960,270 +1360,51 @@
 .hobbyCardName {
     margin: 0;
     font-family: var(--font-family-base);
-    font-size: clamp(1.1rem, 2vw, 1.4rem);
-    font-weight: 700;
-    color: var(--text-primary-dark);
-}
-
-/* ══════════════════════════════════════════════
-   HOBBY MODAL (layoutId expand)
-══════════════════════════════════════════════ */
-
-/* Backdrop — starts BELOW the navbar (52px) so navbar stays visible */
-.hobbyBackdrop {
-    position: fixed;
-    inset: 52px 0 0 0;
-    background: rgba(0, 0, 0, 0.70);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 100;
-}
-
-/* Expanded modal card — fixed, centered in the area below navbar */
-.hobbyModal {
-    position: fixed;
-    top: calc(52px + (100vh - 52px) / 2);
-    left: 50%;
-    translate: -50% -50%;
-    z-index: 101;
-    width: min(560px, 90vw);
-    /* Height sized to content — no scroll needed */
-    height: auto;
-    max-height: clamp(420px, 80vh, 680px);
-    border-radius: 28px;
-    background: color-mix(in srgb, var(--surface) 96%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1.5px solid color-mix(in srgb, var(--primary) 24%, transparent);
-    box-shadow:
-        0 40px 80px -16px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(255, 255, 255, 0.06);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-/* Close button */
-.hobbyModalClose {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
-    color: var(--text-primary-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-    z-index: 1;
-}
-.hobbyModalClose:hover { background: color-mix(in srgb, var(--primary) 18%, transparent); }
-
-/* ── Zone 1+2: Inline header row — icon left, text right ─── */
-.hobbyModalHeader {
-    width: 100%;
-    padding: 1.75rem 2.25rem 1.25rem;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 1.25rem;
-    /* Subtle tinted gradient top */
-    background: linear-gradient(
-        to bottom,
-        color-mix(in srgb, var(--primary) 8%, transparent) 0%,
-        transparent 100%
-    );
-}
-
-/* Per-token header tint */
-.hobbyModalHeader_primary  { background: linear-gradient(to bottom, color-mix(in srgb, var(--primary)  10%, transparent), transparent); }
-
-.hobbyModalHeaderText {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-}
-
-.hobbyModalIconLg {
-    width: 80px;
-    height: 80px;
-    border-radius: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    box-shadow: 0 8px 32px color-mix(in srgb, var(--primary) 25%, transparent);
-}
-
-
-.hobbyModalName {
-    margin: 0;
-    font-family: var(--font-family-base);
-    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-size: clamp(1.3rem, 2.1vw, 1.75rem);
     font-weight: 800;
     color: var(--text-primary-dark);
-    letter-spacing: -0.02em;
+    line-height: 1.05;
+    letter-spacing: 0;
 }
 
-.hobbyModalDesc {
-    margin: 0.4rem 0 0;
-    font-family: var(--font-family-base);
-    font-size: clamp(0.9rem, 1.4vw, 1rem);
-    color: rgba(255, 255, 255, 0.58);
-    line-height: 1.7;
+.hobbyPreviewStrip {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.45rem;
+    align-items: stretch;
 }
 
-/* Image / icon area placeholder */
-.hobbyModalImgArea {
-    margin-top: 1.5rem;
+.hobbyPreviewImg {
     width: 100%;
-    min-height: 120px;
-    border-radius: 16px;
-    border: 2px dashed rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.hobbyModalImgPlaceholder {
-    margin: 0;
-    font-family: var(--font-family-base);
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.25);
-}
-
-/* ── Zone 3: Game section ────────────────────── */
-.hobbyGameSection {
-    padding: 0.75rem 2.25rem 1.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    flex: 1;
-}
-
-.hobbyGameSectionLabel {
-    margin: 0;
-    font-family: var(--font-family-base);
-    font-size: clamp(0.6rem, 0.9vw, 0.72rem);
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--primary);
-    opacity: 0.7;
-}
-
-/* ── Seamless CSS scroll marquee ─────────────── */
-
-/* Divider line above the marquee strip */
-.hobbyMarqueeDivider {
-    width: 40px;
-    height: 2px;
-    border-radius: 99px;
-    background: color-mix(in srgb, var(--primary) 45%, transparent);
-    margin: 0 auto;
-}
-
-
-.hobbyMarqueeTrack {
-    width: 100%;
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(
-        to right,
-        transparent 0%,
-        black 12%,
-        black 88%,
-        transparent 100%
-    );
-    mask-image: linear-gradient(
-        to right,
-        transparent 0%,
-        black 12%,
-        black 88%,
-        transparent 100%
-    );
-}
-
-/* Inner rail — items duplicated, scrolls exactly -50% then loops */
-.hobbyMarqueeRail {
-    display: flex;
-    flex-direction: row;
-    /* Fixed px gap so translateX(-50%) calculation is exact */
-    gap: 14px;
-    width: max-content;
-    /* GPU-composited animation — no layout repaints */
-    will-change: transform;
-    transform: translateZ(0);
-    animation: hobbyMarqueeScroll 22s linear infinite;
-}
-
-/* Pause on hover */
-.hobbyMarqueeRail:hover {
-    animation-play-state: paused;
-}
-
-/* Keyframe: slide left by exactly half the rail (= original set width) */
-@keyframes hobbyMarqueeScroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-}
-
-/* Single card */
-.hobbyMarqueeCard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-    width: 100px;
-}
-
-/* Square image — games & restaurants */
-.hobbyMarqueeImg {
-    width: 100px;
-    height: 100px;
-    border-radius: 16px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    min-width: 0;
     object-fit: cover;
     object-position: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: block;
-    /* GPU-promoted so hover scale doesn't cause repaint on rail */
-    will-change: transform;
+    border: 1px solid color-mix(in srgb, var(--hobby-accent) 24%, var(--divider));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--hobby-accent) 10%, var(--surface));
+    filter: saturate(1.04) contrast(1.02);
     transform: translateZ(0);
-    transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-.hobbyMarqueeCard:hover .hobbyMarqueeImg {
-    transform: translateZ(0) scale(1.1) translateY(-3px);
-    box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 30%, transparent);
+    transition: transform 0.22s ease, filter 0.22s ease;
 }
 
-/* Portrait override — anime posters (2:3) */
-.hobbyMarqueeImgPortrait {
-    height: 150px;
-    border-radius: 10px;
-    object-position: top center;
+.hobbyCard:hover .hobbyPreviewImg {
+    filter: saturate(1.12) contrast(1.04);
 }
 
-/* Caption */
-.hobbyGameName {
-    font-family: var(--font-family-base);
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: color-mix(in srgb, var(--text-primary-dark) 62%, transparent);
-    text-align: center;
-    line-height: 1.2;
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+.hobbyCard:hover .hobbyPreviewImg:nth-child(1) { transform: translateY(-2px); }
+.hobbyCard:hover .hobbyPreviewImg:nth-child(2) { transform: translateY(2px); }
+.hobbyCard:hover .hobbyPreviewImg:nth-child(3) { transform: translateY(-3px); }
+.hobbyCard:hover .hobbyPreviewImg:nth-child(4) { transform: translateY(1px); }
 
+@media (max-width: 1024px) {
+    .hobbyGrid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
 
 /* ── Responsive ─────────────────────────────── */
 @media (max-width: 768px) {
@@ -1235,15 +1416,21 @@
         padding: 3rem 1.25rem;
     }
 
-    .hobbyModal {
-        width: min(440px, 92vw);
-    }
 }
 
 @media (max-width: 480px) {
     .hobbyGrid {
         grid-template-columns: 1fr;
     }
+
+    .hobbyCard {
+        grid-column: span 1;
+    }
+
+    .hobbyPreviewStrip {
+        gap: 0.4rem;
+    }
+
 }
 
 /* ══════════════════════════════════════════════
@@ -1346,12 +1533,10 @@
 }
 
 :global(.dark) .skillsTitle,
-:global(.dark) .aiTitle,
 :global(.dark) .eduTitle,
 :global(.dark) .hobbyTitle,
 :global(.dark) .contactTitle,
 :global([data-theme="dark"]) .skillsTitle,
-:global([data-theme="dark"]) .aiTitle,
 :global([data-theme="dark"]) .eduTitle,
 :global([data-theme="dark"]) .hobbyTitle,
 :global([data-theme="dark"]) .contactTitle {

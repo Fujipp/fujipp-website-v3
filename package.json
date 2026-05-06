@@ -11,5 +11,8 @@
     "build": "bun run --filter fujipp-frontend build",
     "lint": "bun run --filter fujipp-frontend lint",
     "preview": "bun run --filter fujipp-frontend preview"
+  },
+  "dependencies": {
+    "@fujipp/slipok": "^0.1.0"
   }
 }

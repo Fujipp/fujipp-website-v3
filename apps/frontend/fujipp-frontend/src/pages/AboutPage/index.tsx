@@ -1,25 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+import type { CSSProperties } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
-  Monitor, Server, Wrench, Bot, Cpu, Code2,
-  Gamepad2, Music, Tv2, Utensils, Mic, Dumbbell, X, Send, ExternalLink,
+  Monitor, Server, Wrench, Code2,
+  Gamepad2, Music, Utensils, Send, ExternalLink,
+  Volume2, VolumeX,
+  Database, Terminal, GitBranch, Package, Globe, Zap, Bug, Paintbrush, Users, Video, FileText, Layers,
+  FileSpreadsheet, Presentation,
 } from 'lucide-react';
 import {
   SiVuedotjs, SiReact, SiTypescript, SiJavascript,
   SiTailwindcss, SiHtml5,
   SiSpring, SiNodedotjs, SiMysql,
-  SiGit, SiDocker, SiDiscord, SiLinux,
-  SiAnthropic, SiOpenai, SiGoogle,
+  SiDocker, SiDiscord,
   SiFacebook, SiInstagram, SiGithub,
+  SiLua, SiBootstrap, SiPostgresql, SiMongodb, SiFirebase, SiRedis,
+  SiGithubactions, SiPostman, SiCypress,
+  SiVscodium, SiIntellijidea,
+  SiFigma, SiCanva,
 } from 'react-icons/si';
 import { FaJava } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import styles from './AboutPage.module.css';
 
-const BG_IMAGES = [
-  '/images/background/Macro Photography Maple Trees.jpg',
-  '/images/background/Pexels Photo 3408353.jpeg',
-];
+type ThreeObject3D = import('three').Object3D;
+type ThreeMesh = import('three').Mesh;
+type ThreeMaterial = import('three').Material;
+type ThreeAnimationMixer = import('three').AnimationMixer;
 
 type Lang = 'th' | 'en';
 
@@ -44,19 +51,287 @@ const BIO: Record<Lang, { paragraphs: string[] }> = {
   },
 };
 
+const MASCOT_MODEL_SRC = '/models/StylishWalkAnimation.glb';
+const ABOUT_MUSIC_SRC = '/music/ToTheNight.mp3';
+const ABOUT_MUSIC_VOLUME = 0.42;
+const MASCOT_SPEECHES: Record<Lang, string[]> = {
+  en: [
+    'Hello, my name is Fujipp.',
+    'I am 22 years old.',
+    'I am preparing to become a first jobber.',
+    'I hope I get the opportunity to work with you.',
+  ],
+  th: [
+    'สวัสดีครับ ผมชื่อ Fujipp',
+    'ผมอายุ 22 ปี',
+    'กำลังจะเป็น First Jobber',
+    'ผมหวังว่าผมจะได้มีโอกาสร่วมงานกับคุณนะครับ',
+  ],
+};
+
+function MascotModel({ lang }: { lang: Lang }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [modelStatus, setModelStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [isRotating, setIsRotating] = useState(false);
+  const [speechIndex, setSpeechIndex] = useState(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const viewport = viewportRef.current;
+    if (!canvas || !viewport) return undefined;
+
+    let disposed = false;
+    let cleanup: (() => void) | undefined;
+    setModelStatus('loading');
+    setIsRotating(false);
+
+    void (async () => {
+      let modules: [
+        typeof import('three'),
+        typeof import('three/examples/jsm/loaders/GLTFLoader.js'),
+      ];
+
+      try {
+        modules = await Promise.all([
+          import('three'),
+          import('three/examples/jsm/loaders/GLTFLoader.js'),
+        ]);
+      } catch {
+        if (!disposed) setModelStatus('error');
+        return;
+      }
+
+      const [THREE, { GLTFLoader }] = modules;
+      if (disposed) return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+      camera.position.set(0, 0.52, 6.25);
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.setClearColor(0x000000, 0);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+
+      const ambientLight = new THREE.HemisphereLight(0xffffff, 0x7987ac, 1.75);
+      const keyLight = new THREE.DirectionalLight(0xffffff, 2.45);
+      keyLight.position.set(4, 5, 6);
+      const rimLight = new THREE.DirectionalLight(0x9fd9d3, 1.15);
+      rimLight.position.set(-4, 2, -3);
+      scene.add(ambientLight, keyLight, rimLight);
+
+      const modelRoot = new THREE.Group();
+      modelRoot.rotation.set(0.04, -0.36, 0);
+      scene.add(modelRoot);
+
+      let animationFrame = 0;
+      let loadedModel: ThreeObject3D | null = null;
+      let animationMixer: ThreeAnimationMixer | null = null;
+      let isDragging = false;
+      let modelReady = false;
+      let lastPointerX = 0;
+      let userRotationY = 0;
+      const clock = new THREE.Clock();
+
+      const resize = () => {
+        const { width, height } = viewport.getBoundingClientRect();
+        const nextWidth = Math.max(1, width);
+        const nextHeight = Math.max(1, height);
+        renderer.setSize(nextWidth, nextHeight, false);
+        camera.aspect = nextWidth / nextHeight;
+        camera.updateProjectionMatrix();
+      };
+
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(viewport);
+      resize();
+
+      const loader = new GLTFLoader();
+      loader.load(MASCOT_MODEL_SRC, (gltf) => {
+        if (disposed) return;
+
+        const model = gltf.scene;
+        model.traverse((child) => {
+          const mesh = child as ThreeMesh;
+          if (!mesh.isMesh) return;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        });
+
+        const bounds = new THREE.Box3().setFromObject(model);
+        const size = bounds.getSize(new THREE.Vector3());
+        const center = bounds.getCenter(new THREE.Vector3());
+        const maxDimension = Math.max(size.x, size.y, size.z) || 1;
+        const scale = 2.72 / maxDimension;
+
+        model.scale.setScalar(scale);
+        model.position.set(-center.x * scale, -center.y * scale + 0.35, -center.z * scale);
+        modelRoot.add(model);
+        loadedModel = model;
+
+        if (gltf.animations.length > 0) {
+          animationMixer = new THREE.AnimationMixer(model);
+          gltf.animations.forEach((clip) => {
+            animationMixer
+              ?.clipAction(clip)
+              .setLoop(THREE.LoopPingPong, Infinity)
+              .reset()
+              .fadeIn(0.2)
+              .play();
+          });
+        }
+
+        modelReady = true;
+        setModelStatus('ready');
+      }, undefined, () => {
+        if (!disposed) setModelStatus('error');
+      });
+
+      const handlePointerDown = (event: PointerEvent) => {
+        if (!modelReady) return;
+        isDragging = true;
+        lastPointerX = event.clientX;
+        setIsRotating(true);
+        viewport.setPointerCapture(event.pointerId);
+      };
+
+      const handlePointerMove = (event: PointerEvent) => {
+        if (!isDragging) return;
+        const deltaX = event.clientX - lastPointerX;
+        lastPointerX = event.clientX;
+        userRotationY += deltaX * 0.01;
+      };
+
+      const handlePointerUp = (event: PointerEvent) => {
+        if (!isDragging) return;
+        isDragging = false;
+        setIsRotating(false);
+        if (viewport.hasPointerCapture(event.pointerId)) {
+          viewport.releasePointerCapture(event.pointerId);
+        }
+      };
+
+      viewport.addEventListener('pointerdown', handlePointerDown);
+      viewport.addEventListener('pointermove', handlePointerMove);
+      viewport.addEventListener('pointerup', handlePointerUp);
+      viewport.addEventListener('pointercancel', handlePointerUp);
+
+      const animate = () => {
+        const time = performance.now() * 0.001;
+        animationMixer?.update(clock.getDelta());
+        modelRoot.rotation.y = -0.2 + userRotationY + Math.sin(time * 0.75) * 0.05;
+        modelRoot.rotation.x = 0.04 + Math.sin(time * 0.55) * 0.025;
+        renderer.render(scene, camera);
+        animationFrame = requestAnimationFrame(animate);
+      };
+      animate();
+
+      cleanup = () => {
+        cancelAnimationFrame(animationFrame);
+        resizeObserver.disconnect();
+        viewport.removeEventListener('pointerdown', handlePointerDown);
+        viewport.removeEventListener('pointermove', handlePointerMove);
+        viewport.removeEventListener('pointerup', handlePointerUp);
+        viewport.removeEventListener('pointercancel', handlePointerUp);
+        animationMixer?.stopAllAction();
+        if (loadedModel) animationMixer?.uncacheRoot(loadedModel);
+        if (loadedModel) {
+          loadedModel.traverse((child) => {
+            const mesh = child as ThreeMesh;
+            if (!mesh.isMesh) return;
+            mesh.geometry?.dispose();
+            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            materials.forEach((material: ThreeMaterial) => material.dispose());
+          });
+        }
+        renderer.dispose();
+      };
+    })();
+
+    return () => {
+      disposed = true;
+      cleanup?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    setSpeechIndex(0);
+  }, [lang]);
+
+  useEffect(() => {
+    if (modelStatus !== 'ready' || isRotating) return undefined;
+
+    const speechTimer = window.setInterval(() => {
+      setSpeechIndex((currentIndex) => (currentIndex + 1) % MASCOT_SPEECHES[lang].length);
+    }, 3400);
+
+    return () => window.clearInterval(speechTimer);
+  }, [isRotating, lang, modelStatus]);
+
+  const loadingText = lang === 'en' ? 'Loading model' : 'กำลังโหลดโมเดล';
+  const errorText = lang === 'en' ? 'Model unavailable' : 'โหลดโมเดลไม่ได้';
+  const statusText = modelStatus === 'error' ? errorText : loadingText;
+  const mascotSpeech = MASCOT_SPEECHES[lang][speechIndex];
+
+  return (
+    <div
+      ref={viewportRef}
+      className={`${styles.mascotViewport} ${modelStatus === 'ready' ? styles.mascotViewportReady : ''}`}
+    >
+      <canvas
+        ref={canvasRef}
+        className={`${styles.mascotCanvas} ${modelStatus === 'ready' ? styles.mascotCanvasReady : ''}`}
+        aria-label="Fujipp 3D mascot model"
+      />
+      {modelStatus !== 'ready' && (
+        <div className={styles.modelLoading} role="status" aria-live="polite">
+          <span className={styles.modelSpinner} aria-hidden />
+          <span>{statusText}</span>
+        </div>
+      )}
+      {modelStatus === 'ready' && (
+        <div
+          key={mascotSpeech}
+          className={`${styles.mascotSpeech} ${isRotating ? styles.mascotSpeechActive : ''}`}
+          aria-live="polite"
+        >
+          {mascotSpeech}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Skills data with brand icons ─────────────────────────────────────────
 const SKILL_GROUPS = [
+  {
+    label: 'Languages',
+    color: 'blue',
+    groupIcon: Code2,
+    skills: [
+      { name: 'HTML / CSS', icon: SiHtml5, brandColor: '#e34f26' },
+      { name: 'JavaScript', icon: SiJavascript, brandColor: '#f7df1e' },
+      { name: 'TypeScript', icon: SiTypescript, brandColor: '#3178c6' },
+      { name: 'Java', icon: FaJava, brandColor: '#f89820' },
+      { name: 'SQL', icon: Database, brandColor: '#4479a1' },
+      { name: 'Lua', icon: SiLua, brandColor: '#000080' },
+      { name: 'Bash / Shell', icon: Terminal, brandColor: '#4eaa25' },
+    ],
+  },
   {
     label: 'Frontend',
     color: 'blue',
     groupIcon: Monitor,
     skills: [
-      { name: 'Vue.js', icon: SiVuedotjs },
-      { name: 'React', icon: SiReact },
-      { name: 'TypeScript', icon: SiTypescript },
-      { name: 'JavaScript', icon: SiJavascript },
-      { name: 'Tailwind CSS', icon: SiTailwindcss },
-      { name: 'HTML / CSS', icon: SiHtml5 },
+      { name: 'Vue.js', icon: SiVuedotjs, brandColor: '#42b883' },
+      { name: 'React', icon: SiReact, brandColor: '#61dafb' },
+      { name: 'Node.js', icon: SiNodedotjs, brandColor: '#5fa04e' },
     ],
   },
   {
@@ -64,32 +339,136 @@ const SKILL_GROUPS = [
     color: 'blue',
     groupIcon: Server,
     skills: [
-      { name: 'Spring Boot', icon: SiSpring },
-      { name: 'Java', icon: FaJava },
-      { name: 'Node.js', icon: SiNodedotjs },
-      { name: 'REST API', icon: Code2 },
-      { name: 'MySQL', icon: SiMysql },
+      { name: 'Spring Boot', icon: SiSpring, brandColor: '#6db33f' },
     ],
   },
   {
-    label: 'Tools & Other',
+    label: 'CSS Frameworks',
     color: 'blue',
-    groupIcon: Wrench,
+    groupIcon: Layers,
     skills: [
-      { name: 'Git', icon: SiGit },
-      { name: 'Docker', icon: SiDocker },
-      { name: 'Discord Bot', icon: SiDiscord },
-      { name: 'Automation', icon: Cpu },
-      { name: 'Linux', icon: SiLinux },
+      { name: 'Tailwind CSS', icon: SiTailwindcss, brandColor: '#06b6d4' },
+      { name: 'Bootstrap', icon: SiBootstrap, brandColor: '#7952b3' },
     ],
   },
-];
-
-const AI_TOOLS = [
-  { name: 'Claude Sonnet', desc: 'Coding & reasoning', icon: SiAnthropic },
-  { name: 'Claude Opus', desc: 'Deep analysis', icon: SiAnthropic },
-  { name: 'GPT-Codex', desc: 'Code generation', icon: SiOpenai },
-  { name: 'Gemini 2.5 Pro', desc: 'Multimodal tasks', icon: SiGoogle },
+  {
+    label: 'Databases',
+    color: 'green',
+    groupIcon: Database,
+    skills: [
+      { name: 'MySQL', icon: SiMysql, brandColor: '#4479a1' },
+      { name: 'Oracle', icon: Database, brandColor: '#f80000' },
+      { name: 'PostgreSQL', icon: SiPostgresql, brandColor: '#4169e1' },
+      { name: 'MongoDB', icon: SiMongodb, brandColor: '#47a248' },
+      { name: 'Firebase', icon: SiFirebase, brandColor: '#ffca28' },
+      { name: 'Redis', icon: SiRedis, brandColor: '#ff4438' },
+    ],
+  },
+  {
+    label: 'Version Control',
+    color: 'green',
+    groupIcon: GitBranch,
+    skills: [
+      { name: 'GitHub', icon: SiGithub, brandColor: '#181717' },
+    ],
+  },
+  {
+    label: 'DevOps & Containers',
+    color: 'green',
+    groupIcon: Package,
+    skills: [
+      { name: 'Docker', icon: SiDocker, brandColor: '#2496ed' },
+      { name: 'GitHub Actions', icon: SiGithubactions, brandColor: '#2088ff' },
+    ],
+  },
+  {
+    label: 'API & Communication',
+    color: 'green',
+    groupIcon: Globe,
+    skills: [
+      { name: 'REST API', icon: Globe, brandColor: '#2f80ed' },
+      { name: 'WebSocket', icon: Zap, brandColor: '#f5a524' },
+    ],
+  },
+  {
+    label: 'Testing',
+    color: 'purple',
+    groupIcon: Bug,
+    skills: [
+      { name: 'Postman', icon: SiPostman, brandColor: '#ff6c37' },
+      { name: 'Cypress', icon: SiCypress, brandColor: '#69d3a7' },
+    ],
+  },
+  {
+    label: 'Editors & IDEs',
+    color: 'purple',
+    groupIcon: Wrench,
+    skills: [
+      { name: 'VS Code', icon: SiVscodium, brandColor: '#007acc' },
+      { name: 'IntelliJ IDEA', icon: SiIntellijidea, brandColor: '#fe315d' },
+      { name: 'Antigravity', icon: Code2, brandColor: '#7c3aed' },
+    ],
+  },
+  {
+    label: 'Database GUI',
+    color: 'purple',
+    groupIcon: Database,
+    skills: [
+      { name: 'MySQL Workbench', icon: SiMysql, brandColor: '#4479a1' },
+    ],
+  },
+  {
+    label: 'Desktop Dev Tools',
+    color: 'purple',
+    groupIcon: Package,
+    skills: [
+      { name: 'GitHub Desktop', icon: SiGithub, brandColor: '#181717' },
+      { name: 'Docker Desktop', icon: SiDocker, brandColor: '#2496ed' },
+    ],
+  },
+  {
+    label: 'UI/UX & Design',
+    color: 'purple',
+    groupIcon: Paintbrush,
+    skills: [
+      { name: 'Figma', icon: SiFigma, brandColor: '#f24e1e' },
+      { name: 'Canva', icon: SiCanva, brandColor: '#00c4cc' },
+    ],
+  },
+  {
+    label: 'Collaboration',
+    color: 'purple',
+    groupIcon: Users,
+    skills: [
+      { name: 'Discord', icon: SiDiscord, brandColor: '#5865f2' },
+    ],
+  },
+  {
+    label: 'Media & Assets',
+    color: 'purple',
+    groupIcon: Video,
+    skills: [
+      { name: 'Photoshop', icon: Paintbrush, brandColor: '#31a8ff' },
+      { name: 'CapCut', icon: Video, brandColor: '#111827' },
+    ],
+  },
+  {
+    label: 'Documentation',
+    color: 'purple',
+    groupIcon: FileText,
+    skills: [
+      { name: 'Word / Google Docs', icon: FileText, brandColor: '#4285f4' },
+      { name: 'Excel / Google Sheets', icon: FileSpreadsheet, brandColor: '#34a853' },
+    ],
+  },
+  {
+    label: 'Presentation',
+    color: 'purple',
+    groupIcon: Layers,
+    skills: [
+      { name: 'PowerPoint / Google Slides', icon: Presentation, brandColor: '#b7472a' },
+    ],
+  },
 ];
 
 
@@ -100,6 +479,8 @@ const EDUCATION = [
     period: '2007 – 2018',
     school: 'Kajornroaj Wittaya School',
     level: 'Kindergarten – Grade 9 (M.3)',
+    phase: 'Foundation',
+    logoFallback: 'KW',
     logo: 'http://fth0.com/uppic/10240001/news/10240001_0_20230126-104320.png',
     banner: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEibGwC1WS4ltiUnG8HcuoPXhSWYOyVeUZHunEw7XEeB76d3agxl0IRFus7NdM4VvTLqd8Ldr-6imD0iO_jwBxPLe54RzIxll-qn89qjUgEiTsBw_y8aB7sjUdTBKM-d2hgcVfi7980zmHw-/s1600/20160426_183130.jpg',
     description: 'Primary and junior high school education',
@@ -110,6 +491,8 @@ const EDUCATION = [
     period: '2019 – 2021',
     school: 'Bangpakok Wittayakom School',
     level: 'Grade 10 – 12 (M.4 – M.6)',
+    phase: 'Senior High',
+    logoFallback: 'BW',
     logo: 'https://lh3.googleusercontent.com/proxy/vnHTxP5gyd6U_JGXQ2Jx69IqLy38Q2rrAIU_SuNVDBrRQwAUhZiTa1SnS_eOM7p-Wzb41KRgAS4clfMK1OL7Y5J9167xbNGiiTlJ',
     banner: 'https://www.print3dd.com/wp-content/uploads/2017/04/%E0%B8%A3%E0%B8%A3-%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9B%E0%B8%B0%E0%B8%81%E0%B8%AD%E0%B8%81%E0%B8%A7%E0%B8%B4%E0%B8%A1%E0%B8%A2%E0%B8%B2%E0%B8%84%E0%B8%A1_8745-1024x576.jpg',
     description: 'Senior high school education',
@@ -120,12 +503,15 @@ const EDUCATION = [
     period: '2022 – Present',
     school: "King Mongkut's University of Technology Thonburi",
     level: "Bachelor's Degree",
+    phase: 'University',
+    logoFallback: '',
     logo: 'https://www.kmutt.ac.th/wp-content/uploads/2020/09/KMUTT_CI_Primary_Logo-Full.png',
     banner: 'https://media.licdn.com/dms/image/v2/D4D1BAQFgmrYvlG-aaQ/company-background_10000/company-background_10000/0/1655321602795/kmutt_cover?e=2147483647&v=beta&t=-oBC43DFebWSfi26PzBXVd2M-mrynn-vsAZREoFTFBw',
     description: 'School of Information Technology / B.Sc. in Information Technology',
     color: 'purple',
   },
 ];
+const DEFAULT_EDUCATION_INDEX = EDUCATION.findIndex((edu) => edu.phase === 'University');
 
 // ── Hobby data (semantic color tokens only) ──────────────────────────
 const HOBBIES = [
@@ -136,90 +522,55 @@ const HOBBIES = [
     tagline: 'Mobile & Casual',
     token: 'primary',
     games: [
-      { name: 'Roblox', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Roblox_Corporation_2025_logo.svg/960px-Roblox_Corporation_2025_logo.svg.png' },
-      { name: 'RoV', logo: 'https://play-lh.googleusercontent.com/fWAs7pgAaEwNk5gGF0sOsdO-dKUmxm94wEeGbXEF7fsmcnEOTqqkJtqvFEDwk3w_F3wiFDlr9-eX5DtLK1GJCw' },
-      { name: 'Pokémon GO', logo: 'https://play-lh.googleusercontent.com/Qf2SJGpLxd9eu4CLWRrh2tfmmkncg7TQ2RNr44tWO07EBfhfMs4CHlizioym11Vb6RmfIWCNz6FNsOgHj_5dMA=w240-h480-rw' },
-      { name: 'Block Blast', logo: 'https://media.xp-pen.co/web/2025/06/12/2025061211235340587185.png' },
-      { name: 'Candy Crush', logo: 'https://logodix.com/logo/1029738.png' },
-      { name: 'Mobile Legends: Bang Bang', logo: 'https://img.tapimg.net/market/images/3f57a40c644dc33a6467176f91c707d6.png/appicon?t=1' },
+      { name: 'Roblox', logo: '/images/games/Roblox.png' },
+      { name: 'RoV', logo: '/images/games/Rov.png' },
+      { name: 'Pokemon GO', logo: '/images/games/PokemonGO.png' },
+      { name: 'Block Blast', logo: '/images/games/Block_Blast.png' },
     ],
   },
   {
     id: 2,
     Icon: Music,
     label: 'Artists',
-    tagline: 'K-Pop & Thai Pop',
-    token: 'primary',
+    tagline: 'K-Pop',
+    token: 'pastel-7',
     artists: [
-      { name: 'Pun', photo: 'https://media.readthecloud.co/wp-content/uploads/2025/04/22125104/punisalwayshappy-22-1.webp' },
-      { name: 'Winter', photo: 'https://pbs.twimg.com/media/GFsjHGwa0AA97zM.jpg' },
-      { name: 'Karina', photo: 'https://xonomax.com/cdn/shop/files/753317.jpg?v=1742271499' },
-      { name: 'NingNing', photo: 'https://preview.redd.it/aespa-ningning-w-korea-x-bvlgari-may-2025-issue-pictorial-v0-0z542u6pw3we1.jpg?width=640&crop=smart&auto=webp&s=8a1ec7a0aad57095fa6cef082a26a68381ea87e5' },
-      { name: 'Giselle', photo: 'https://pbs.twimg.com/media/HCaFZJwbMAAKUT_.jpg' },
-      { name: 'Percy', photo: 'https://i.scdn.co/image/ab67616100005174cbd0b4097d0b6f42a706a8b2' },
+      { name: 'Winter', photo: '/images/artists/Aespa_Winter.png' },
+      { name: 'Ningning', photo: '/images/artists/Aespa_Ningning.png' },
+      { name: 'Karina', photo: '/images/artists/Aespa_Karina.jpg' },
+      { name: 'Giselle', photo: '/images/artists/Aespa_Giselle.jpg' },
     ],
   },
   {
     id: 3,
-    Icon: Dumbbell,
-    label: 'Sports',
-    tagline: 'Active & Spectator',
-    token: 'primary',
-    sports: [
-      { name: 'Badminton', photo: 'https://corporate.bwfbadminton.com/wp-content/uploads/2025/02/20241212_2212_WorldTourFinals2024_BPYL0773.jpg' },
-      { name: 'F1', photo: 'https://media.formula1.com/image/upload/c_lfill,w_3392/q_auto/v1740000000/fom-website/2025/Miscellaneous/2025-start-barcelona.webp' },
-      { name: 'Running', photo: 'https://www.healthywomen.org/media-library/fitness-woman-running-training-for-marathon-on-sunny-coast-trail.jpg?id=34353001&width=1200&height=800&quality=70&coordinates=110%2C0%2C110%2C0' },
-      { name: 'Football', photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Football_in_Bloomington%2C_Indiana%2C_1995.jpg/1280px-Football_in_Bloomington%2C_Indiana%2C_1995.jpg' },
-      { name: 'Basketball', photo: 'https://www.rockstaracademy.com/lib/images/news/basketball.jpeg' },
-      { name: 'Tennis', photo: 'https://i.natgeofe.com/n/e626ca85-71f1-4485-90ea-4828d5884965/GettyImages-1272468011.jpg' },
-    ],
-  },
-  {
-    id: 4,
-    Icon: Tv2,
-    label: 'Anime',
-    tagline: 'Seinen & Thriller',
-    token: 'primary',
-    animes: [
-      { name: 'Pokémon Journey', poster: 'https://cms.dmpcdn.com/moviearticle/2022/12/02/af9b6a10-7233-11ed-80b2-f5c55ac792e7_webp_original.jpg' },
-      { name: 'Naruto', poster: 'https://m.media-amazon.com/images/M/MV5BZTNjOWI0ZTAtOGY1OS00ZGU0LWEyOWYtMjhkYjdlYmVjMDk2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg' },
-      { name: 'One Piece', poster: 'https://m.media-amazon.com/images/M/MV5BMTNjNGU4NTUtYmVjMy00YjRiLTkxMWUtNzZkMDNiYjZhNmViXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg' },
-      { name: 'Demon Slayer', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWRaIUYW6W8mWGutUKJkRbKn2rOkYq9HN4Dg&s' },
-      { name: 'Attack on Titan', poster: 'https://aot-portal.com/wp/wp-content/uploads/2025/11/re_aotLA_kokuchi_1107-1-712x1006.jpg' },
-      { name: 'Slime Datta Ken', poster: 'https://i.ebayimg.com/images/g/-LUAAOSwfyVcwunZ/s-l1200.jpg' },
-    ],
-  },
-  {
-    id: 5,
     Icon: Utensils,
     label: 'Restaurants',
     tagline: 'Japanese & Hot Pot',
-    token: 'primary',
+    token: 'pastel-5',
     restaurants: [
-      { name: 'Fuji', photo: 'https://d2kihw5e8drjh5.cloudfront.net/eyJidWNrZXQiOiJ1dGEtaW1hZ2VzIiwia2V5IjoicGxhY2VfaW1nL3kyVlJ1TlFoU0RhdkRYUlhiTkNRbVEiLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjY0MCwiaGVpZ2h0Ijo2NDAsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsInRvRm9ybWF0IjogIndlYnAifX0=' },
-      { name: 'Yakiniku Like', photo: 'https://www.lemon8-app.com/seo/image?item_id=7444072419444326919&index=2&sign=4f25b199053bdd7b481de39c264a1fb2' },
-      { name: 'Sushiro', photo: 'https://pacificplace.b-cdn.net/directory_image/JxKMM/PP-Web-Sushiro-1%20(1).jpg' },
-      { name: 'Hot Pot Man', photo: 'https://img.wongnai.com/p/400x0/2024/11/12/51d54f995d9d4b159cc2151935dedea8.jpg' },
-      { name: 'Haidilao', photo: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/35/31/15/1haidilao-hot-pot-2-outdoor.jpg?w=1200&h=1200&s=1' },
-      { name: 'Momo Paradise', photo: 'https://img.wongnai.com/p/1920x0/2023/01/12/cebfb1e5fa08410d8b4a886942769b4a.jpg' },
-    ],
-  },
-  {
-    id: 6,
-    Icon: Mic,
-    label: 'Speakers',
-    tagline: 'Ideas & Insights',
-    token: 'primary',
-    speakers: [
-      { name: '9arm', photo: 'https://shop.9arm.co/cdn/shop/files/chat1.jpg?v=1686500424' },
-      { name: 'CK', photo: 'https://yt3.googleusercontent.com/CMqKWgqvz1amDcZaIa7KksykIeM1TjNpyg5mxNrdoRl3UbLVbyX7mGg7CV-hPiQ3Dfp7N2jr6g=s900-c-k-c0x00ffffff-no-rj' },
-      { name: '9aimmuno', photo: 'https://media.readthecloud.co/wp-content/uploads/2022/02/29124731/aimmuno-feature.webp' },
-      { name: 'ธนาธร', photo: 'https://static.thairath.co.th/media/dFQROr7oWzulq5Fa6rY3s3rvbZ4CsfC96lSDb9cxXqC1UaKJybBTprBvMDPDQ3EPNJQ.jpg' },
-      { name: 'พิธา', photo: 'https://f.ptcdn.info/946/088/000/meiljq6miTV1q7cNKr5-o.jpg' },
-      { name: 'ณัฐพงษ์', photo: 'https://static.thairath.co.th/media/dFQROr7oWzulq5Fa6rMjN2oy8tvr5maS39MZLcsw9DJKHW2qgryg7v4IogQJmBO1sjt.jpg' },
+      { name: 'Fuji', photo: '/images/restaurants/Fuji.png' },
+      { name: 'Sushiro', photo: '/images/restaurants/Sushiro.png' },
+      { name: 'Hot Pot Man', photo: '/images/restaurants/HotPotMan.png' },
+      { name: 'Momo Paradise', photo: '/images/restaurants/MomoParadise.png' },
     ],
   },
 ];
+
+type Hobby = (typeof HOBBIES)[number];
+type HobbyEntry = { src: string; name: string };
+
+function getHobbyEntries(hobby: Hobby): HobbyEntry[] {
+  if ('games' in hobby && hobby.games) {
+    return hobby.games.map((game) => ({ src: game.logo, name: game.name }));
+  }
+  if ('restaurants' in hobby && hobby.restaurants) {
+    return hobby.restaurants.map((restaurant) => ({ src: restaurant.photo, name: restaurant.name }));
+  }
+  if ('artists' in hobby && hobby.artists) {
+    return hobby.artists.map((artist) => ({ src: artist.photo, name: artist.name }));
+  }
+  return [];
+}
 
 // ── Lanyard (Discord live status) ─────────────────────────────────────────
 const DISCORD_USER_ID = '1108816021915176962';
@@ -307,10 +658,97 @@ const SOCIAL_CARDS = [
 ];
 
 export function AboutPage() {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [lang, setLang] = useState<Lang>('en');
-  const [selectedHobby, setSelectedHobby] = useState<number | null>(null);
+  const [currentEducationIndex, setCurrentEducationIndex] = useState(DEFAULT_EDUCATION_INDEX);
+  const [educationSlideDirection, setEducationSlideDirection] = useState(1);
+  const [isAboutMusicMuted, setIsAboutMusicMuted] = useState(false);
+  const isAboutMusicMutedRef = useRef(false);
+  const isInSectionRef = useRef(false);
+  const aboutSectionRef = useRef<HTMLElement>(null);
+  const aboutMusicRef = useRef<HTMLAudioElement | null>(null);
+  const aboutMusicFadeFrameRef = useRef<number | null>(null);
+  const aboutMusicFadeToRef = useRef<((volume: number) => void) | null>(null);
   const lanyardSnapshotRef = useRef<string>('');
+
+  useEffect(() => {
+    const aboutSection = aboutSectionRef.current;
+    if (!aboutSection) return undefined;
+
+    const audio = new Audio(ABOUT_MUSIC_SRC);
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.volume = 0;
+    aboutMusicRef.current = audio;
+
+    let disposed = false;
+    let wantToPlay = false;
+
+    const cancelFade = () => {
+      if (aboutMusicFadeFrameRef.current !== null) {
+        cancelAnimationFrame(aboutMusicFadeFrameRef.current);
+        aboutMusicFadeFrameRef.current = null;
+      }
+    };
+
+    const fadeTo = (target: number) => {
+      const nextVolume = Math.max(0, Math.min(target, 1));
+      cancelFade();
+      if (nextVolume > 0) void audio.play().catch(() => {});
+      const startVolume = audio.volume;
+      const duration = nextVolume > startVolume ? 1500 : 850;
+      const startTime = performance.now();
+      const tick = (now: number) => {
+        if (disposed) return;
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        audio.volume = startVolume + (nextVolume - startVolume) * eased;
+        if (progress < 1) {
+          aboutMusicFadeFrameRef.current = requestAnimationFrame(tick);
+          return;
+        }
+        audio.volume = nextVolume;
+        aboutMusicFadeFrameRef.current = null;
+        if (nextVolume === 0) audio.pause();
+      };
+      aboutMusicFadeFrameRef.current = requestAnimationFrame(tick);
+    };
+    aboutMusicFadeToRef.current = fadeTo;
+
+    const retryOnGesture = () => {
+      if (wantToPlay && audio.paused) void audio.play().catch(() => {});
+    };
+
+    const updateAudio = (inSection: boolean) => {
+      isInSectionRef.current = inSection;
+      wantToPlay = inSection && !isAboutMusicMutedRef.current;
+      fadeTo(wantToPlay ? ABOUT_MUSIC_VOLUME : 0);
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        updateAudio(entry.isIntersecting && entry.intersectionRatio >= 0.22);
+      },
+      {
+        rootMargin: '18% 0px 18% 0px',
+        threshold: [0, 0.1, 0.22, 0.35, 0.5, 0.75, 1],
+      },
+    );
+    observer.observe(aboutSection);
+    document.addEventListener('pointerdown', retryOnGesture, { passive: true });
+    document.addEventListener('keydown', retryOnGesture);
+
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      document.removeEventListener('pointerdown', retryOnGesture);
+      document.removeEventListener('keydown', retryOnGesture);
+      cancelFade();
+      audio.pause();
+      audio.src = '';
+      aboutMusicRef.current = null;
+      aboutMusicFadeToRef.current = null;
+    };
+  }, []);
 
   // ── Discord Lanyard live status ──────────────────────────────────────────
   const [lanyardData, setLanyardData] = useState<LanyardData | null>(null);
@@ -381,75 +819,42 @@ export function AboutPage() {
     offline: 'Offline',
   };
 
-  // Lock body scroll when hobby modal is open
-  useEffect(() => {
-    if (selectedHobby !== null) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  const musicLabel = isAboutMusicMuted
+    ? (lang === 'en' ? 'Unmute music' : 'เปิดเสียงเพลง')
+    : (lang === 'en' ? 'Mute music' : 'ปิดเสียงเพลง');
+
+  const currentEducation = EDUCATION[currentEducationIndex];
+
+  const handleEducationSelect = (nextIndex: number) => {
+    if (nextIndex === currentEducationIndex) return;
+    setEducationSlideDirection(nextIndex > currentEducationIndex ? 1 : -1);
+    setCurrentEducationIndex(nextIndex);
+  };
+
+  const handleToggleMute = () => {
+    const nextMuted = !isAboutMusicMuted;
+    isAboutMusicMutedRef.current = nextMuted;
+    setIsAboutMusicMuted(nextMuted);
+    if (isInSectionRef.current) {
+      if (!nextMuted) {
+        void aboutMusicRef.current?.play().catch(() => {});
+        aboutMusicFadeToRef.current?.(ABOUT_MUSIC_VOLUME);
+      } else {
+        aboutMusicFadeToRef.current?.(0);
+      }
     }
-    return () => { document.body.style.overflow = ''; };
-  }, [selectedHobby]);
-
-  // ── Education horizontal scroll (Framer Motion) ──
-  const eduTrackRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: eduScrollYProgress } = useScroll({
-    target: eduTrackRef,
-    offset: ['start start', 'end end'],
-  });
-
-  const CARD_WIDTH = 560;
-  const CARD_GAP = 32;
-  const totalDistance = (EDUCATION.length - 1) * (CARD_WIDTH + CARD_GAP);
-  const eduX = useTransform(eduScrollYProgress, [0, 1], [0, -totalDistance]);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % BG_IMAGES.length);
-    }, 5000);
-    return () => clearInterval(id);
-  }, []);
+  };
 
   return (
     <main className={styles.page}>
 
       {/* ══ SECTION 1 — About Me ══ */}
-      <section className={styles.section}>
+      <section ref={aboutSectionRef} className={styles.section}>
+        <div className={styles.aboutShell}>
+          <div className={styles.introPanel}>
+            <div className={styles.introTop}>
+              <p className={styles.profileKicker}>ABOUT ME</p>
 
-        {/* Background slideshow */}
-        <div className={styles.bgWrapper}>
-          {BG_IMAGES.map((src, i) => (
-            <img
-              key={src}
-              src={src}
-              alt=""
-              aria-hidden
-              className={`${styles.bgImage} ${i === currentIndex ? styles.bgImageActive : ''}`}
-            />
-          ))}
-          <div className={styles.bgOverlay} />
-          <div className={styles.bgGradientTop} />
-          <div className={styles.bgGradientBottom} />
-        </div>
-
-        {/* Centered content */}
-        <div className={styles.content}>
-          <div className={styles.card}>
-
-            {/* Card top row */}
-            <div className={styles.cardTop}>
-              <div className={styles.avatarWrap}>
-                <img
-                  src="/images/users/fujipp/profile-fujipp.png"
-                  alt="Anawat Grudtoop"
-                  className={styles.avatarImg}
-                  draggable={false}
-                />
-              </div>
-              <div className={styles.identity}>
-                <h1 className={styles.name}>Anawat Grudtoop</h1>
-                <p className={styles.role}>Fullstack Developer</p>
-              </div>
               <div className={styles.langToggle} role="group" aria-label="Language">
                 <button
                   className={`${styles.langBtn} ${lang === 'en' ? styles.langBtnActive : ''}`}
@@ -462,26 +867,36 @@ export function AboutPage() {
               </div>
             </div>
 
-            <div className={styles.divider} />
+            <div className={styles.identity}>
+              <h1 className={styles.name}>Anawat Grudtoop</h1>
+              <p className={styles.role}>Fullstack Developer</p>
+            </div>
 
-            {/* Bio */}
-            <div className={styles.bioBlock} key={lang}>
+            <div className={styles.aboutTextBlock} key={lang}>
               {BIO[lang].paragraphs.map((text, i) => (
                 <p key={i} className={styles.bio}>{text}</p>
               ))}
             </div>
+
           </div>
 
-          {/* Image indicators */}
-          <div className={styles.indicators}>
-            {BG_IMAGES.map((_, i) => (
+          <div className={styles.mascotPanel}>
+            <div className={styles.modelHeader}>
+              <span>3D Mascot</span>
+              <span>{lang === 'en' ? 'Drag to rotate' : 'ลากเพื่อหมุน'}</span>
+            </div>
+            <MascotModel lang={lang} />
+            <div className={styles.musicControls}>
               <button
-                key={i}
-                aria-label={`Background ${i + 1}`}
-                onClick={() => setCurrentIndex(i)}
-                className={`${styles.indicator} ${i === currentIndex ? styles.indicatorActive : ''}`}
-              />
-            ))}
+                type="button"
+                className={styles.musicIconBtn}
+                onClick={handleToggleMute}
+                aria-label={musicLabel}
+                title={musicLabel}
+              >
+                {isAboutMusicMuted ? <VolumeX size={17} strokeWidth={2.4} /> : <Volume2 size={17} strokeWidth={2.4} />}
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -513,10 +928,12 @@ export function AboutPage() {
                 initial={{ opacity: 0, y: 32 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
-                transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.1 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.035 }}
               >
                 <h3 className={styles.skillGroupLabel}>
-                  <GroupIcon size={14} strokeWidth={2.5} />
+                  <span className={styles.skillGroupIcon}>
+                    <GroupIcon size={15} strokeWidth={2.5} />
+                  </span>
                   {group.label}
                 </h3>
                 <div className={styles.chipRow}>
@@ -525,10 +942,13 @@ export function AboutPage() {
                     return (
                       <span
                         key={skill.name}
-                        className={`${styles.chip} ${styles[`chip_${group.color}` as keyof typeof styles]}`}
+                        className={styles.chip}
+                        style={{ '--skill-brand': skill.brandColor } as CSSProperties}
                       >
-                        <SkillIcon size={13} />
-                        {skill.name}
+                        <span className={styles.skillIconWrap}>
+                          <SkillIcon size={18} />
+                        </span>
+                        <span className={styles.skillName}>{skill.name}</span>
                       </span>
                     );
                   })}
@@ -538,98 +958,86 @@ export function AboutPage() {
           })}
         </div>
 
-        {/* AI Tools */}
-        <motion.div
-          className={styles.aiSection}
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 26, delay: 0.25 }}
-        >
-          <h3 className={styles.aiTitle}>
-            <Bot size={18} strokeWidth={2} className={styles.aiIconEl} /> AI Tools I Use
-          </h3>
-          <div className={styles.aiGrid}>
-            {AI_TOOLS.map((tool, i) => {
-              const AiIcon = tool.icon;
-              return (
-                <motion.div
-                  key={tool.name}
-                  className={styles.aiCard}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ type: 'spring', stiffness: 240, damping: 26, delay: 0.3 + i * 0.07 }}
-                >
-                  <AiIcon size={22} className={styles.aiCardIcon} />
-                  <span className={styles.aiName}>{tool.name}</span>
-                  <span className={styles.aiDesc}>{tool.desc}</span>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-
       </section>
 
-      {/* ══ SECTION 3 — Education (horizontal scroll) ══ */}
-      <div ref={eduTrackRef} className={styles.eduTrack}>
-        <div className={styles.eduSticky}>
+      {/* ══ SECTION 3 — Education ══ */}
+      <section className={styles.eduSection}>
+        <motion.div
+          className={styles.eduSectionLabel}
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+        >
+          <p className={styles.eduEyebrow}>MY JOURNEY</p>
+          <h2 className={styles.eduTitle}>Education</h2>
+          <div className={styles.eduTitleDivider} />
+        </motion.div>
 
-          {/* Centered label */}
-          <div className={styles.eduSectionLabel}>
-            <p className={styles.eduEyebrow}>MY JOURNEY</p>
-            <h2 className={styles.eduTitle}>Education</h2>
-            <div className={styles.eduTitleDivider} />
-          </div>
-
-          {/* Centered gallery wrapper (width = card) — overflow visible so cards bleed */}
-          <div className={styles.eduGalleryWrapper}>
-            <motion.div className={styles.eduGallery} style={{ x: eduX }}>
-              {EDUCATION.map((edu, i) => (
-                <div
-                  key={edu.id}
-                  className={`${styles.eduCard} ${styles[`eduCard_${edu.color}` as keyof typeof styles]}`}
-                >
-                  {/* Banner image */}
-                  <div className={styles.eduBannerWrap}>
+        <div className={styles.eduCarousel}>
+          <div className={styles.eduStage}>
+            <AnimatePresence mode="wait">
+              <motion.article
+                key={currentEducation.id}
+                className={`${styles.eduCard} ${styles[`eduCard_${currentEducation.color}` as keyof typeof styles]}`}
+                initial={{ opacity: 0, x: educationSlideDirection > 0 ? 88 : -88, scale: 0.98 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: educationSlideDirection > 0 ? -88 : 88, scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 240, damping: 28 }}
+              >
+                <div className={styles.eduMedia}>
+                  <img
+                    src={currentEducation.banner}
+                    alt={currentEducation.school}
+                    className={styles.eduBanner}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  <div className={styles.eduMediaOverlay} />
+                  <div className={styles.eduLogoBadge}>
+                    <span className={styles.eduLogoFallback} aria-hidden>
+                      {currentEducation.logoFallback}
+                    </span>
                     <img
-                      src={edu.banner}
-                      alt={edu.school}
-                      className={styles.eduBanner}
+                      src={currentEducation.logo}
+                      alt=""
+                      className={styles.eduLogo}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                     />
-                    {/* Logo badge over banner */}
-                    <div className={styles.eduLogoBadge}>
-                      <img
-                        src={edu.logo}
-                        alt=""
-                        className={styles.eduLogo}
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                      />
-                    </div>
                   </div>
-
-                  {/* Text */}
-                  <div className={styles.eduText}>
-                    <p className={`${styles.eduPeriod} ${styles[`eduPeriod_${edu.color}` as keyof typeof styles]}`}>
-                      {edu.period}
-                    </p>
-                    <h3 className={styles.eduSchool}>{edu.school}</h3>
-                    <p className={styles.eduLevel}>{edu.level}</p>
-                    <p className={styles.eduDesc}>{edu.description}</p>
-                  </div>
-
-                  {/* Number badge */}
-                  <span className={`${styles.eduBadge} ${styles[`eduBadge_${edu.color}` as keyof typeof styles]}`}>
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
                 </div>
-              ))}
-            </motion.div>
+
+                <div className={styles.eduText}>
+                  <div className={styles.eduMetaRow}>
+                    <span className={`${styles.eduPhase} ${styles[`eduPhase_${currentEducation.color}` as keyof typeof styles]}`}>
+                      {currentEducation.phase}
+                    </span>
+                    <p className={styles.eduPeriod}>{currentEducation.period}</p>
+                  </div>
+                  <h3 className={styles.eduSchool}>{currentEducation.school}</h3>
+                  <p className={styles.eduLevel}>{currentEducation.level}</p>
+                  <p className={styles.eduDesc}>{currentEducation.description}</p>
+                </div>
+              </motion.article>
+            </AnimatePresence>
           </div>
 
+          <div className={styles.eduDots} role="tablist" aria-label="Education timeline">
+            {EDUCATION.map((edu, i) => (
+              <button
+                key={edu.id}
+                type="button"
+                className={`${styles.eduDot} ${i === currentEducationIndex ? styles.eduDotActive : ''}`}
+                onClick={() => handleEducationSelect(i)}
+                aria-label={`Show ${edu.school}`}
+                aria-selected={i === currentEducationIndex}
+                role="tab"
+              >
+                <span>{edu.phase}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* ══ SECTION 4 — Hobbies ══ */}
       <section className={styles.hobbySection}>
@@ -645,34 +1053,48 @@ export function AboutPage() {
           <div className={styles.hobbyDivider} />
         </motion.div>
 
-        {/* Grid of compact clickable cards */}
+        {/* Grid of compact cards */}
         <div className={styles.hobbyGrid}>
-          {HOBBIES.map((h, i) => (
-            <motion.div
-              key={h.id}
-              layoutId={`hobby-card-${h.id}`}
-              className={`${styles.hobbyCard} ${styles[`hobbyCard_${h.token}` as keyof typeof styles]}`}
-              initial={{ opacity: 0, y: 36 }}
-              whileInView={{ opacity: selectedHobby === h.id ? 0 : 1, y: 0 }}
-              animate={{ opacity: selectedHobby === h.id ? 0 : 1 }}
-              viewport={{ once: true, amount: 0.25 }}
-              whileHover={selectedHobby !== null ? {} : { scale: 1.04, y: -6 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.09 }}
-              onClick={() => setSelectedHobby(h.id)}
-              style={{ cursor: 'pointer', pointerEvents: selectedHobby === h.id ? 'none' : 'auto' }}
-            >
-              <div className={`${styles.hobbyIconWrap} ${styles[`hobbyIconWrap_${h.token}` as keyof typeof styles]}`}>
-                <h.Icon size={28} strokeWidth={1.6} />
-              </div>
-              <div className={styles.hobbyCardBody}>
-                <p className={`${styles.hobbyCardTagline} ${styles[`hobbyTagline_${h.token}` as keyof typeof styles]}`}>
-                  {h.tagline}
-                </p>
-                <h3 className={styles.hobbyCardName}>{h.label}</h3>
-              </div>
-            </motion.div>
-          ))}
+          {HOBBIES.map((h, i) => {
+            const entries = getHobbyEntries(h);
+            return (
+              <motion.article
+                key={h.id}
+                className={`${styles.hobbyCard} ${styles[`hobbyCard_${h.token}` as keyof typeof styles]}`}
+                initial={{ opacity: 0, y: 36 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.25 }}
+                whileHover={{ scale: 1.025, y: -6 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.07 }}
+              >
+                <div className={styles.hobbyCardTop}>
+                  <div className={`${styles.hobbyIconWrap} ${styles[`hobbyIconWrap_${h.token}` as keyof typeof styles]}`}>
+                    <h.Icon size={24} strokeWidth={1.8} />
+                  </div>
+                  <span className={styles.hobbyCount}>{entries.length} picks</span>
+                </div>
+
+                <div className={styles.hobbyCardBody}>
+                  <p className={`${styles.hobbyCardTagline} ${styles[`hobbyTagline_${h.token}` as keyof typeof styles]}`}>
+                    {h.tagline}
+                  </p>
+                  <h3 className={styles.hobbyCardName}>{h.label}</h3>
+                </div>
+
+                <div className={styles.hobbyPreviewStrip} aria-hidden>
+                  {entries.slice(0, 4).map((entry) => (
+                    <img
+                      key={`${h.id}-${entry.name}`}
+                      src={entry.src}
+                      alt=""
+                      className={styles.hobbyPreviewImg}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.12'; }}
+                    />
+                  ))}
+                </div>
+              </motion.article>
+            );
+          })}
         </div>
       </section>
 
@@ -812,121 +1234,6 @@ export function AboutPage() {
 
         </div>
       </section>
-
-
-
-
-
-
-      {/* ══ Hobby modal (shared layoutId expands from grid card) ══ */}
-      <AnimatePresence>
-        {selectedHobby && (() => {
-          const h = HOBBIES.find(x => x.id === selectedHobby)!;
-          return (
-            <>
-              {/* Backdrop — delayed so flying card animation is visible first */}
-              <motion.div
-                className={styles.hobbyBackdrop}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ type: 'tween', duration: 0.22, delay: 0.2 }}
-                onClick={() => setSelectedHobby(null)}
-              />
-
-              {/* Expanded card — same layoutId as the grid card */}
-              <motion.div
-                layoutId={`hobby-card-${h.id}`}
-                className={`${styles.hobbyModal} ${styles[`hobbyCard_${h.token}` as keyof typeof styles]}`}
-                transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-              >
-                {/* Close button */}
-                <button
-                  className={styles.hobbyModalClose}
-                  onClick={() => setSelectedHobby(null)}
-                  aria-label="Close"
-                >
-                  <X size={20} strokeWidth={2} />
-                </button>
-
-                {/* ―― ZONE 1+2: Icon · tagline · name — single inline row ―― */}
-                <motion.div
-                  className={`${styles.hobbyModalHeader} ${styles[`hobbyModalHeader_${h.token}` as keyof typeof styles]}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: 'spring', stiffness: 240, damping: 24, delay: 0.42 }}
-                >
-                  <div className={`${styles.hobbyModalIconLg} ${styles[`hobbyIconWrap_${h.token}` as keyof typeof styles]}`}>
-                    <h.Icon size={36} strokeWidth={1.4} />
-                  </div>
-                  <div className={styles.hobbyModalHeaderText}>
-                    <p className={`${styles.hobbyCardTagline} ${styles[`hobbyTagline_${h.token}` as keyof typeof styles]}`}>
-                      {h.tagline}
-                    </p>
-                    <h2 className={styles.hobbyModalName}>{h.label}</h2>
-                  </div>
-                </motion.div>
-
-                {/* ―― ZONE 3: Seamless CSS marquee ―― */}
-                {(() => {
-                  type GameItem = { name: string; logo: string };
-                  type AnimeItem = { name: string; poster: string };
-                  type RestItem = { name: string; photo: string };
-
-                  type MarqueeEntry = { src: string; name: string; portrait?: boolean };
-
-                  let entries: MarqueeEntry[] = [];
-
-                  if ('games' in h && h.games) {
-                    entries = (h.games as GameItem[]).map(g => ({ src: g.logo, name: g.name }));
-                  } else if ('animes' in h && h.animes) {
-                    entries = (h.animes as AnimeItem[]).map(a => ({ src: a.poster, name: a.name, portrait: true }));
-                  } else if ('restaurants' in h && h.restaurants) {
-                    entries = (h.restaurants as RestItem[]).map(r => ({ src: r.photo, name: r.name }));
-                  } else if ('artists' in h && h.artists) {
-                    entries = (h.artists as { name: string; photo: string }[]).map(a => ({ src: a.photo, name: a.name, portrait: true }));
-                  } else if ('sports' in h && h.sports) {
-                    entries = (h.sports as { name: string; photo: string }[]).map(s => ({ src: s.photo, name: s.name }));
-                  } else if ('speakers' in h && h.speakers) {
-                    entries = (h.speakers as { name: string; photo: string }[]).map(s => ({ src: s.photo, name: s.name, portrait: true }));
-                  }
-
-                  if (entries.length === 0) return null;
-
-                  // Duplicate so translateX(-50%) loops seamlessly
-                  const doubled = [...entries, ...entries];
-
-                  return (
-                    <motion.div
-                      className={styles.hobbyGameSection}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ type: 'tween', duration: 0.28, ease: 'easeOut', delay: 0.62 }}
-                    >
-                      <div className={styles.hobbyMarqueeDivider} />
-                      <div className={styles.hobbyMarqueeTrack}>
-                        <div className={styles.hobbyMarqueeRail}>
-                          {doubled.map((item, i) => (
-                            <div key={i} className={styles.hobbyMarqueeCard}>
-                              <img
-                                src={item.src}
-                                alt={item.name}
-                                className={`${styles.hobbyMarqueeImg}${item.portrait ? ` ${styles.hobbyMarqueeImgPortrait}` : ''}`}
-                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.15'; }}
-                              />
-                              <span className={styles.hobbyGameName}>{item.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })()}
-              </motion.div>
-            </>
-          );
-        })()}
-      </AnimatePresence>
 
     </main>
   );

@@ -69,7 +69,13 @@ function App() {
   return (
     <BrowserRouter>
       <AppLayout />
-      <Toaster position="bottom-right" duration={2000} />
+      <Toaster
+        position="bottom-right"
+        duration={4000}
+        expand
+        gap={12}
+        visibleToasts={5}
+      />
     </BrowserRouter>
   )
 }

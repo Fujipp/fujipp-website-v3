@@ -104,16 +104,18 @@ export function AppNavbar({ pages, theme, onThemeChange }: AppNavbarProps) {
               <button
                 type="button"
                 onClick={() => setIsThemeMenuOpen((prev) => !prev)}
-                className={styles.themeTrigger}
+                className={cn(styles.themeTrigger, isThemeMenuOpen && styles.themeTriggerOpen)}
                 aria-haspopup="menu"
                 aria-expanded={isThemeMenuOpen}
                 aria-label="Theme selector"
               >
-                <SelectedThemeIcon className="size-6" strokeWidth={1.75} />
+                <span className={styles.themeIconShell} key={selectedThemeOption.value}>
+                  <SelectedThemeIcon className={styles.themeIcon} strokeWidth={1.75} />
+                </span>
                 {isThemeMenuOpen ? (
-                  <ChevronUp className="size-3" strokeWidth={2} />
+                  <ChevronUp className={styles.themeChevron} strokeWidth={2} />
                 ) : (
-                  <ChevronDown className="size-3" strokeWidth={2} />
+                  <ChevronDown className={styles.themeChevron} strokeWidth={2} />
                 )}
               </button>
 
@@ -129,22 +131,15 @@ export function AppNavbar({ pages, theme, onThemeChange }: AppNavbarProps) {
                         onClick={() => {
                           onThemeChange(option.value)
                           setIsThemeMenuOpen(false)
-                          if (option.value === 'system') {
-                            toast.warning('Theme: System', {
-                              description: 'This feature may only be fully supported on Safari.',
-                              icon: <Icon className="size-4" strokeWidth={1.75} />,
-                            })
-                          } else {
-                            toast(`Theme: ${option.label}`, {
-                              icon: <Icon className="size-4" strokeWidth={1.75} />,
-                            })
-                          }
+                          toast(`Theme: ${option.label}`, {
+                            icon: <Icon className="size-4" strokeWidth={1.75} />,
+                          })
                         }}
                         className={cn(styles.themeItem, isActive && styles.themeItemActive)}
                         role="menuitemradio"
                         aria-checked={isActive}
                       >
-                        <Icon className="size-4" strokeWidth={1.75} />
+                        <Icon className={styles.themeItemIcon} strokeWidth={1.75} />
                         <span className={styles.themeItemLabel}>{option.label}</span>
                         <span
                           className={cn(

@@ -166,44 +166,176 @@
 }
 
 .themeTrigger {
-  display: flex;
-  height: 24px;
+  position: relative;
+  display: inline-flex;
+  height: 34px;
+  min-width: 64px;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+  border-radius: 999px;
+  padding: 0 9px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
   color: var(--text-primary-light);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary-light) 6%, transparent) inset;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease,
+    background-color 180ms ease;
+}
+
+.themeTrigger::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 12%, transparent), transparent 60%);
+  opacity: 0;
+  transform: scale(0.45);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+.themeTrigger:hover,
+.themeTriggerOpen {
+  border-color: color-mix(in srgb, var(--primary) 38%, transparent);
+  color: var(--navbar-active-foreground);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--primary) 8%, transparent) inset,
+    0 6px 16px color-mix(in srgb, var(--primary) 7%, transparent);
+}
+
+:global(.light) .themeTrigger:hover,
+:global(.light) .themeTriggerOpen,
+:global([data-theme="light"]) .themeTrigger:hover,
+:global([data-theme="light"]) .themeTriggerOpen {
+  border-color: color-mix(in srgb, var(--primary) 28%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary-light) 5%, transparent) inset;
+}
+
+.themeTrigger:hover::before,
+.themeTriggerOpen::before {
+  opacity: 0.72;
+  transform: scale(1);
+}
+
+:global(.light) .themeTrigger:hover::before,
+:global(.light) .themeTriggerOpen::before,
+:global([data-theme="light"]) .themeTrigger:hover::before,
+:global([data-theme="light"]) .themeTriggerOpen::before {
+  opacity: 0;
+}
+
+.themeTrigger:active {
+  transform: scale(0.96);
+}
+
+.themeIconShell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  animation: themeIconEnter 260ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.themeIcon {
+  width: 22px;
+  height: 22px;
+  transition: transform 220ms ease;
+}
+
+.themeTrigger:hover .themeIcon {
+  transform: rotate(-12deg) scale(1.08);
+}
+
+.themeChevron {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  transition:
+    opacity 180ms ease,
+    transform 220ms ease;
+}
+
+.themeTriggerOpen .themeChevron {
+  transform: rotate(180deg);
+}
+
+@keyframes themeIconEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) rotate(-24deg) scale(0.74);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
 }
 
 .themeDropdown {
   position: absolute;
-  top: 36px;
+  top: 42px;
   right: 0;
   display: flex;
-  width: 113px;
+  width: 132px;
   flex-direction: column;
-  gap: 10px;
-  border: 1px solid var(--text-primary-light);
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, var(--primary) 26%, transparent);
   border-radius: 8px;
   padding: 8px;
   background: var(--surface);
+  box-shadow: none;
+  transform-origin: top right;
+  animation: themeDropdownIn 180ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+@keyframes themeDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .themeItem {
   display: flex;
   width: 100%;
-  height: 24px;
+  height: 30px;
   align-items: center;
   gap: 8px;
-  padding-inline: 2px;
+  padding-inline: 8px;
   border-radius: 6px;
   color: var(--text-primary-light);
   text-align: left;
   transition:
     color 150ms ease,
-    background-color 150ms ease;
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.themeItem:hover {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--navbar-active-foreground);
+  transform: translateX(2px);
 }
 
 .themeItemActive {
   color: var(--btn-primary-text);
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.themeItemIcon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
 }
 
 .themeItemLabel {
@@ -218,10 +350,18 @@
   height: 6px;
   border-radius: 9999px;
   background: transparent;
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease,
+    transform 180ms ease;
 }
 
 .themeItemIndicatorActive {
   background: var(--primary);
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* ── Mobile Sidebar ──────────────────────────────────────────────── */

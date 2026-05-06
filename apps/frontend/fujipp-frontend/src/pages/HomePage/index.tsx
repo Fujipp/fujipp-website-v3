@@ -67,9 +67,6 @@ export function HomePage() {
             <span className={styles.roleMark} aria-hidden="true" />
             <h1 className={styles.roleText}>FULLSTACK DEVELOPER</h1>
           </div>
-          <p className={styles.heroSummary}>
-            I build clean web experiences with React, Spring Boot, and thoughtful product details.
-          </p>
         </div>
 
         <div className={styles.statsRow}>

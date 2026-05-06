@@ -43,18 +43,18 @@ export const PAGES: PageDefinition[] = [
     icon: Home,
   },
   {
-    id: 'about',
-    label: 'ABOUT',
-    path: '/about',
-    component: AboutPage,
-    icon: User,
-  },
-  {
     id: 'projects',
     label: 'PROJECTS',
     path: '/projects',
     component: ProjectsPage,
     icon: FolderOpen,
+  },
+  {
+    id: 'about',
+    label: 'ABOUT',
+    path: '/about',
+    component: AboutPage,
+    icon: User,
   },
   {
     id: 'performance',
