@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect } from 'react'
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { PAGES } from './routes'
+import { getRouteTitleLabel, isKnownProjectDetailId, normalizePathname } from './routes/guards'
 import { BackgroundEffect } from './components/layout/BackgroundEffect'
 import { AppNavbar } from './components/layout/AppNavbar'
 import { AppFooter } from './components/layout/AppFooter'
@@ -22,6 +23,32 @@ const ProjectEditorPage = isLocalProjectEditorEnabled
   ? lazy(() => import('./pages/ProjectEditorPage/index').then((m) => ({ default: m.ProjectEditorPage })))
   : null
 
+function ProjectDetailGuard() {
+  const { id } = useParams<{ id: string }>()
+
+  if (!isKnownProjectDetailId(id)) {
+    return <NotFoundPage />
+  }
+
+  return <ProjectDetailPage />
+}
+
+function TrailingSlashGuard() {
+  const location = useLocation()
+  const normalizedPathname = normalizePathname(location.pathname)
+
+  if (normalizedPathname !== location.pathname) {
+    return (
+      <Navigate
+        to={`${normalizedPathname}${location.search}${location.hash}`}
+        replace
+      />
+    )
+  }
+
+  return null
+}
+
 function AppLayout() {
   const { theme, setTheme } = useAppTheme()
   const location = useLocation()
@@ -32,12 +59,7 @@ function AppLayout() {
 
   // Dynamic page title
   useEffect(() => {
-    const currentPage = PAGES.find((p) =>
-      p.path === '/' ? location.pathname === '/' : location.pathname.startsWith(p.path)
-    )
-    document.title = currentPage
-      ? `FUJIPP | ${currentPage.label}`
-      : 'FUJIPP | NOT FOUND'
+    document.title = `FUJIPP | ${getRouteTitleLabel(location.pathname)}`
   }, [location.pathname])
 
   return (
@@ -54,6 +76,7 @@ function AppLayout() {
 
         <main className="mx-auto flex min-h-svh w-full items-start">
           <Suspense fallback={null}>
+            <TrailingSlashGuard />
             <Routes>
               {PAGES.map((page) => (
                 <Route
@@ -65,7 +88,8 @@ function AppLayout() {
               {ProjectEditorPage && (
                 <Route path="/projects/editor" element={<ProjectEditorPage />} />
               )}
-              <Route path="/projects/:id" element={<ProjectDetailPage />} />
+              <Route path="/projects/:id" element={<ProjectDetailGuard />} />
+              <Route path="/404" element={<NotFoundPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
