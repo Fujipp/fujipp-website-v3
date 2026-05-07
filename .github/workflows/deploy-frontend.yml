@@ -5,6 +5,10 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/deploy-frontend.yml'
+      - 'bun.lock'
+      - 'package.json'
+      - 'package-lock.json'
       - 'apps/frontend/fujipp-frontend/**'
 
 jobs:
