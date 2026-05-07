@@ -5,8 +5,10 @@ import { BackgroundEffect } from './components/layout/BackgroundEffect'
 import { AppNavbar } from './components/layout/AppNavbar'
 import { AppFooter } from './components/layout/AppFooter'
 import { ScrollToTop } from './components/layout/ScrollToTop'
+import { FujippChat } from './components/features/FujippChat'
 import { Toaster } from './components/ui/sonner'
 import { useAppTheme } from './hooks/useAppTheme'
+import { useImagePreload } from './stores/use-image-preload'
 
 const NotFoundPage = lazy(() =>
   import('./pages/NotFoundPage/index').then((m) => ({ default: m.NotFoundPage }))
@@ -15,9 +17,16 @@ const ProjectDetailPage = lazy(() =>
   import('./pages/ProjectDetailPage/index').then((m) => ({ default: m.ProjectDetailPage }))
 )
 
+const isLocalProjectEditorEnabled = import.meta.env.DEV
+const ProjectEditorPage = isLocalProjectEditorEnabled
+  ? lazy(() => import('./pages/ProjectEditorPage/index').then((m) => ({ default: m.ProjectEditorPage })))
+  : null
+
 function AppLayout() {
   const { theme, setTheme } = useAppTheme()
   const location = useLocation()
+  const preloadAll = useImagePreload((s) => s.preloadAll)
+  useEffect(() => { preloadAll() }, [preloadAll])
   const showFooter = ['/about', '/performance', '/changelog', '/privacy', '/terms', '/projects'].includes(location.pathname)
     || location.pathname.startsWith('/projects/')
 
@@ -53,6 +62,9 @@ function AppLayout() {
                   element={<page.component />}
                 />
               ))}
+              {ProjectEditorPage && (
+                <Route path="/projects/editor" element={<ProjectEditorPage />} />
+              )}
               <Route path="/projects/:id" element={<ProjectDetailPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
@@ -61,6 +73,7 @@ function AppLayout() {
 
         {showFooter && <AppFooter pages={PAGES} />}
       </div>
+      <FujippChat />
     </div>
   )
 }

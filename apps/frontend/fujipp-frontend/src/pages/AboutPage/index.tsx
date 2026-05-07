@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import {
   Monitor, Server, Wrench, Code2,
   Gamepad2, Music, Utensils, Send, ExternalLink,
@@ -137,7 +136,7 @@ function MascotModel({ lang }: { lang: Lang }) {
       let modelReady = false;
       let lastPointerX = 0;
       let userRotationY = 0;
-      const clock = new THREE.Clock();
+      let lastTime = performance.now();
 
       const resize = () => {
         const { width, height } = viewport.getBoundingClientRect();
@@ -223,8 +222,11 @@ function MascotModel({ lang }: { lang: Lang }) {
       viewport.addEventListener('pointercancel', handlePointerUp);
 
       const animate = () => {
-        const time = performance.now() * 0.001;
-        animationMixer?.update(clock.getDelta());
+        const now = performance.now();
+        const delta = (now - lastTime) / 1000;
+        lastTime = now;
+        const time = now * 0.001;
+        animationMixer?.update(delta);
         modelRoot.rotation.y = -0.2 + userRotationY + Math.sin(time * 0.75) * 0.05;
         modelRoot.rotation.x = 0.04 + Math.sin(time * 0.55) * 0.025;
         renderer.render(scene, camera);
@@ -263,16 +265,6 @@ function MascotModel({ lang }: { lang: Lang }) {
   useEffect(() => {
     setSpeechIndex(0);
   }, [lang]);
-
-  useEffect(() => {
-    if (modelStatus !== 'ready' || isRotating) return undefined;
-
-    const speechTimer = window.setInterval(() => {
-      setSpeechIndex((currentIndex) => (currentIndex + 1) % MASCOT_SPEECHES[lang].length);
-    }, 3400);
-
-    return () => window.clearInterval(speechTimer);
-  }, [isRotating, lang, modelStatus]);
 
   const loadingText = lang === 'en' ? 'Loading model' : 'กำลังโหลดโมเดล';
   const errorText = lang === 'en' ? 'Model unavailable' : 'โหลดโมเดลไม่ได้';
@@ -660,7 +652,6 @@ const SOCIAL_CARDS = [
 export function AboutPage() {
   const [lang, setLang] = useState<Lang>('en');
   const [currentEducationIndex, setCurrentEducationIndex] = useState(DEFAULT_EDUCATION_INDEX);
-  const [educationSlideDirection, setEducationSlideDirection] = useState(1);
   const [isAboutMusicMuted, setIsAboutMusicMuted] = useState(false);
   const isAboutMusicMutedRef = useRef(false);
   const isInSectionRef = useRef(false);
@@ -827,7 +818,6 @@ export function AboutPage() {
 
   const handleEducationSelect = (nextIndex: number) => {
     if (nextIndex === currentEducationIndex) return;
-    setEducationSlideDirection(nextIndex > currentEducationIndex ? 1 : -1);
     setCurrentEducationIndex(nextIndex);
   };
 
@@ -905,30 +895,20 @@ export function AboutPage() {
       <section className={styles.skillsSection}>
 
         {/* Header */}
-        <motion.div
-          className={styles.skillsHeader}
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-        >
+        <div className={styles.skillsHeader}>
           <p className={styles.skillsEyebrow}>WHAT I WORK WITH</p>
           <h2 className={styles.skillsTitle}>Skills & Tools</h2>
           <div className={styles.skillsTitleDivider} />
-        </motion.div>
+        </div>
 
         {/* Tech groups */}
         <div className={styles.skillsGrid}>
-          {SKILL_GROUPS.map((group, i) => {
+          {SKILL_GROUPS.map((group) => {
             const GroupIcon = group.groupIcon;
             return (
-              <motion.div
+              <div
                 key={group.label}
                 className={`${styles.skillGroup} ${styles[`skillGroup_${group.color}` as keyof typeof styles]}`}
-                initial={{ opacity: 0, y: 32 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.035 }}
               >
                 <h3 className={styles.skillGroupLabel}>
                   <span className={styles.skillGroupIcon}>
@@ -953,7 +933,7 @@ export function AboutPage() {
                     );
                   })}
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>
@@ -962,63 +942,51 @@ export function AboutPage() {
 
       {/* ══ SECTION 3 — Education ══ */}
       <section className={styles.eduSection}>
-        <motion.div
-          className={styles.eduSectionLabel}
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-        >
+        <div className={styles.eduSectionLabel}>
           <p className={styles.eduEyebrow}>MY JOURNEY</p>
           <h2 className={styles.eduTitle}>Education</h2>
           <div className={styles.eduTitleDivider} />
-        </motion.div>
+        </div>
 
         <div className={styles.eduCarousel}>
           <div className={styles.eduStage}>
-            <AnimatePresence mode="wait">
-              <motion.article
-                key={currentEducation.id}
-                className={`${styles.eduCard} ${styles[`eduCard_${currentEducation.color}` as keyof typeof styles]}`}
-                initial={{ opacity: 0, x: educationSlideDirection > 0 ? 88 : -88, scale: 0.98 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: educationSlideDirection > 0 ? -88 : 88, scale: 0.98 }}
-                transition={{ type: 'spring', stiffness: 240, damping: 28 }}
-              >
-                <div className={styles.eduMedia}>
+            <article
+              key={currentEducation.id}
+              className={`${styles.eduCard} ${styles[`eduCard_${currentEducation.color}` as keyof typeof styles]}`}
+            >
+              <div className={styles.eduMedia}>
+                <img
+                  src={currentEducation.banner}
+                  alt={currentEducation.school}
+                  className={styles.eduBanner}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+                <div className={styles.eduMediaOverlay} />
+                <div className={styles.eduLogoBadge}>
+                  <span className={styles.eduLogoFallback} aria-hidden>
+                    {currentEducation.logoFallback}
+                  </span>
                   <img
-                    src={currentEducation.banner}
-                    alt={currentEducation.school}
-                    className={styles.eduBanner}
+                    src={currentEducation.logo}
+                    alt=""
+                    className={styles.eduLogo}
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
-                  <div className={styles.eduMediaOverlay} />
-                  <div className={styles.eduLogoBadge}>
-                    <span className={styles.eduLogoFallback} aria-hidden>
-                      {currentEducation.logoFallback}
-                    </span>
-                    <img
-                      src={currentEducation.logo}
-                      alt=""
-                      className={styles.eduLogo}
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  </div>
                 </div>
+              </div>
 
-                <div className={styles.eduText}>
-                  <div className={styles.eduMetaRow}>
-                    <span className={`${styles.eduPhase} ${styles[`eduPhase_${currentEducation.color}` as keyof typeof styles]}`}>
-                      {currentEducation.phase}
-                    </span>
-                    <p className={styles.eduPeriod}>{currentEducation.period}</p>
-                  </div>
-                  <h3 className={styles.eduSchool}>{currentEducation.school}</h3>
-                  <p className={styles.eduLevel}>{currentEducation.level}</p>
-                  <p className={styles.eduDesc}>{currentEducation.description}</p>
+              <div className={styles.eduText}>
+                <div className={styles.eduMetaRow}>
+                  <span className={`${styles.eduPhase} ${styles[`eduPhase_${currentEducation.color}` as keyof typeof styles]}`}>
+                    {currentEducation.phase}
+                  </span>
+                  <p className={styles.eduPeriod}>{currentEducation.period}</p>
                 </div>
-              </motion.article>
-            </AnimatePresence>
+                <h3 className={styles.eduSchool}>{currentEducation.school}</h3>
+                <p className={styles.eduLevel}>{currentEducation.level}</p>
+                <p className={styles.eduDesc}>{currentEducation.description}</p>
+              </div>
+            </article>
           </div>
 
           <div className={styles.eduDots} role="tablist" aria-label="Education timeline">
@@ -1041,31 +1009,20 @@ export function AboutPage() {
 
       {/* ══ SECTION 4 — Hobbies ══ */}
       <section className={styles.hobbySection}>
-        <motion.div
-          className={styles.hobbyHeader}
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-        >
+        <div className={styles.hobbyHeader}>
           <p className={styles.hobbyEyebrow}>OUTSIDE THE CODE</p>
           <h2 className={styles.hobbyTitle}>Hobbies & Interests</h2>
           <div className={styles.hobbyDivider} />
-        </motion.div>
+        </div>
 
         {/* Grid of compact cards */}
         <div className={styles.hobbyGrid}>
-          {HOBBIES.map((h, i) => {
+          {HOBBIES.map((h) => {
             const entries = getHobbyEntries(h);
             return (
-              <motion.article
+              <article
                 key={h.id}
                 className={`${styles.hobbyCard} ${styles[`hobbyCard_${h.token}` as keyof typeof styles]}`}
-                initial={{ opacity: 0, y: 36 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
-                whileHover={{ scale: 1.025, y: -6 }}
-                transition={{ type: 'spring', stiffness: 220, damping: 26, delay: i * 0.07 }}
               >
                 <div className={styles.hobbyCardTop}>
                   <div className={`${styles.hobbyIconWrap} ${styles[`hobbyIconWrap_${h.token}` as keyof typeof styles]}`}>
@@ -1092,7 +1049,7 @@ export function AboutPage() {
                     />
                   ))}
                 </div>
-              </motion.article>
+              </article>
             );
           })}
         </div>
@@ -1104,17 +1061,11 @@ export function AboutPage() {
         <div className={styles.contactInner}>
 
           {/* Header — same structure as hobbyHeader */}
-          <motion.div
-            className={styles.contactHeader}
-            initial={{ opacity: 0, y: 32 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-          >
+          <div className={styles.contactHeader}>
             <p className={styles.contactEyebrow}>GET IN TOUCH</p>
             <h2 className={styles.contactTitle}>Let's Connect</h2>
             <div className={styles.hobbyDivider} />
-          </motion.div>
+          </div>
 
           {/* Contact cards */}
           <div className={styles.contactCardRow}>
@@ -1127,15 +1078,10 @@ export function AboutPage() {
                 ? discordDisplayName
                 : (card as { displayName?: string }).displayName ?? card.handle;
               return (
-                <motion.div
+                <div
                   key={card.id}
                   className={`${styles.contactCard} ${styles[`contactCard_${card.color}` as keyof typeof styles]}`}
                   style={{ zIndex: card.stagger + 1 }}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ type: 'spring', stiffness: 220, damping: 24, delay: card.stagger * 0.08 }}
-                  whileHover={{ y: -6, zIndex: 10, transition: { type: 'spring', stiffness: 300, damping: 24 } }}
                 >
                   <div className={styles.contactCardInner}>
 
@@ -1227,7 +1173,7 @@ export function AboutPage() {
                         : <><ExternalLink size={14} strokeWidth={2} /> View Profile</>}
                     </a>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>

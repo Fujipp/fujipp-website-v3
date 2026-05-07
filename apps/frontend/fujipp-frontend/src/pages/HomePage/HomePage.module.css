@@ -363,23 +363,45 @@
     }
 }
 
+@media (max-width: 480px) {
+    .hero {
+        overflow-x: hidden;
+    }
+
+    .textBlock {
+        left: 16px;
+        right: 16px;
+        gap: 14px;
+    }
+
+    .statsRow {
+        width: 100%;
+    }
+}
+
 @media (max-width: 380px) {
     .textBlock {
         top: 58%;
+        left: 14px;
+        right: 14px;
     }
 
     .roleText {
-        font-size: clamp(2rem, 13vw, 3rem);
+        font-size: clamp(1.85rem, 12.5vw, 2.8rem);
     }
 
     .heroSummary {
-        font-size: 0.88rem;
-        line-height: 1.45;
+        font-size: 0.84rem;
+        line-height: 1.5;
     }
 
     .statItem {
-        min-height: 76px;
-        padding: 10px 12px;
+        min-height: 70px;
+        padding: 9px 11px;
+    }
+
+    .statNumber {
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
     }
 }
 

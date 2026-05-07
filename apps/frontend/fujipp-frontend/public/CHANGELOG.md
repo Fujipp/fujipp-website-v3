@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-07
+
+### Features
+- `frontend` add Fujipp AI chat widget with Cloudflare Worker backend proxy
+- `frontend` add project detail pages, project CMS data, and project directory pagination
+- `frontend` replace performance page with lightweight website status dashboard
+- `worker` add OpenRouter-powered portfolio assistant with CORS allowlist and contact fallback
+
+### Fixes
+- `worker` return a Thai fallback when the AI provider returns an empty reply
+- `worker` make contact questions deterministic and avoid invented contact forms
+- `frontend` improve Project Directory light-mode colors and skeleton placeholders
+
+### Styles
+- `frontend` refresh Projects Folder cards, filters, pagination, and skeleton slots
+- `frontend` update Fujipp AI chat header to show beta development status
+
+---
+
 ## [0.5.0] - 2026-03-17
 
 ### Features

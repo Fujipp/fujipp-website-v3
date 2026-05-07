@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fujipp-ai-chat",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-07",
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://www.fujipp.com,http://localhost:5173,http://127.0.0.1:5173",
+    "OPENROUTER_MODEL": "openrouter/free"
+  }
+}

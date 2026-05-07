@@ -151,7 +151,6 @@
     padding-right: 0.35rem;
     scrollbar-width: thin;
     scrollbar-color: var(--primary) transparent;
-    animation: fadeSlide 0.3s ease;
 }
 
 .highlightGrid {
@@ -407,7 +406,6 @@
     line-height: 1.45;
     letter-spacing: 0;
     pointer-events: none;
-    animation: speechIn 0.28s ease both;
 }
 
 .mascotSpeech::after {
@@ -429,22 +427,17 @@
     transform: translateY(-2px);
 }
 
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 .modelSpinner {
     width: 1rem;
     height: 1rem;
     border-radius: 999px;
     border: 2px solid color-mix(in srgb, var(--primary) 20%, transparent);
     border-top-color: var(--primary);
-    animation: modelSpin 0.85s linear infinite;
-}
-
-@keyframes modelSpin {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes speechIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    animation: spin 0.8s linear infinite;
 }
 
 .bioPanel {
@@ -499,12 +492,6 @@
     display: flex;
     flex-direction: column;
     gap: clamp(0.72rem, 1.35vh, 0.95rem);
-    animation: fadeSlide 0.3s ease;
-}
-
-@keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
 }
 
 .bio {
@@ -808,6 +795,25 @@
 
 @media (max-width: 480px) {
     .chipRow {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .skillsSection {
+        padding: 2.5rem 0.875rem;
+        gap: 1.5rem;
+    }
+
+    .skillsTitle {
+        font-size: clamp(1.85rem, 11vw, 2.6rem);
+    }
+
+    .skillsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 380px) {
+    .chipRow {
         grid-template-columns: 1fr;
     }
 }
@@ -880,10 +886,16 @@
     border-radius: 8px;
 }
 
+@keyframes eduFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 .eduCard {
     --edu-accent: var(--primary);
     position: relative;
     display: grid;
+    animation: eduFadeIn 0.32s ease;
     grid-template-columns: minmax(270px, 0.9fr) minmax(0, 1.1fr);
     min-height: clamp(330px, 42vw, 460px);
     overflow: hidden;
@@ -1118,7 +1130,7 @@
     .eduSection {
         min-height: auto;
         align-items: stretch;
-        gap: 2rem;
+        gap: 1.75rem;
         padding: 3rem 1rem;
     }
 
@@ -1127,13 +1139,17 @@
         text-align: left;
     }
 
+    .eduTitle {
+        font-size: clamp(1.85rem, 9vw, 2.8rem);
+    }
+
     .eduCard {
         grid-template-columns: 1fr;
         min-height: 0;
     }
 
     .eduMedia {
-        min-height: 210px;
+        min-height: 190px;
         aspect-ratio: 16 / 9;
     }
 
@@ -1144,7 +1160,8 @@
     }
 
     .eduText {
-        padding: 1.25rem;
+        padding: 1.1rem;
+        gap: 0.55rem;
     }
 
     .eduMetaRow {
@@ -1159,6 +1176,30 @@
 
     .eduDots {
         grid-template-columns: 1fr;
+    }
+
+    .eduSchool {
+        font-size: clamp(1.35rem, 6.5vw, 2rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .eduSection {
+        padding: 2.5rem 0.875rem;
+        gap: 1.5rem;
+    }
+
+    .eduMedia {
+        min-height: 160px;
+    }
+
+    .eduText {
+        padding: 0.9rem;
+    }
+
+    .eduLogoBadge {
+        width: 52px;
+        height: 52px;
     }
 }
 
@@ -1419,18 +1460,43 @@
 }
 
 @media (max-width: 480px) {
+    .hobbySection {
+        padding: 2.5rem 0.875rem;
+        gap: 1.5rem;
+    }
+
+    .hobbyTitle {
+        font-size: clamp(1.85rem, 11vw, 2.6rem);
+    }
+
+    .hobbyGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+    }
+
+    .hobbyCard {
+        grid-column: span 1;
+        min-height: 180px;
+    }
+
+    .hobbyPreviewStrip {
+        gap: 0.3rem;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .hobbyCardName {
+        font-size: clamp(1.1rem, 5vw, 1.45rem);
+    }
+}
+
+@media (max-width: 380px) {
     .hobbyGrid {
         grid-template-columns: 1fr;
     }
 
     .hobbyCard {
-        grid-column: span 1;
+        min-height: 160px;
     }
-
-    .hobbyPreviewStrip {
-        gap: 0.4rem;
-    }
-
 }
 
 /* ══════════════════════════════════════════════
@@ -1823,6 +1889,7 @@
 
 
 
+
 /* ── Responsive ─────────────────────────────── */
 @media (max-width: 1200px) {
     .contactCardRow {
@@ -1841,7 +1908,21 @@
 }
 
 @media (max-width: 480px) {
-    .contactTitle { font-size: 2rem; }
-    .contactSection { padding: 4rem 1.25rem 5rem; }
-    .contactCardRow { grid-template-columns: 1fr; }
+    .contactTitle { font-size: clamp(1.75rem, 10vw, 2.2rem); }
+    .contactSection { padding: 3rem 0.875rem 4rem; }
+    .contactCardRow {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    .contactCard {
+        min-height: 280px;
+    }
+    .contactSubtitle {
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .contactSection { padding: 2.5rem 0.75rem 3.5rem; }
+    .contactCard { min-height: 240px; }
 }

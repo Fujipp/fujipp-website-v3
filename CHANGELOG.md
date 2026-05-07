@@ -6,6 +6,48 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-07
+
+### Features
+- `frontend` add Fujipp AI chat widget with Cloudflare Worker backend proxy
+- `frontend` add project detail pages, project CMS data, and project directory pagination
+- `frontend` replace performance page with lightweight website status dashboard
+- `worker` add OpenRouter-powered portfolio assistant with CORS allowlist and contact fallback
+
+### Fixes
+- `worker` return a Thai fallback when the AI provider returns an empty reply
+- `worker` make contact questions deterministic and avoid invented contact forms
+- `frontend` improve Project Directory light-mode colors and skeleton placeholders
+
+### Styles
+- `frontend` refresh Projects Folder cards, filters, pagination, and skeleton slots
+- `frontend` update Fujipp AI chat header to show beta development status
+
+---
+
+## [0.5.0] - 2026-03-17
+
+### Features
+- `frontend` add ProjectDetailModal — click any project card to expand full details (icon, description, tech stack, links, image slideshow)
+- `frontend` add crossfade image slideshow with dot indicators for featured project card
+- `frontend` add thumbnail image display on regular project cards
+- `frontend` add click-to-zoom image viewer for project images (reuse CertificateModal)
+- `frontend` add internship project entries: RPA-001 SFTP File Processing & Message Queue System, Etax Service e-Tax Invoice with Digital Signature
+- `frontend` add internship learning experience entries: Report Generation (JasperReports, Oracle DB) and Software Testing (JUnit 5, Mockito, Postman)
+- `frontend` replace all project card emojis with Lucide icons
+
+### Fixes
+- `frontend` fix ProjectDetailModal close button overlapping image panel
+- `frontend` fix image click bug in detail modal slideshow — move onClick to container using slideIdx reference
+- `frontend` fix All Work section title color to match Projects hero heading
+- `frontend` add stopPropagation on all inner interactive elements in project cards (links, cert button, image thumb)
+
+### Styles
+- `frontend` add zoom hint badge on detail modal image slideshow (hover to reveal)
+- `frontend` add pointer-events: none on stacked slideshow images to prevent invisible-layer click interception
+
+---
+
 ## [0.4.0] - 2026-03-16
 
 ### Features
