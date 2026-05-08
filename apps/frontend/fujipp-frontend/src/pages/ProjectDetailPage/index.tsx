@@ -190,6 +190,90 @@ const YIP_INVOICE_TH: LocalizedFeaturedContent = {
   },
 };
 
+const PETSTORY_EN: LocalizedFeaturedContent = {
+  subtitle: 'Pet care platform with Instagram-style social feed, daily missions, and health tracking',
+  overview:
+    'PetStory is a platform for pet owners that combines an Instagram-style social feed, daily mission gamification, and health tracking in one application. Users can create pet profiles, log daily care activities such as feeding, walking, mood, and weight, complete missions to earn EXP and level up their pets, share feed and story posts, track vaccines and medication, receive important reminders, and connect with other pet owners through a community-driven experience.',
+  problemStatement: [
+    'Pet owners often want a reliable way to record pet care activities for future reference, but existing tools are usually just simple diaries or lack long-term motivation.',
+    'Pet health management requires tracking multiple factors such as food, weight, vaccines, and medication, while important reminders are often forgotten over time.',
+    'Pet owners also want a space to share the joy of raising pets and connect with a like-minded community.',
+  ],
+  objectives: [
+    'Build an application where pet owners can log daily care activities such as feeding, walking, mood, and weight in one unified flow.',
+    'Create a daily mission system that motivates users through EXP and a pet leveling mechanic.',
+    'Develop a health system that includes weight tracking, vaccine management, medicine reminders, and health alerts.',
+    'Develop social features such as feed, story, like, comment, and follow to support community interaction.',
+    'Create a moments feature for preserving birthdays, adoption dates, and other meaningful milestones.',
+  ],
+  process:
+    'The team analyzed the needs of real pet owners and observed how people interact with social media and health tracking apps. Based on those insights, we integrated gamification to improve daily engagement and separated the system into clear domains such as Auth, Pet, Mission, Health, and Social for smoother development.',
+  highlights: [
+    'All-in-one care logging for feeding, walking, mood, and weight in a single workflow',
+    'Daily mission system with EXP rewards and pet level-up progression',
+    'Complete health tracking with weight history, vaccine CRUD, medicine reminders, and health alerts',
+    'Social features including feed and story posts, likes, comments, deletion, follow, and unfollow',
+    'Moments for pinning important dates such as birthdays, adoption days, and special memories',
+    'User search, followers and following lists, and theme settings',
+    'Image upload support for both local storage and Cloudinary unsigned upload',
+    'Admin dashboard for user management, post moderation, and activity monitoring',
+  ],
+  challenges: [
+    { title: 'Mission Generation Logic', description: 'The mission system needed an algorithm that could generate realistic and relevant care tasks for different pet types.' },
+    { title: 'EXP & Level System', description: 'The EXP formula had to feel rewarding without making progression too fast or too slow.' },
+    { title: 'Health Data Integrity', description: 'Weight history, vaccine records, and medicine reminders had to remain chronologically accurate and consistent.' },
+    { title: 'Care Log Schema Design', description: 'A single schema had to efficiently support feeding, walking, mood, and weight data together.' },
+    { title: 'Social Feed Performance', description: 'Post, like, and comment loading needed pagination and performance tuning as data volume increased.' },
+    { title: 'Image Storage Management', description: 'The upload flow needed to support both local storage and Cloudinary reliably.' },
+    { title: 'JWT Token Management', description: 'Token expiration, refresh flow, and logout handling had to work correctly across frontend and backend.' },
+  ],
+  feasibility:
+    'The project was highly feasible because each core idea already existed in proven products, whether social platforms, health apps, or gamified systems. The team focused on integrating these parts into one cohesive experience while testing edge cases such as multiple pets, timezone issues, and concurrent updates.',
+  targetAudience:
+    'The target audience is Thai pet owners aged 15 and above who want to record pet care, track health, share pet profiles, and connect with other pet lovers in a community setting.',
+  systemOverview: [
+    'Authentication flow with JWT token exchange for identity verification and access control',
+    'Pet profile system for storing name, breed, age, birthday, adoption date, weight, biography, level, and EXP',
+    'Unified care log system for feeding, walking, mood, and weight tracking',
+    'Daily mission system that generates activities and rewards EXP for pet progression',
+    'Health management system for weight history, vaccine records, medicine reminders, and alerts',
+    'Social system supporting feed and story posts, likes, comments, follow and unfollow, and user search',
+    'Moments system for preserving important life events of each pet',
+    'Theme settings and user profile customization',
+  ],
+  workflow: [
+    'Users register and sign in with email and password',
+    'They create one or more pet profiles with images and basic information',
+    'The system generates daily missions such as feeding, walking, mood check, and weight tracking',
+    'Users log care activities through missions or manual entries and level up their pets when EXP is full',
+    'They track health through weight history, vaccine dates, and medicine reminders',
+    'Users create and share feed or story posts, then like and comment on other posts',
+    'They follow or unfollow other users, search for friends, and view followers and following lists',
+    'They pin important moments such as birthdays, adoption dates, and special events',
+    'They customize themes and manage personal profile settings',
+  ],
+  features: {
+    users: [
+      'Register, sign in, and edit profile',
+      'Create and manage pet profiles',
+      'Complete daily missions and earn EXP',
+      'Log care activities such as feeding, walking, mood, and weight',
+      'Track health through weight, vaccines, medication, and alerts',
+      'Create and share feed and story posts',
+      'Follow users, like posts, comment, and search for friends',
+      'Pin important moments',
+      'Upload images',
+      'Customize theme settings',
+    ],
+    admin: [
+      'View overall system summaries',
+      'Manage user accounts, including blocking, approval, and inspection',
+      'Moderate posts with approve and reject actions',
+      'Monitor user activity and detect suspicious behavior',
+    ],
+  },
+};
+
 const RELATIONSHIP_STAGES: Record<DetailLang, { label: string; value: number; note: string }[]> = {
   th: [
     { label: 'Match', value: 100, note: 'เริ่มจับคู่จากโปรไฟล์และระยะทาง' },
@@ -206,6 +290,20 @@ const RELATIONSHIP_STAGES: Record<DetailLang, { label: string; value: number; no
 };
 
 const PROJECT_STAGE_FALLBACKS: Record<string, Record<DetailLang, { label: string; value: number; note: string }[]>> = {
+  petstory: {
+    th: [
+      { label: 'Care Log', value: 100, note: 'บันทึกการดูแลสัตว์เลี้ยงใน workflow เดียว' },
+      { label: 'Mission', value: 100, note: 'ทำภารกิจรายวันเพื่อรับ EXP และยกระดับสัตว์เลี้ยง' },
+      { label: 'Health', value: 100, note: 'ติดตามน้ำหนัก วัคซีน ยา และการแจ้งเตือน' },
+      { label: 'Social Feed', value: 100, note: 'แชร์โพสต์ ติดตามผู้ใช้ และบันทึกช่วงเวลาสำคัญ' },
+    ],
+    en: [
+      { label: 'Care Log', value: 100, note: 'Track pet care activities in one unified workflow.' },
+      { label: 'Mission', value: 100, note: 'Complete daily missions to earn EXP and level up pets.' },
+      { label: 'Health', value: 100, note: 'Monitor weight, vaccines, medicine, and reminders.' },
+      { label: 'Social Feed', value: 100, note: 'Share posts, follow users, and preserve important moments.' },
+    ],
+  },
   'yip-invoice-service': {
     th: [
       { label: 'Orchestrate', value: 100, note: 'รับคำขอและกระจายงานให้บริการที่เกี่ยวข้อง' },
@@ -220,6 +318,12 @@ const PROJECT_STAGE_FALLBACKS: Record<string, Record<DetailLang, { label: string
       { label: 'Deliver', value: 100, note: 'Store, email, and monitor generated documents.' },
     ],
   },
+};
+
+const PROJECT_HERO_TAGS: Record<string, string[]> = {
+  chat2date: ['Matching', 'Real-time Chat', 'Date Unlock', 'SOS Safety'],
+  petstory: ['Care Log', 'Daily Mission', 'Health Tracker', 'Social Feed'],
+  'yip-invoice-service': ['Orchestrator', 'PDF/XML', 'Signature', 'Email Queue'],
 };
 
 const YIP_SIMULATION: Record<DetailLang, {
@@ -265,6 +369,7 @@ const YIP_SIMULATION: Record<DetailLang, {
 
 function getLocalizedFeaturedData(data: FeaturedProjectData, lang: DetailLang): FeaturedProjectData {
   if (lang === 'en' && data.id === 'chat2date') return { ...data, ...CHAT2DATE_EN };
+  if (lang === 'en' && data.id === 'petstory') return { ...data, ...PETSTORY_EN };
   if (lang === 'th' && data.id === 'yip-invoice-service') return { ...data, ...YIP_INVOICE_TH };
   return data;
 }
@@ -306,9 +411,7 @@ function FeaturedDetail({ data, onBack }: { data: FeaturedProjectData; onBack: (
   const hasLinks = content.links.figma || content.links.live;
   const youtubeEmbedUrl = getYoutubeEmbedUrl(data.links.youtube);
   const stageItems = PROJECT_STAGE_FALLBACKS[data.id]?.[lang] ?? RELATIONSHIP_STAGES[lang];
-  const heroTags = data.id === 'yip-invoice-service'
-    ? ['Orchestrator', 'PDF/XML', 'Signature', 'Email Queue']
-    : ['Matching', 'Real-time Chat', 'Date Unlock', 'SOS Safety'];
+  const heroTags = PROJECT_HERO_TAGS[data.id] ?? ['Core System', 'Workflow', 'Architecture', 'Delivery'];
   const projectNote = data.id === 'yip-invoice-service'
     ? (isEnglish ? 'Completed during a 6-month internship' : 'พัฒนาระหว่างฝึกงาน 6 เดือน')
     : (isEnglish ? 'Completed unpaid Senior Project' : 'Senior Project ที่จบแล้วและไม่ได้รับค่าตอบแทน');

@@ -27,6 +27,8 @@ export type ProjectTag =
   | 'ai'
   | 'security'
   | 'docker'
+  | 'social'
+  | 'health-tracking'
   | 'wip';
 
 export type Status = 'active' | 'archived' | 'wip';
@@ -343,6 +345,118 @@ export const FEATURED_PROJECTS: Record<string, FeaturedProjectData> = {
       live: undefined,
     },
   },
+  'petstory': {
+    id: 'petstory',
+    title: 'PetStory',
+    subtitle: 'แอปพลิเคชันดูแลสัตว์เลี้ยงแนว Instagram + Daily Mission + Health Tracker',
+    year: 'Senior Project',
+    template: 'case-study',
+    tags: ['featured', 'fullstack', 'social', 'health-tracking'],
+    commissioned: false,
+    logo: undefined,
+    appIcon: undefined,
+    overview:
+      'PetStory คือแพลตฟอร์มสำหรับผู้เลี้ยงสัตว์ที่รวมแนวคิด Instagram Social Feed, Daily Mission Gamification และ Health Tracker เข้าไว้ในแอปเดียว ผู้ใช้สามารถสร้างโปรไฟล์สัตว์เลี้ยง บันทึกการดูแลประจำวัน เช่น อาหาร เดิน อารมณ์ และน้ำหนัก ทำภารกิจเพื่อรับ EXP และยกระดับสัตว์เลี้ยง แชร์โพสต์ Feed และ Story ติดตามสุขภาพผ่านระบบวัคซีน ยา และการแจ้งเตือนเหตุการณ์สำคัญ พร้อมเชื่อมต่อกับเพื่อนและชุมชนผู้เลี้ยงสัตว์',
+    problemStatement: [
+      'ผู้เลี้ยงสัตว์มักต้องการบันทึกการดูแลสัตว์เลี้ยงไว้เพื่ออ้างอิง แต่เครื่องมือปัจจุบันมักเป็นเพียงไดอารี่ธรรมดาหรือไม่มีแรงจูงใจให้ใช้งานต่อเนื่อง',
+      'การดูแลสุขภาพสัตว์เลี้ยงต้องติดตามหลายปัจจัย เช่น อาหาร น้ำหนัก วัคซีน และยา ซึ่งการเตือนเหตุการณ์สำคัญมักหลุดหายไปตามเวลา',
+      'ผู้เลี้ยงสัตว์ต้องการพื้นที่ในการแชร์ความสุขของการเลี้ยงสัตว์และเชื่อมต่อกับชุมชนผู้เลี้ยงสัตว์คนอื่น',
+    ],
+    objectives: [
+      'พัฒนาแอปที่ให้ผู้เลี้ยงสัตว์บันทึกกิจกรรมการดูแล เช่น อาหาร เดิน อารมณ์ และน้ำหนักใน workflow เดียว',
+      'สร้างระบบ Daily Mission ที่เพิ่มแรงจูงใจผ่าน EXP และระบบยกระดับสัตว์เลี้ยง',
+      'พัฒนาระบบสุขภาพที่รวม Weight Tracking, Vaccine Management, Medicine Reminder และ Health Alerts',
+      'พัฒนาฟีเจอร์สังคม เช่น Feed, Story, Like, Comment และ Follow เพื่อสนับสนุนการสร้างชุมชน',
+      'สร้างระบบ Moments สำหรับเก็บวันเกิด วันรับเลี้ยง และเหตุการณ์สำคัญของสัตว์เลี้ยง',
+    ],
+    process:
+      'ทีมวิเคราะห์ความต้องการของผู้เลี้ยงสัตว์จริง และสังเกตพฤติกรรมการใช้งาน Social Media ร่วมกับ Health Tracking App จากนั้นนำแนวคิด Gamification มาช่วยเพิ่มแรงจูงใจในการใช้งานประจำวัน และแยกระบบออกเป็นโดเมนหลัก เช่น Auth, Pet, Mission, Health และ Social เพื่อให้พัฒนาและดูแลได้ชัดเจน',
+    highlights: [
+      'บันทึกการดูแลแบบ All-in-One สำหรับ Feeding, Walk, Mood และ Weight ใน workflow เดียว',
+      'ระบบ Daily Mission พร้อม EXP และการ Level Up สัตว์เลี้ยง',
+      'Health Tracking ครบทั้ง Weight History, Vaccine CRUD, Medicine Reminder และ Health Alerts',
+      'Social Features เช่น Feed และ Story Posts, Like, Comment, Delete, Follow และ Unfollow',
+      'Moments สำหรับปักหมุดวันสำคัญ เช่น วันเกิด วันรับเลี้ยง และความทรงจำพิเศษ',
+      'Search Users, Followers และ Following List พร้อม Theme Settings',
+      'Image Upload รองรับทั้ง Local Storage และ Cloudinary unsigned upload',
+      'Admin Dashboard สำหรับ User Management, Post Moderation และ Activity Monitoring',
+    ],
+    challenges: [
+      { title: 'Mission Generation Logic', description: 'ต้องออกแบบอัลกอริทึมสำหรับสุ่มสร้างภารกิจที่สมจริงและสัมพันธ์กับการดูแลสัตว์เลี้ยงแต่ละประเภท' },
+      { title: 'EXP & Level System', description: 'ต้องออกแบบสูตร EXP ให้สมดุล เพื่อให้ผู้ใช้รู้สึกคุ้มค่าจากการทำ Mission โดยไม่เร็วหรือช้าเกินไป' },
+      { title: 'Health Data Integrity', description: 'ต้องจัดการ Weight History, Vaccine Records และ Medicine Reminders ให้ถูกต้องและเรียงลำดับเวลาอย่างแม่นยำ' },
+      { title: 'Care Log Schema Design', description: 'ต้องออกแบบ schema ที่รองรับ Feeding, Walk, Mood และ Weight ในโครงสร้างเดียวได้อย่างมีประสิทธิภาพ' },
+      { title: 'Social Feed Performance', description: 'ต้องปรับประสิทธิภาพการโหลด Post, Like และ Comment เมื่อข้อมูลเพิ่มขึ้นด้วย Pagination' },
+      { title: 'Image Storage Management', description: 'ต้องบริหารการอัปโหลดรูปและตัวเลือกระหว่าง Local Storage กับ Cloudinary ให้เสถียร' },
+      { title: 'JWT Token Management', description: 'ต้องจัดการ Token Expiration, Refresh Token และ Logout ให้ถูกต้องทั้งฝั่ง Frontend และ Backend' },
+    ],
+    feasibility:
+      'โครงการมีความเป็นไปได้สูง เพราะแต่ละองค์ประกอบมีตัวอย่างจากแอปที่มีอยู่แล้ว เช่น Social Platform, Health App และระบบ Gamification ทีมจึงเน้นการบูรณาการทุกส่วนให้ทำงานร่วมกันอย่างลงตัว พร้อมทดสอบ edge case เช่น multiple pets, timezone issues และ concurrent updates',
+    targetAudience:
+      'กลุ่มเป้าหมายคือคนไทยอายุ 15 ปีขึ้นไปที่เลี้ยงสัตว์ เช่น สุนัข แมว กระต่าย หรือนก และต้องการบันทึกการดูแล ติดตามสุขภาพ แชร์โปรไฟล์สัตว์เลี้ยง และเชื่อมต่อกับชุมชนผู้เลี้ยงสัตว์',
+    systemOverview: [
+      'ระบบเข้าสู่ระบบและแลกเปลี่ยน JWT Token สำหรับยืนยันตัวตนและควบคุมสิทธิ์การเข้าถึง',
+      'ระบบโปรไฟล์สัตว์เลี้ยงสำหรับเก็บชื่อ สายพันธุ์ อายุ วันเกิด วันรับเลี้ยง น้ำหนัก ชีวประวัติ Level และ EXP',
+      'ระบบ Care Log ที่รวม Feeding, Walk, Mood และ Weight ไว้ใน workflow เดียว',
+      'ระบบ Daily Mission ที่สร้างภารกิจประจำวันและให้ EXP เพื่อยกระดับสัตว์เลี้ยง',
+      'ระบบสุขภาพสำหรับ Weight History, Vaccine Records, Medicine Reminders และ Alerts',
+      'ระบบสังคมที่รองรับ Feed และ Story Posts, Likes, Comments, Follow/Unfollow และ Search Users',
+      'ระบบ Moments สำหรับเก็บเหตุการณ์สำคัญในชีวิตของสัตว์เลี้ยง',
+      'ระบบตั้งค่า Theme และโปรไฟล์ผู้ใช้',
+    ],
+    workflow: [
+      'ผู้ใช้สมัครสมาชิกและลงชื่อเข้าใช้ด้วย Email และ Password',
+      'สร้างโปรไฟล์สัตว์เลี้ยงได้ตั้งแต่หนึ่งตัวขึ้นไป พร้อมรูปภาพและข้อมูลพื้นฐาน',
+      'ระบบสร้าง Daily Mission เช่น Feeding, Walking, Mood Check และ Weight Tracking',
+      'ผู้ใช้บันทึกการดูแลจาก Mission หรือเพิ่มเองภายหลัง พร้อมยกระดับสัตว์เลี้ยงเมื่อ EXP เต็ม',
+      'ผู้ใช้ติดตามสุขภาพผ่าน Weight History, Vaccine Dates และ Medicine Reminders',
+      'สร้างและแชร์ Feed หรือ Story Posts รวมถึงกดถูกใจและแสดงความคิดเห็นในโพสต์อื่น',
+      'ติดตามหรือเลิกติดตามผู้ใช้อื่น ค้นหาเพื่อน และดูรายชื่อ Followers หรือ Following',
+      'ปักหมุด Moments สำคัญ เช่น วันเกิด วันรับเลี้ยง และวันพิเศษ',
+      'ปรับแต่ง Theme และตั้งค่าโปรไฟล์ส่วนตัว',
+    ],
+    features: {
+      users: [
+        'ลงทะเบียน เข้าสู่ระบบ และแก้ไขโปรไฟล์',
+        'สร้างและจัดการโปรไฟล์สัตว์เลี้ยง',
+        'ทำ Daily Mission และรับ EXP',
+        'บันทึกการดูแล เช่น อาหาร เดิน อารมณ์ และน้ำหนัก',
+        'ติดตามสุขภาพ เช่น น้ำหนัก วัคซีน ยา และการแจ้งเตือน',
+        'สร้างและแชร์ Feed และ Story Posts',
+        'ติดตามผู้ใช้ กดถูกใจ แสดงความคิดเห็น และค้นหาเพื่อน',
+        'ปักหมุด Moments สำคัญ',
+        'อัปโหลดรูปภาพ',
+        'ปรับแต่ง Theme',
+      ],
+      admin: [
+        'ดูสรุประบบทั้งหมด',
+        'จัดการข้อมูลผู้ใช้ เช่น บล็อก อนุมัติ และตรวจสอบ',
+        'จัดการโพสต์ด้วยการอนุมัติหรือปฏิเสธ',
+        'ตรวจสอบกิจกรรมผู้ใช้และพฤติกรรมผิดปกติ',
+      ],
+    },
+    infrastructure: [
+      { label: 'Client App', items: ['Vue.js 3', 'Vite', 'Pinia'], connector: 'REST API · JWT' },
+      { label: 'Application API', items: ['Spring Boot 3', 'Spring Security', 'Spring Data JPA'], connector: 'Data · Media' },
+      { label: 'Data & Media', items: ['MySQL 8', 'Cloudinary / Local Storage'], connector: 'Docker Network' },
+      { label: 'Delivery', items: ['Java 21', 'Maven', 'Docker Compose'] },
+    ],
+    techStack: [
+      { category: 'Frontend', items: ['Vue.js 3', 'Vite', 'Tailwind CSS', 'Pinia', 'Three.js'] },
+      { category: 'Backend', items: ['Spring Boot 3.3', 'Spring Security', 'Spring Data JPA'] },
+      { category: 'Data & Storage', items: ['MySQL 8', 'Cloudinary', 'Local Storage'] },
+      { category: 'Delivery', items: ['Java 21', 'Maven', 'Docker Compose'] },
+      { category: 'Collaboration', items: ['Figma', 'Discord', 'GitHub'] },
+      { category: 'Testing', items: ['Postman'] },
+    ],
+    architectureImage: undefined,
+    images: [],
+    links: {
+      figma: undefined,
+      youtube: undefined,
+      live: undefined,
+    },
+  },
 };
 
 export const TOP_PROJECTS: TopProject[] = [
@@ -371,14 +485,16 @@ export const TOP_PROJECTS: TopProject[] = [
     detailId: 'yip-invoice-service',
   },
   {
-    id: 'project-03',
+    id: 'petstory',
     number: '03',
-    title: 'Coming Soon',
-    description: 'กำลังเตรียม project ถัดไป — จะอัปเดตเร็ว ๆ นี้',
-    categoryLabel: 'Backend',
-    status: 'wip',
-    tech: ['Node.js', 'PostgreSQL', 'Docker'],
+    title: 'PetStory',
+    description:
+      'Pet care platform ที่รวม social feed, daily mission gamification และ health tracking เพื่อให้ผู้ใช้ดูแลสัตว์เลี้ยง บันทึกกิจกรรม และแชร์ช่วงเวลาสำคัญได้ในที่เดียว',
+    categoryLabel: 'Full Stack',
+    status: 'active',
+    tech: ['Vue.js 3', 'Spring Boot 3', 'MySQL 8', 'Pinia', 'Docker'],
     accent: 'orange',
+    detailId: 'petstory',
   },
 ];
 
@@ -404,6 +520,18 @@ export const PROJECT_FOLDERS: ProjectFolder[] = [
     year: 'Senior Project',
     tech: ['Flutter', 'Vue.js', 'Spring Boot', 'MySQL', 'Socket.io'],
     detailId: 'chat2date',
+  },
+  {
+    id: 'petstory-folder',
+    title: 'PetStory',
+    description: 'Pet care platform combining social feed, daily missions, health tracking, moments, and pet profile management.',
+    category: 'fullstack',
+    categoryLabel: 'Full Stack',
+    tags: ['featured', 'fullstack', 'social', 'health-tracking'],
+    status: 'active',
+    year: 'Senior Project',
+    tech: ['Vue.js 3', 'Spring Boot 3', 'MySQL 8', 'Pinia'],
+    detailId: 'petstory',
   },
   {
     id: 'yip-invoice-service-folder',

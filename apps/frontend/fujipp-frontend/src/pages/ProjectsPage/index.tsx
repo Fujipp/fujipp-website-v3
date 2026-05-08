@@ -385,6 +385,169 @@ function YipModel() {
   );
 }
 
+function PetStoryModel() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const viewport = viewportRef.current;
+    if (!canvas || !viewport) return undefined;
+
+    let disposed = false;
+    let cleanup: (() => void) | undefined;
+
+    void (async () => {
+      let modules: [
+        typeof import('three'),
+        typeof import('three/examples/jsm/loaders/GLTFLoader.js'),
+      ];
+      try {
+        modules = await Promise.all([
+          import('three'),
+          import('three/examples/jsm/loaders/GLTFLoader.js'),
+        ]);
+      } catch {
+        if (!disposed) setStatus('error');
+        return;
+      }
+
+      const [THREE, { GLTFLoader }] = modules;
+      if (disposed) return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+      camera.position.set(0, 0.45, 6);
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.setClearColor(0x000000, 0);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+
+      const ambientLight = new THREE.HemisphereLight(0xffffff, 0x8fa4a0, 1.9);
+      const keyLight = new THREE.DirectionalLight(0xffffff, 2.3);
+      keyLight.position.set(3.5, 5.5, 5);
+      const fillLight = new THREE.DirectionalLight(0xf5b6a0, 0.9);
+      fillLight.position.set(-4.5, 2.2, 2.8);
+      const rimLight = new THREE.DirectionalLight(0xc9f0d2, 1.0);
+      rimLight.position.set(-3.2, 3, -4);
+      scene.add(ambientLight, keyLight, fillLight, rimLight);
+
+      const modelRoot = new THREE.Group();
+      scene.add(modelRoot);
+
+      let animationFrame = 0;
+      let loadedModel: ThreeObject3D | null = null;
+      let animationMixer: ThreeAnimationMixer | null = null;
+      let lastTime = performance.now();
+
+      const resize = () => {
+        const { width, height } = viewport.getBoundingClientRect();
+        const w = Math.max(1, width);
+        const h = Math.max(1, height);
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      };
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(viewport);
+      resize();
+
+      const loader = new GLTFLoader();
+      loader.load(
+        '/models/PetStory.glb',
+        (gltf) => {
+          if (disposed) return;
+          const model = gltf.scene;
+          model.traverse((child) => {
+            const mesh = child as ThreeMesh;
+            if (!mesh.isMesh) return;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+          });
+          const bounds = new THREE.Box3().setFromObject(model);
+          const size = bounds.getSize(new THREE.Vector3());
+          const center = bounds.getCenter(new THREE.Vector3());
+          const scale = 2.7 / (Math.max(size.x, size.y, size.z) || 1);
+          model.scale.setScalar(scale);
+          model.position.set(-center.x * scale, -center.y * scale + 0.12, -center.z * scale);
+          modelRoot.add(model);
+          loadedModel = model;
+          if (gltf.animations.length > 0) {
+            animationMixer = new THREE.AnimationMixer(model);
+            gltf.animations.forEach((clip) => {
+              animationMixer
+                ?.clipAction(clip)
+                .setLoop(THREE.LoopPingPong, Infinity)
+                .reset()
+                .fadeIn(0.2)
+                .play();
+            });
+          }
+          setStatus('ready');
+        },
+        undefined,
+        () => { if (!disposed) setStatus('error'); },
+      );
+
+      const animate = () => {
+        const now = performance.now();
+        const delta = (now - lastTime) / 1000;
+        lastTime = now;
+        const t = now * 0.001;
+        animationMixer?.update(delta);
+        modelRoot.rotation.y = 0.14 + Math.sin(t * 0.4) * 0.22;
+        modelRoot.rotation.x = 0.02 + Math.sin(t * 0.3) * 0.016;
+        renderer.render(scene, camera);
+        animationFrame = requestAnimationFrame(animate);
+      };
+      animate();
+
+      cleanup = () => {
+        cancelAnimationFrame(animationFrame);
+        resizeObserver.disconnect();
+        animationMixer?.stopAllAction();
+        if (loadedModel) {
+          animationMixer?.uncacheRoot(loadedModel);
+          loadedModel.traverse((child) => {
+            const mesh = child as ThreeMesh;
+            if (!mesh.isMesh) return;
+            mesh.geometry?.dispose();
+            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            mats.forEach((m: ThreeMaterial) => m.dispose());
+          });
+        }
+        renderer.dispose();
+      };
+    })();
+
+    return () => {
+      disposed = true;
+      cleanup?.();
+    };
+  }, []);
+
+  return (
+    <div ref={viewportRef} className={styles.modelViewport}>
+      <canvas
+        ref={canvasRef}
+        className={`${styles.modelCanvas} ${status === 'ready' ? styles.modelCanvasReady : ''}`}
+      />
+      {status !== 'ready' && (
+        <div className={styles.modelLoading} aria-live="polite">
+          {status === 'loading' && <span className={styles.modelSpinner} aria-hidden />}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Page ────────────────────────────────────── */
 
 export function ProjectsPage() {
@@ -442,6 +605,7 @@ export function ProjectsPage() {
 
               {proj.number === '01' && <Chat2DateModel />}
               {proj.number === '02' && <YipModel />}
+              {proj.number === '03' && <PetStoryModel />}
 
               <div className={styles.cardContent}>
                 <div className={styles.cardMeta}>
