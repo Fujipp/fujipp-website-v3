@@ -416,10 +416,6 @@ export function ProjectsPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.hero}>
-        {/*  */}
-      </section>
-
       <section className={styles.featuredSection} aria-labelledby="featured-title">
         <div className={styles.featuredHeader}>
           <p className={styles.eyebrow}>FEATURED WORK</p>
